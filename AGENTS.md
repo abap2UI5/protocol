@@ -17,9 +17,11 @@ down, and the spec records what the implementations do.
   `spec/README.md#sources`. A statement you cannot trace to code is a
   proposal - say so, or leave it out.
 - **Accidental behaviour is an implementation note, not a rule.** When the
-  reference does something odd (draft ids that repeat after a leave, the URL
-  reflected into a 500 body), write it under *Implementation note* - another
-  implementation must not have to copy it.
+  reference does something odd (draft ids that repeat after a leave), write
+  it under *Implementation note* - another implementation must not have to
+  copy it. When the maintainer turns such a note into a rule the reference
+  breaks (the URL reflected into a 500 body, revision 0.3), the rule gets its
+  check and the reference's failure is pinned (below).
 - **A rule a backend can break gets a check.** New MUST/SHOULD for backends ->
   a check in `conformance/backend/lib/checks/`, its id on the spec's
   *Checked by* line, `node scripts/gen-check-list.mjs`. `npm test` fails when
@@ -48,7 +50,12 @@ down, and the spec records what the implementations do.
   `traffic/`; record again after changing a check or an app.
 - **Generated sections are generated.** `conformance/backend/README.md`
   (check list), `profiles/portable.md` (between the `portable:*` markers,
-  from `profiles/portable-v1.json`) - run `npm run generate`.
+  from `profiles/portable-v1.json`), `renderers/adaptive-cards/README.md`
+  (the mapping table, from `mapping.mjs`) - run `npm run generate`.
+- **Known failures of a reference are pinned, not hidden.** A backend check
+  the reference backends fail goes into `test/lib/expected.mjs` with the
+  place of its fix; the tests fail when it starts to pass (unpin it, record
+  again) as well as when another check fails.
 - **`profiles/semantic.md` is the normative snapshot v1** (moved from
   abap2UI5/mcp-server `docs/agent-snapshot.md`). Changes to the snapshot
   shape are made here first; implementations follow.
@@ -65,7 +72,8 @@ down, and the spec records what the implementations do.
 | `profiles/` | UI5, portable (v1 + `portable-v1.json` + coverage) and semantic profiles |
 | `schema/` | JSON Schemas 2020-12 |
 | `conformance/backend/` | the backend suite - the published package's entry (`index.mjs`, `bin/`) |
-| `conformance/frontend/` | the frontend suite - `lib/` (scripted backend `mock.mjs`, runner, response builders, `checks/`), `adapters/` (`ui5` Playwright + the boot page, `agent` + the vendored mcp-server client, `webcomponent`, `headless` stub) |
+| `conformance/frontend/` | the frontend suite - `lib/` (scripted backend `mock.mjs`, runner, response builders, `checks/`), `adapters/` (`ui5` Playwright + the boot page, `agent` + the vendored mcp-server client, `webcomponent`, `adaptive-cards` (in process, the renderer below), `headless` stub) |
+| `renderers/adaptive-cards/` | a prototype portable renderer: response -> Adaptive Card 1.5 and `Action.Submit` payload -> request (`render.mjs`, `mapping.mjs` - the control table the README's mapping section is generated from, `submit.mjs`, `host.mjs`, `demo.mjs`), golden cards in `golden/` (`UPDATE_GOLDEN=1 node --test test/adaptive-cards.test.mjs` rewrites them) |
 | `conformance/apps/` | the conformance apps (ABAP + cap2UI5) and their abaplint config |
 | `conformance/hosts/` | `node-runtime` (build + serve) and `cap2ui5` (a CAP project) reference hosts |
 | `traffic/` | recorded traffic per backend: `suite.json`, `ui5-frontend.json`, `agent-client.json` |
@@ -80,7 +88,8 @@ recorded traffic, cross-backend equality, docs links and anchors, the
 portable profile, the conformance apps' abapGit format, the CLI, the
 full backend suite against both reference backends (`PROTOCOL_SKIP_BACKENDS=1`
 skips those; the cap2UI5 run skips itself when its host is not installed),
-and the frontend suite against the agent client (always) and the UI5 SPA
+and the frontend suite against the agent client and the Adaptive Cards
+renderer (always, golden cards included) and the UI5 SPA
 (when an abap2UI5 checkout and a Chromium are there;
 `PROTOCOL_SKIP_BROWSER=1` skips it, `PROTOCOL_REQUIRE_BROWSER=1` fails
 without them). CI runs the same on Node 22 and 24, and the UI5 SPA in a
@@ -89,8 +98,8 @@ has browsers already - point `CHROMIUM_BIN` at one.
 
 ## Style
 
-ES modules, Node 22+, no runtime dependencies in `conformance/backend/`
-and `conformance/frontend/` (the browser adapters import `playwright-core`
-lazily). English, ASCII in source files - the vendored copies under
+ES modules, Node 22+, no runtime dependencies in `conformance/backend/`,
+`conformance/frontend/` and `renderers/` (the browser adapters import
+`playwright-core` lazily). English, ASCII in source files - the vendored copies under
 `conformance/frontend/adapters/vendor/` are byte-equal to upstream and
 exempt. Markdown wrapped at ~78 columns.

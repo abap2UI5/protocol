@@ -180,7 +180,8 @@ between roundtrips. The switch travels outside the body ([TY] `ty_s_next-s_state
   send it with every later POST; a response without the header MUST NOT
   wipe an established id ([SRV] `readHttp`). This holds for every frontend
   that talks HTTP, not only for browsers: a stateful ABAP app answers a
-  POST without its session id from a fresh work process.
+  POST without its session id from a fresh work process (decided in
+  revision 0.3, [open question 9](open-questions.md#9-stateful-sessions-and-frontends-without-a-browser)).
   *Frontend check:* `transport.contextid-kept`.
 - A frontend SHOULD end the session with the terminate HEAD when the page
   closes.
@@ -210,8 +211,11 @@ These are rules for frontends; they keep a session consistent.
   the frontend's user asks for - a click, or a call of a program driving
   the frontend (an agent's `act`): two overlapping requests on one session
   continue the same draft, and the later answer silently drops what the
-  earlier one did. *Frontend checks:* `transport.one-at-a-time`,
-  `ui5.wire-queue-last`.
+  earlier one did. A frontend driven by a program SHOULD queue such a call
+  and start it once the response in flight is adopted (it MAY refuse it
+  instead; decided in revision 0.3,
+  [open question 8](open-questions.md#8-one-roundtrip-at-a-time-for-frontends-driven-by-a-program)).
+  *Frontend checks:* `transport.one-at-a-time`, `ui5.wire-queue-last`.
 - **Timeout.** The UI5 frontend gives up after 600 s ([SRV]
   `REQUEST_TIMEOUT_MS`); a frontend SHOULD have a timeout.
 - **Retry.** After a network failure, a timeout or a 502/503/504 a frontend

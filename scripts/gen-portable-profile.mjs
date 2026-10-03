@@ -137,7 +137,7 @@ const profile = {
     allowed: [
       { wire: ".eB(['EVENT'], arg...)", from: "client->_event( )" },
       { wire: ".eB(['___ZZZ_NAL'])", from: "client->_event_nav_app_leave( )" },
-      { wire: ".eF('ACTION', arg...)", from: "client->_event_client( ) / a wired follow_up_action( )", note: "only the frontend actions of frontendActions.allowed" },
+      { wire: ".eF('ACTION', arg...)", from: "client->_event_client( ) / a wired follow_up_action( )", note: "only the frontend actions of actions.wire.custom and actions.wire.customGlobals" },
       { wire: ".eBP($event, true, ['EVENT'], arg...)", from: "s_ctrl-check_prevent_default" },
       { wire: "['EVENT', false, false, false, queueLast, noBusy]", from: "s_ctrl-check_queue_last / check_no_busy" },
       { wire: "quoted arguments", from: "s_ctrl-check_arg_literal" },
@@ -188,6 +188,35 @@ const profile = {
     },
     noOpAllowed: ["SET_SIZE_LIMIT", "SET_PUSH_STATE", "HASH_REPLACE", "HASH_BACK", "HASH_ATTACH_CHANGED", "SET_NAV_ROUTING", "SET_APP_STATE_ACTIVE"],
     excluded: ["CONTROL_BY_ID", "BINDING_CALL", "BIND_ELEMENT", "SET_ODATA_MODEL", "SMART_VARIANT_INIT", "FILTER_BAR_VARIANT_INIT", "CROSS_APP_NAV_TO_EXT", "CROSS_APP_NAV_TO_PREV_APP", "SET_TITLE_LAUNCHPAD", "CONTROL_GLOBAL ICON_POOL", "CONTROL_GLOBAL POPUP", "CONTROL_GLOBAL FORMATTING"],
+  },
+  // revision 0.3 (open question 10): the client API's names and what a
+  // renderer receives, apart. frontendActions.allowed stays the api list for
+  // consumers of revision 0.2.
+  actions: {
+    note: "api: the follow_up_action( ) names (cs_event values) a portable app may call - frontendActions.allowed is the same list, kept for consumers of revision 0.2. wire: what a portable renderer actually receives - T_SYSTEM actions with their ROUTER options, and the T_CUSTOM / .eF names. The navigation family of api is folded by the backend into the one ROUTER system action (foldedIntoRouter) and never arrives under its own name.",
+    api: [
+      "SET_FOCUS", "START_TIMER", "DOWNLOAD_B64_FILE", "CLIPBOARD_COPY", "URLHELPER", "OPEN_NEW_TAB", "SCROLL_TO", "SCROLL_INTO_VIEW",
+      "SET_TITLE", "SET_FAVICON", "LOCATION_RELOAD", "SYSTEM_LOGOUT", "STORE_DATA", "KEYBOARD_SHORTCUT", "PLAY_AUDIO",
+      "SET_PUSH_STATE", "HASH_REPLACE", "HASH_BACK", "HASH_ATTACH_CHANGED", "SET_NAV_ROUTING", "SET_APP_STATE_ACTIVE", "SET_SIZE_LIMIT",
+    ],
+    wire: {
+      system: { VIEW_SLOTS: ["display", "destroy"], ROUTER: ["sync"] },
+      routerOptions: ["setNavRouting", "checkNavAppCall", "navAppCallPrevApp", "navAppCallPrevId", "setPushState", "setHashReplace", "setHashEvent", "setAppStateActive"],
+      foldedIntoRouter: { SET_NAV_ROUTING: "setNavRouting", SET_PUSH_STATE: "setPushState", HASH_REPLACE: "setHashReplace", HASH_ATTACH_CHANGED: "setHashEvent", SET_APP_STATE_ACTIVE: "setAppStateActive" },
+      custom: [
+        "SET_FOCUS", "START_TIMER", "DOWNLOAD_B64_FILE", "CLIPBOARD_COPY", "URLHELPER", "OPEN_NEW_TAB", "SCROLL_TO", "SCROLL_INTO_VIEW",
+        "SET_TITLE", "SET_FAVICON", "LOCATION_RELOAD", "SYSTEM_LOGOUT", "STORE_DATA", "KEYBOARD_SHORTCUT", "PLAY_AUDIO", "HASH_BACK", "SET_SIZE_LIMIT",
+      ],
+      customGlobals: {
+        MESSAGE_TOAST: ["show"],
+        MESSAGE_BOX: ["show", "alert", "confirm", "information", "warning", "error", "success"],
+        BUSY_INDICATOR: ["show", "hide"],
+        INVISIBLE_MESSAGE: ["announce"],
+        THEMING: ["setTheme"],
+        VIEW_SLOTS: ["destroy"],
+      },
+      noOpAllowed: ["ROUTER", "HASH_BACK", "SET_SIZE_LIMIT"],
+    },
   },
   clientApi: {
     allowed: ["view_display", "popup_display", "popup_destroy", "popover_display", "popover_destroy", "message_toast_display", "message_box_display", "follow_up_action", "_event", "_event_client", "_event_nav_app_leave", "_bind", "_bind_edit", "nav_app_call", "nav_app_leave", "get_event_arg"],

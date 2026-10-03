@@ -5,12 +5,14 @@
 #   node-runtime  @abap2ui5/node-runtime + the ABAP apps, transpiled in the job
 #                 (open-abap-core fetched with git, cached by its commit)
 #   cap2ui5       a CAP project + @cap2ui5/cds-plugin + the JS apps
-# plus abaplint over the ABAP apps. Each backend run takes seconds; the
-# install dominates.
+# plus abaplint over the ABAP apps, and the frontend suite against the two
+# in-process frontends: the agent client and the Adaptive Cards renderer
+# (renderers/adaptive-cards/, with its golden cards). Each backend run takes
+# seconds; the install dominates.
 # The frontend job runs the frontend suite against the UI5 SPA of abap2UI5
 # (the commit the spec is derived from, app/webapp only) in Chromium - the
 # test job skips that test, it has no browser and no checkout - and records
-# the reports of the UI5 SPA and the agent client.
+# the reports of the UI5 SPA, the agent client and the Adaptive Cards renderer.
 name: ci
 
 on:
@@ -56,14 +58,16 @@ jobs:
         run: npm ci --prefix conformance/hosts/cap2ui5 --no-audit --no-fund
       - name: abaplint (ABAP conformance apps)
         run: npm run lint:abap
-      - name: npm test (both backends)
+      - name: npm test (both backends, agent client, Adaptive Cards renderer)
         run: npm test
+      - name: generated sections are up to date
+        run: npm run generate && git diff --exit-code
       - name: backend suite report - node-runtime
         if: ${{ !cancelled() }}
-        run: node scripts/run-conformance.mjs node-runtime --json report-node-runtime.json
+        run: node scripts/run-conformance.mjs node-runtime --json report-node-runtime.json --expected
       - name: backend suite report - cap2ui5
         if: ${{ !cancelled() }}
-        run: node scripts/run-conformance.mjs cap2ui5 --json report-cap2ui5.json
+        run: node scripts/run-conformance.mjs cap2ui5 --json report-cap2ui5.json --expected
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ !cancelled() && matrix.node == '22' }}
         with:
@@ -101,6 +105,9 @@ jobs:
       - name: frontend suite report - agent client
         if: ${{ !cancelled() }}
         run: node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter agent --json > report-frontend-agent.json || true
+      - name: frontend suite report - Adaptive Cards renderer
+        if: ${{ !cancelled() }}
+        run: node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter adaptive-cards --json > report-frontend-adaptive-cards.json || true
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ !cancelled() }}
         with:

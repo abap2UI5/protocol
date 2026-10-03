@@ -1,5 +1,5 @@
 /*
- * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit ea4e9fa8f6eaeca8f9c975a1c4fbd532c44ff76c,
+ * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit a4d9f07659cd8a18d2e1f8ee4d2121695f40702b,
  * copied unchanged by scripts/vendor-agent-client.mjs. Change it upstream,
  * then re-vendor; test/frontend.test.mjs fails when this copy drifts.
  */
@@ -91,6 +91,10 @@ function destroySlot(next, slot) {
 
 /*
  * One response folded into the state, the way the frontend folds it:
+ *   - a response of another APP than the one that answered last tears the
+ *     popup and the popover down first (protocol spec/response.md "View
+ *     slots": the backend queues those destroys only for a hop between two
+ *     instances of the same class, which a frontend cannot see);
  *   - every VIEW_SLOTS action of T_SYSTEM in order (a MAIN display tears
  *     down the nested views, the popup and the popover - the backend sends
  *     no destroy for them next to a MAIN display);
@@ -107,6 +111,10 @@ export function applyResponse(state, response) {
   const prev = state || emptyState();
   const next = { app: prev.app, id: prev.id, slots: { ...prev.slots }, models: { ...prev.models }, custom: [] };
   const front = (response && response.S_FRONT) || {};
+  if (front.APP && prev.app && front.APP !== prev.app) {
+    destroySlot(next, 'POPUP');
+    destroySlot(next, 'POPOVER');
+  }
   if (front.APP) next.app = front.APP;
   if (front.ID) next.id = front.ID;
   const hasModel = response && response.MODEL !== undefined;

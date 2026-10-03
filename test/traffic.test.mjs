@@ -1,10 +1,11 @@
 // The recorded traffic (traffic/<backend>/) of the two reference backends:
 // every message validates (schema.test.mjs), every suite check passed when it
-// was recorded, and the two backends answered the same - see
+// was recorded but the pinned expected failures (test/lib/expected.mjs), and the two backends answered the same - see
 // conformance/RESULTS.md for what differs and why.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load, comparable, normalizeIds } from "./lib/traffic.mjs";
+import { BACKEND_EXPECTED_FAILURE_IDS } from "./lib/expected.mjs";
 
 const node = load("node-runtime", "suite.json");
 const cap = load("cap2ui5", "suite.json");
@@ -14,8 +15,11 @@ test("the suite traffic of both backends is recorded", () => {
   assert.ok(cap, "traffic/cap2ui5/suite.json");
 });
 
-test("no MUST check failed while the traffic was recorded", () => {
-  for (const s of [node, cap]) assert.equal(s.counts.fail, 0, `${s.backend}: ${JSON.stringify(s.counts)}`);
+test("no MUST check failed while the traffic was recorded but the pinned ones", () => {
+  for (const s of [node, cap]) {
+    assert.deepEqual(s.checks.filter((c) => c.status === "fail").map((c) => c.id), BACKEND_EXPECTED_FAILURE_IDS, `${s.backend}: ${JSON.stringify(s.counts)}`);
+    assert.equal(s.counts.fail, BACKEND_EXPECTED_FAILURE_IDS.length, `${s.backend}: ${JSON.stringify(s.counts)}`);
+  }
 });
 
 test("both backends ran the same checks with the same requests", () => {

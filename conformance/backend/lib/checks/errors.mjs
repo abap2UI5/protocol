@@ -49,12 +49,38 @@ export default [
     profile: "core",
     spec: `${E}#the-error-response`,
     async run(t) {
-      // the reference reflects the request URL into the body verbatim - safe
-      // only because nothing renders the body as markup
+      // a body that names the request is still never to be read as markup -
+      // the headers say so even where a backend reflects more than it should
       const r = await t.client.start("Z2UI5_<b>x</b>");
       t.ok(r.status >= 400, `expected an error status, got ${r.status}`);
       t.ok(/^text\/plain\b/i.test(r.headers["content-type"] || ""), `Content-Type should be text/plain, is "${r.headers["content-type"]}"`);
       t.equal((r.headers["x-content-type-options"] || "").toLowerCase(), "nosniff", "X-Content-Type-Options");
     },
   },
+  {
+    id: "error.no-reflection",
+    title: "Request data the backend did not validate is not reflected into the error body",
+    level: "MUST",
+    profile: "core",
+    spec: `${E}#the-error-response`,
+    async run(t) {
+      // A crafted request (not a browser: location.search would arrive
+      // percent-encoded) whose URL carries markup and quotes next to an app
+      // start that fails. Whatever the body says about the URL must have been
+      // reduced to characters that cannot be read as markup (spec/errors.md;
+      // open question 3, decided in revision 0.3).
+      const r = await t.client.start("Z2UI5_CL_CONF_DOES_NOT_EXIST", {
+        search: `?app_start=Z2UI5_CL_CONF_DOES_NOT_EXIST&conformance=${REFLECTION_PROBE}`,
+      });
+      t.ok(r.status >= 400, `expected an error status, got ${r.status}`);
+      const hit = REFLECTED.filter((part) => r.text.includes(part));
+      const line = r.text.split("\n").find((l) => hit.some((part) => l.includes(part))) || "";
+      t.ok(!hit.length, `the error body reflects ${hit.map((h) => JSON.stringify(h)).join(", ")} from the request URL verbatim: ${line.slice(0, 200)}`);
+    },
+  },
 ];
+
+/** What error.no-reflection puts into the request URL, and the parts of it
+ *  an error body must not contain. */
+export const REFLECTION_PROBE = `<script>alert("conformance-probe")</script><img src='conformance-probe'>`;
+const REFLECTED = ["<script", "</script>", "<img", "\"conformance-probe\"", "'conformance-probe'"];

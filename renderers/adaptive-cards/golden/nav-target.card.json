@@ -1,0 +1,58 @@
+{
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "Container",
+        "id": "slot-MAIN",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance - nav target",
+            "wrap": true,
+            "size": "Large",
+            "weight": "Bolder",
+            "style": "heading"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Back",
+                "data": {
+                  "event": "___ZZZ_NAL"
+                }
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "from caller",
+            "wrap": true
+          },
+          {
+            "type": "TextBlock",
+            "text": "",
+            "wrap": true
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Done",
+                "data": {
+                  "event": "DONE"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "unsupported": []
+}

@@ -17,6 +17,7 @@
     "eventArgDescriptors",
     "eventParameters",
     "frontendActions",
+    "actions",
     "clientApi",
     "excludedNamespaces"
   ],
@@ -199,6 +200,85 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        }
+      }
+    },
+    "actions": {
+      "description": "Revision 0.3: the client API's action names (api) apart from what a renderer receives (wire). frontendActions.allowed equals api, kept for consumers of revision 0.2.",
+      "type": "object",
+      "required": [
+        "api",
+        "wire"
+      ],
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "api": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          }
+        },
+        "wire": {
+          "type": "object",
+          "required": [
+            "system",
+            "routerOptions",
+            "foldedIntoRouter",
+            "custom",
+            "customGlobals"
+          ],
+          "properties": {
+            "system": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "routerOptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][A-Za-z0-9]*$"
+              }
+            },
+            "foldedIntoRouter": {
+              "type": "object",
+              "propertyNames": {
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "custom": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              }
+            },
+            "customGlobals": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "noOpAllowed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       }

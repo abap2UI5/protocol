@@ -1,0 +1,85 @@
+{
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "Container",
+        "id": "slot-POPOVER",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance popover",
+            "wrap": true,
+            "size": "Medium",
+            "weight": "Bolder",
+            "style": "heading"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Close",
+                "data": {
+                  "event": "POPOVER_CLOSE",
+                  "slot": "POPOVER"
+                }
+              }
+            ]
+          }
+        ],
+        "style": "emphasis"
+      },
+      {
+        "type": "Container",
+        "id": "slot-MAIN",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance - slots",
+            "wrap": true,
+            "size": "Large",
+            "weight": "Bolder",
+            "style": "heading"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Popup",
+                "data": {
+                  "event": "POPUP_OPEN"
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "Popover",
+                "data": {
+                  "event": "POPOVER_OPEN"
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "Nest",
+                "data": {
+                  "event": "NEST_OPEN"
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "Nest2",
+                "data": {
+                  "event": "NEST2_OPEN"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "unsupported": []
+}
