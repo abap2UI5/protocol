@@ -1,0 +1,380 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abap2UI5/protocol/schema/portable-profile.schema.json",
+  "title": "abap2UI5 portable view profile, machine-readable form",
+  "description": "The shape of profiles/portable-v1.json - what a linter or a frontend reads to decide whether a view stays inside the portable profile (profiles/portable.md).",
+  "type": "object",
+  "required": [
+    "profile",
+    "version",
+    "documentRoots",
+    "slots",
+    "namespaces",
+    "universalAttributes",
+    "controls",
+    "bindingForms",
+    "eventWires",
+    "eventArgDescriptors",
+    "eventParameters",
+    "frontendActions",
+    "clientApi",
+    "excludedNamespaces"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "portable"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "type": "string"
+    },
+    "generatedFrom": {
+      "type": "string"
+    },
+    "documentRoots": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "slots": {
+      "type": "object",
+      "required": [
+        "required"
+      ],
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "MAIN",
+              "NEST",
+              "NEST2",
+              "POPUP",
+              "POPOVER"
+            ]
+          }
+        },
+        "notInV1": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "MAIN",
+              "NEST",
+              "NEST2",
+              "POPUP",
+              "POPOVER"
+            ]
+          }
+        }
+      }
+    },
+    "namespaces": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "universalAttributes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cssHelperClassPattern": {
+      "type": "string"
+    },
+    "controls": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^sap\\.[A-Za-z0-9.]+\\.[A-Z][A-Za-z0-9]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/control"
+      }
+    },
+    "bindingForms": {
+      "type": "object",
+      "required": [
+        "allowed",
+        "excluded"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "array"
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "eventWires": {
+      "type": "object",
+      "required": [
+        "allowed",
+        "excluded"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "array"
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "eventArgDescriptors": {
+      "type": "object",
+      "required": [
+        "allowed",
+        "excluded"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "array"
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "eventParameters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "frontendActions": {
+      "type": "object",
+      "required": [
+        "allowed",
+        "allowedGlobals",
+        "excluded"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          }
+        },
+        "allowedGlobals": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "noOpAllowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "clientApi": {
+      "type": "object",
+      "required": [
+        "allowed",
+        "excluded"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "excludedNamespaces": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "v11Candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "family",
+          "controls"
+        ],
+        "properties": {
+          "family": {
+            "type": "string"
+          },
+          "controls": {
+            "type": "string"
+          },
+          "coreAppsBlocked": {
+            "type": "string"
+          },
+          "webComponent": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "member": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]*$"
+        },
+        "core": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "core apps using it (census)"
+        },
+        "controls": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "samples-controls apps using it (census)"
+        }
+      }
+    },
+    "control": {
+      "type": "object",
+      "required": [
+        "category",
+        "tolerated",
+        "properties",
+        "aggregations",
+        "events"
+      ],
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "tolerated": {
+          "type": "boolean",
+          "description": "true: carries no UI of its own and may be dropped by a renderer"
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "coreApps": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "samplesControlsApps": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/member"
+          }
+        },
+        "aggregations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/member"
+          }
+        },
+        "defaultAggregation": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/member"
+          }
+        },
+        "webComponent": {
+          "type": "string",
+          "description": "informative: the UI5 Web Components mapping"
+        },
+        "fit": {
+          "enum": [
+            "direct",
+            "adapt",
+            "compose"
+          ]
+        },
+        "mapping": {
+          "type": "string"
+        },
+        "notInV1": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "kind",
+              "name"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "property",
+                  "aggregation",
+                  "event"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "core": {
+                "type": "integer"
+              },
+              "controls": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

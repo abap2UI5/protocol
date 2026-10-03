@@ -1,0 +1,68 @@
+# The gate: npm test on Node 22 and 24 - schemas against the recorded
+# traffic (shipped validator and ajv), docs links and anchors, the portable
+# profile, the conformance apps' abapGit format, the CLI, and the backend
+# suite against BOTH reference backends:
+#   node-runtime  @abap2ui5/node-runtime + the ABAP apps, transpiled in the job
+#                 (open-abap-core fetched with git, cached by its commit)
+#   cap2ui5       a CAP project + @cap2ui5/cds-plugin + the JS apps
+# plus abaplint over the ABAP apps. Each backend run takes seconds; the
+# install dominates.
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [ '22', '24' ]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            conformance/hosts/cap2ui5/package-lock.json
+      - run: npm ci
+      - name: open-abap-core commit of the runtime
+        id: core-sha
+        run: echo "sha=$(node -p "require('@abap2ui5/node-runtime/package.json').abap2ui5.openAbapCore")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/open-abap-core
+          key: open-abap-core-${{ steps.core-sha.outputs.sha }}
+      - name: cap2UI5 host
+        run: npm ci --prefix conformance/hosts/cap2ui5 --no-audit --no-fund
+      - name: abaplint (ABAP conformance apps)
+        run: npm run lint:abap
+      - name: npm test (both backends)
+        run: npm test
+      - name: backend suite report - node-runtime
+        if: ${{ !cancelled() }}
+        run: node scripts/run-conformance.mjs node-runtime --json report-node-runtime.json
+      - name: backend suite report - cap2ui5
+        if: ${{ !cancelled() }}
+        run: node scripts/run-conformance.mjs cap2ui5 --json report-cap2ui5.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() && matrix.node == '22' }}
+        with:
+          name: conformance-reports
+          path: report-*.json
+          if-no-files-found: ignore

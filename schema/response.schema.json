@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abap2UI5/protocol/schema/response.schema.json",
+  "title": "abap2UI5 roundtrip response, protocol 2",
+  "description": "The JSON body of a successful (2xx) roundtrip response (spec/response.md). Keys this schema does not name are allowed - a later additive revision of protocol 2 may add some, and a frontend ignores what it does not know (spec/versioning.md).",
+  "type": "object",
+  "required": ["S_FRONT"],
+  "properties": {
+    "S_FRONT": { "$ref": "#/$defs/sFront" },
+    "MODEL": {
+      "description": "The COMPLETE view model of the app that answered. Absent when nothing bound changed - the frontend keeps the model it has (spec/response.md#model).",
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "sFront": {
+      "type": "object",
+      "required": ["ID", "APP", "PROTOCOL"],
+      "properties": {
+        "ID": {
+          "description": "The draft id the next request continues (spec/sessions.md).",
+          "type": "string",
+          "minLength": 1
+        },
+        "APP": {
+          "description": "The app class that answered, upper case.",
+          "type": "string",
+          "minLength": 1
+        },
+        "PROTOCOL": {
+          "description": "The wire protocol the backend speaks (spec/versioning.md).",
+          "const": 2
+        },
+        "S_ACTION": {
+          "type": "object",
+          "properties": {
+            "T_SYSTEM": {
+              "description": "System actions - the view lifecycle and the router - run first, in order, before anything the app queued.",
+              "type": "array",
+              "items": { "$ref": "#/$defs/systemAction" }
+            },
+            "T_CUSTOM": {
+              "description": "Follow-up actions the app queued, run in order once the view is rendered.",
+              "type": "array",
+              "items": { "$ref": "#/$defs/customAction" }
+            }
+          }
+        }
+      }
+    },
+    "slot": { "enum": ["MAIN", "NEST", "NEST2", "POPUP", "POPOVER"] },
+    "systemAction": {
+      "type": "array",
+      "minItems": 2,
+      "prefixItems": [
+        { "enum": ["VIEW_SLOTS", "ROUTER"] },
+        { "type": "string" }
+      ],
+      "allOf": [
+        {
+          "if": { "prefixItems": [{ "const": "VIEW_SLOTS" }, { "const": "display" }] },
+          "then": { "$ref": "#/$defs/slotDisplay" }
+        },
+        {
+          "if": { "prefixItems": [{ "const": "VIEW_SLOTS" }, { "const": "destroy" }] },
+          "then": { "$ref": "#/$defs/slotDestroy" }
+        },
+        {
+          "if": { "prefixItems": [{ "const": "VIEW_SLOTS" }] },
+          "then": { "prefixItems": [true, { "enum": ["display", "destroy"] }] }
+        },
+        {
+          "if": { "prefixItems": [{ "const": "ROUTER" }] },
+          "then": { "$ref": "#/$defs/routerSync" }
+        }
+      ]
+    },
+    "slotDisplay": {
+      "description": "[\"VIEW_SLOTS\", \"display\", <slot>, <view XML>, <options>?] - build the view into the slot, replacing what it holds.",
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 5,
+      "prefixItems": [
+        { "const": "VIEW_SLOTS" },
+        { "const": "display" },
+        { "$ref": "#/$defs/slot" },
+        { "type": "string", "minLength": 1 },
+        { "$ref": "#/$defs/displayOptions" }
+      ]
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "NEST/NEST2: the id of the control that receives the nested view." },
+        "methodInsert": { "type": "string", "description": "NEST/NEST2: the mutator that inserts it (addItem, addContent, ...)." },
+        "methodDestroy": { "type": "string", "description": "NEST/NEST2: the mutator that clears the anchor first." },
+        "openById": { "type": "string", "description": "POPOVER: the id of the control it opens by." },
+        "switchDefaultModelPath": { "type": "string", "description": "MAIN: an OData service URL installed as the view's default model." },
+        "switchDefaultModelAnnoUri": { "type": "string" },
+        "transition": { "type": "string", "description": "MAIN: the page transition the view arrives with." },
+        "transitionBack": { "const": true },
+        "navBack": { "const": true, "description": "MAIN: the view is reached by going back (nav_app_leave to a stacked app)." },
+        "appInstance": { "type": "string", "description": "MAIN: an opaque id of the app instance the view belongs to." }
+      }
+    },
+    "slotDestroy": {
+      "description": "[\"VIEW_SLOTS\", \"destroy\", <slot>] - tear the slot down.",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        { "const": "VIEW_SLOTS" },
+        { "const": "destroy" },
+        { "$ref": "#/$defs/slot" }
+      ]
+    },
+    "routerSync": {
+      "description": "[\"ROUTER\", \"sync\", <options>] - the browser-history intent of this response (spec/navigation.md#the-router-action).",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        { "const": "ROUTER" },
+        { "const": "sync" },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "properties": {
+            "setNavRouting": { "type": "string" },
+            "setAppStateActive": { "const": true },
+            "setPushState": { "type": "string" },
+            "setHashReplace": { "type": "string" },
+            "setHashEvent": { "type": "string" },
+            "checkNavAppCall": { "const": true },
+            "navAppCallPrevApp": { "type": "string" },
+            "navAppCallPrevId": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "customAction": {
+      "description": "[\"<ACTION>\", arg...] - a follow-up action; arguments are strings, an option object as the last one where the action takes one (spec/actions.md).",
+      "type": "array",
+      "minItems": 1,
+      "prefixItems": [
+        { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" }
+      ],
+      "allOf": [
+        {
+          "if": { "prefixItems": [{ "const": "MESSAGE_TOAST" }] },
+          "then": {
+            "minItems": 3,
+            "maxItems": 4,
+            "prefixItems": [
+              true,
+              { "const": "show" },
+              { "type": "string" },
+              { "$ref": "#/$defs/toastOptions" }
+            ]
+          }
+        },
+        {
+          "if": { "prefixItems": [{ "const": "MESSAGE_BOX" }] },
+          "then": {
+            "minItems": 3,
+            "maxItems": 4,
+            "prefixItems": [
+              true,
+              { "enum": ["show", "alert", "confirm", "information", "warning", "error", "success"] },
+              { "type": "string" },
+              { "$ref": "#/$defs/boxOptions" }
+            ]
+          }
+        }
+      ]
+    },
+    "toastOptions": {
+      "type": "object",
+      "properties": {
+        "duration": { "type": "integer", "minimum": 0 },
+        "onClose": { "type": "string", "description": "A backend event raised when the toast closes." }
+      }
+    },
+    "boxOptions": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "styleClass": { "type": "string" },
+        "onClose": { "type": "string", "description": "A backend event raised when the box closes; the pressed action is its first argument." },
+        "actions": { "type": "array", "items": { "type": "string" } },
+        "emphasizedAction": { "type": "string" },
+        "initialFocus": { "type": "string" },
+        "details": { "type": "string" }
+      }
+    }
+  }
+}
