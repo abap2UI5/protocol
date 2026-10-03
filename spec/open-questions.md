@@ -232,8 +232,9 @@ includes a call of a program that drives the frontend: an agent client
 MUST NOT start a second roundtrip on a session while one is in flight; it
 SHOULD queue the call and start it once the response is adopted, and MAY
 refuse it ([transport.md](transport.md#client-behaviour), frontend check
-`transport.one-at-a-time`). The agent client of abap2UI5/mcp-server posts
-both (two `act` calls on one session), each continuing the same draft.
+`transport.one-at-a-time`). The agent client of abap2UI5/mcp-server posted
+both (two `act` calls on one session, each continuing the same draft) up to
+`ea4e9fa`; since `a4d9f07` it queues.
 
 *Rationale.* Overlapping requests continue the same draft and the later
 answer silently drops what the earlier one did; a queue keeps both effects
@@ -252,9 +253,9 @@ in order at the cost of latency only.
 **Decided (revision 0.3): (a), MUST keep it.** Every frontend that talks
 HTTP MUST keep the last `sap-contextid` response header and send it back
 ([transport.md](transport.md#stateful-sessions-sap-contextid), frontend check
-`transport.contextid-kept`). The agent client does not; against an ABAP app
-that switched to a stateful session it would talk to a fresh work process
-on every act.
+`transport.contextid-kept`). The agent client did not up to `ea4e9fa` -
+against an ABAP app that switched to a stateful session it would have
+talked to a fresh work process on every act; since `a4d9f07` it keeps it.
 
 *Rationale.* Whether an app is stateful is the app's business, not the
 frontend's; an agent-operable app should not have to be a stateless one.

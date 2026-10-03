@@ -43,6 +43,12 @@
   every one of the 65 checks of the portable profile it can be driven
   through (16 skipped: URL, DOM, focus, title, model edits; UI5 and semantic
   profiles). Pinned in `test/frontend.test.mjs`; CI uploads its report.
+- **Agent client re-vendored** at abap2UI5/mcp-server `a4d9f07` (PR #44):
+  it now follows every frontend rule that applies - 61 pass, 0 fail, 0
+  warn, 20 skip (was 5 MUST failures and 3 warnings at `ea4e9fa`); the pin
+  in `test/frontend.test.mjs` follows. The Web Components frontend at its
+  main `410d607` measures 68 pass / 0 fail / 13 skip, with
+  `model.number-and-boolean` failing intermittently (RESULTS.md).
 - The UI5 SPA pin accepts `portable.box-details` passing (its fix is under
   way); CI checks that `npm run generate` leaves no diff.
 

@@ -64,10 +64,9 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 - **Frontend suite: 81 checks** (66 MUST, 15 SHOULD; 66 core, 8 portable,
   4 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
   SPA passes every MUST but one - message box details stay empty on OpenUI5
-  >= 1.120 (fix under way); the agent client fails 5 MUSTs (no PROTOCOL
-  check, no `sap-contextid`, overlapping acts, popups kept across an app
-  change, error markup stripped); the Adaptive Cards renderer passes all 65
-  checks that apply to it ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
+  >= 1.120 (fix under way); the agent client (mcp-server `a4d9f07`) and the
+  Adaptive Cards renderer pass every check that applies to them (61 and 65);
+  the Web Components frontend 68 of 68, with one intermittent failure ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
 - **Adaptive Cards renderer** (prototype, [renderers/adaptive-cards/](renderers/adaptive-cards/README.md)):
   all 65 portable controls mapped onto Adaptive Cards 1.5, the way back from
   an `Action.Submit` to the next request, golden cards of recorded traffic.

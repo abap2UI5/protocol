@@ -126,9 +126,9 @@ perform.
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
 | UI5 SPA (`ui5`) | abap2UI5 1.146.0 `b812079` `app/webapp` (identical at main `5d7e91f`, which CI pins), OpenUI5 1.144.0 (npm), Chromium 141 | ui5 | 76 | 1 | 0 | 4 | one MUST deviation: `portable.box-details` |
-| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `ea4e9fa` (vendored) | semantic | 53 | 5 | 3 | 20 | not conformant: 5 MUSTs |
+| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `a4d9f07` (main, PR #44; vendored) | semantic | 61 | 0 | 0 | 20 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 65 | 0 | 0 | 16 | every check it can be driven through holds |
-| Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from `6997c40` (in development) | portable | 63 | 4 | 1 | 13 | work in progress: router not implemented, error markup stripped |
+| Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
 The UI5 SPA run is stable (two consecutive runs, identical results) and
@@ -187,33 +187,27 @@ error body shown verbatim as text.
 
 ### Findings - the agent client
 
-All five MUST failures are *the client's*; filed for abap2UI5/mcp-server.
+Re-vendored at abap2UI5/mcp-server `a4d9f07` (main, PR #44): **every check
+that applies passes** - 61 pass, 0 fail, 0 warn, 20 skip, two runs
+identical. The five MUST deviations and three warnings measured at
+`ea4e9fa` (revision 0.2) are fixed in the client, as filed:
 
-1. **No PROTOCOL check** (`response.protocol-mismatch`): a `PROTOCOL: 3`
-   response is adopted and described. `lib/appclient.mjs` `post` checks
-   status, JSON and `S_FRONT` only.
-2. **No stateful session id** (`transport.contextid-kept`): the
-   `sap-contextid` response header is never read or sent back; a stateful
-   ABAP app would meet a fresh work process on every act
-   ([open question 9](../spec/open-questions.md#9-stateful-sessions-and-frontends-without-a-browser)).
-3. **Overlapping acts** (`transport.one-at-a-time`): a second `act` while
-   the first is in flight posts at once, continuing the same draft id
-   ([open question 8](../spec/open-questions.md#8-one-roundtrip-at-a-time-for-frontends-driven-by-a-program)).
-4. **Popups survive an app change** (`slots.app-change`):
-   `lib/snapshot.mjs` `applyResponse` tears POPUP/POPOVER down only on a
-   MAIN display or a destroy; a popup app answering with another `APP` leaves
-   the previous app's popover in the snapshot.
-5. **Error markup interpreted** (`error.as-text`): `errorText` extracts a
-   `<pre>`, strips tags and decodes entities - written for the old HTML
-   error page; the body is `text/plain` now. `<b>bold</b>` arrives as
-   `bold`.
+1. PROTOCOL check - a `PROTOCOL: 3` response is refused naming both numbers
+   (`response.protocol-mismatch`, `-message`).
+2. `sap-contextid` read and sent back (`transport.contextid-kept`; open
+   question 9, decided: MUST).
+3. One roundtrip at a time - a second `act` on a session in flight is
+   queued (`transport.one-at-a-time`; open question 8, decided: the client
+   queues).
+4. POPUP/POPOVER torn down on an `APP` change (`slots.app-change`).
+5. The error body verbatim, no markup stripped (`error.as-text`).
 
-Warnings: no CSRF token handshake (`transport.csrf-token`); edits made with
-an `act` while another is in flight are dropped, because `act` clears all
-pending edits of the model after its response, not only the ones it sent
-(`model.pending-survive-push`); the PROTOCOL message (follows from 1).
-Skipped: the URL, DOM and focus checks (no browser), a nested-table cell
-(the snapshot does not describe nested tables), a programmatic model edit.
+and the CSRF token handshake (`transport.csrf-token`) and edits made during
+a roundtrip kept (`model.pending-survive-push`). Skipped: the portable and
+UI5 profiles (not claimed), the URL, DOM and focus checks (no browser), a
+nested-table cell (the snapshot does not describe nested tables), a
+programmatic model edit. `traffic/*/agent-client.json` is still the
+recording of `ea4e9fa`; `semantic.recorded-snapshots` passes against it.
 
 ### Findings - the Adaptive Cards renderer
 
@@ -247,14 +241,20 @@ a browser to be rendered; what a card cannot do (raise `change` events,
 show a URL) the profile already lets a renderer drop or the edit travels
 with the next action.
 
-### Findings - the Web Components frontend (in development)
+### Findings - the Web Components frontend
 
-Run against the build of its development branch at the time; recorded for
-its authors, not as a verdict. It passes every portable-profile check that
-applies, including the tolerance rule, the NEST placeholder rule and the
-box details. Failing: the `ROUTER` action and the URL hash are not
-implemented yet (`router.keep`, `router.back-restores`, `router.app-state`;
-`router.hash-sent` warns), and error markup is stripped (`error.as-text`) -
-it vendors the agent client's `errorText`. Table cells were not addressed
-(its DOM exposes control ids, not binding paths) and the box close is not
-wired in the adapter yet.
+Run against `dist/` built from its main `410d607` (PR #2: `ROUTER` and the
+URL hash, verbatim error text, formatters, growing), in a separate worktree
+(`WC_FRONTEND_HOME`): 68 pass, 0 fail, 0 warn, 13 skip in three of four full
+runs - every portable-profile check that applies, now including the router
+checks and `error.as-text`. In the other run, and in one of three runs of
+the check alone, **`model.number-and-boolean` failed**: the edited
+`StepInput` (`/QTY`, 42) was missing from `MODEL` - the press reached the
+frontend before the `ui5-step-input` had committed the typed value.
+Intermittent, not yet attributed (the adapter fills the inner input,
+presses Enter and blurs, then waits 50 ms; a longer wait did not make it go
+away); filed for abap2UI5/frontend-webcomponent. Skipped: the UI5 and
+semantic profiles, `message.box-close-event` (the box close is not wired in
+the adapter), the focus and model-edit checks, and three table-cell checks
+(its DOM exposes control ids, not binding paths). Its vendored copy of the agent client is being
+re-pinned to `a4d9f07` there as well.

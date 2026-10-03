@@ -156,16 +156,25 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 });
 
 // The agent client's result, check by check - a change here is a change of
-// the client (re-vendored) or of a check, and conformance/RESULTS.md says
-// which deviations these are.
-const AGENT_FAILS = ["transport.contextid-kept", "transport.one-at-a-time", "response.protocol-mismatch", "slots.app-change", "error.as-text"];
-const AGENT_WARNS = ["transport.csrf-token", "model.pending-survive-push", "response.protocol-mismatch-message"];
+// the client (re-vendored) or of a check. Since mcp-server a4d9f07 (PR #44)
+// it follows every frontend rule that applies (conformance/RESULTS.md); the
+// skips are the portable and UI5 profiles it does not claim, a URL, a DOM,
+// focus, programmatic model edits and the nested-table cell its snapshot
+// does not describe.
+const AGENT_SKIPS = [
+  "model.nested-table", "model.whole-beats-delta", "action.after-render", "message.details-sanitized",
+  "router.keep", "router.hash-sent", "router.back-restores", "router.app-state",
+  "portable.default-aggregation", "portable.unknown-property", "portable.unknown-control", "portable.excluded-action",
+  "portable.box-details", "portable.timer", "portable.set-title", "portable.view-replaced",
+  "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
+];
 
 test("the agent client: the frontend suite's result is the one RESULTS.md records", { timeout: 120_000 }, async () => {
   const r = await runFrontendSuite({ adapter: "agent" });
   assert.equal(r.profile, "semantic");
-  assert.deepEqual(r.results.filter((x) => x.status === "fail").map((x) => x.id), AGENT_FAILS);
-  assert.deepEqual(r.results.filter((x) => x.status === "warn").map((x) => x.id), AGENT_WARNS);
+  const bad = r.results.filter((x) => x.status === "fail" || x.status === "warn");
+  assert.deepEqual(bad.map((x) => `${x.id}: ${x.message}`), []);
+  assert.deepEqual(r.results.filter((x) => x.status === "skip").map((x) => x.id), AGENT_SKIPS);
 });
 
 // The Adaptive Cards renderer of this repository (renderers/adaptive-cards/):
