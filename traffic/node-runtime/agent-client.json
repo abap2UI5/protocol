@@ -1,0 +1,1125 @@
+{
+  "source": "lib/appclient.mjs of @abap2ui5/mcp-server 1.0.0 (mcp-server)",
+  "backend": "@abap2ui5/node-runtime 1.146.0",
+  "exchanges": [
+    {
+      "label": "BIND: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:39821",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_BIND",
+            "ID": "5EF509DACAFF4915819AB7CD465D6735",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_SYSTEM": [
+                [
+                  "VIEW_SLOTS",
+                  "display",
+                  "MAIN",
+                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - bind\"><Input id=\"name\" value=\"{/NAME}\"/><StepInput id=\"qty\" value=\"{/QTY}\"/><CheckBox id=\"flag\" text=\"Flag\" selected=\"{/FLAG}\"/><Input id=\"city\" value=\"{/S_ADDR/CITY}\"/><Input id=\"zip\" value=\"{/S_ADDR/ZIP}\"/><Text id=\"summary\" text=\"{/SUMMARY}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Add row\" press=\".eB(['ADD_ROW'])\"/><Table id=\"items\" items=\"{/T_ITEMS}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Input value=\"{TEXT}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+                ]
+              ]
+            }
+          },
+          "MODEL": {
+            "FLAG": false,
+            "NAME": "start",
+            "QTY": 1,
+            "SUMMARY": "",
+            "S_ADDR": {
+              "CITY": "Berlin",
+              "ZIP": "10115"
+            },
+            "T_ITEMS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "TEXT": "one"
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "TEXT": "two"
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "TEXT": "three"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "BIND: act - fill NAME and a cell, fire CHECK",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "5EF509DACAFF4915819AB7CD465D6735",
+              "EVENT": "CHECK"
+            },
+            "MODEL": {
+              "NAME": "Ada",
+              "T_ITEMS": {
+                "__delta": {
+                  "1": {
+                    "TEXT": "zwei"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_BIND",
+            "ID": "1AB8E753AD024FB99E7B67D025D22DF8",
+            "PROTOCOL": 2
+          },
+          "MODEL": {
+            "FLAG": false,
+            "NAME": "Ada",
+            "QTY": 1,
+            "SUMMARY": "Ada;1;;Berlin;10115;1:one:,2:zwei:,3:three:",
+            "S_ADDR": {
+              "CITY": "Berlin",
+              "ZIP": "10115"
+            },
+            "T_ITEMS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "TEXT": "one"
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "TEXT": "zwei"
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "TEXT": "three"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "MSG: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:39821",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_MSG"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_MSG",
+            "ID": "9DD6560ED8BE42EBB781DA5218937437",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_SYSTEM": [
+                [
+                  "VIEW_SLOTS",
+                  "display",
+                  "MAIN",
+                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - messages\"><Text id=\"last_action\" text=\"{/LAST_ACTION}\"/><Button text=\"Toast\" press=\".eB(['TOAST'])\"/><Button text=\"Box\" press=\".eB(['BOX'])\"/><Button text=\"Confirm\" press=\".eB(['BOX_CONFIRM'])\"/></Page></mvc:View>"
+                ]
+              ]
+            }
+          },
+          "MODEL": {
+            "LAST_ACTION": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "MSG: act - BOX_CONFIRM",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "9DD6560ED8BE42EBB781DA5218937437",
+              "EVENT": "BOX_CONFIRM"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_MSG",
+            "ID": "117EEAFD734D481587666B7A9532A080",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_CUSTOM": [
+                [
+                  "MESSAGE_BOX",
+                  "confirm",
+                  "conformance confirm",
+                  {
+                    "actions": [
+                      "OK",
+                      "CANCEL"
+                    ],
+                    "onClose": "BOX_CLOSED"
+                  }
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "SLOTS: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:39821",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_SLOTS",
+            "ID": "E629E2C8FCCA4BBF8FE2066A7B784BDE",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_SYSTEM": [
+                [
+                  "VIEW_SLOTS",
+                  "display",
+                  "MAIN",
+                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - slots\"><Button id=\"btn_popup\" text=\"Popup\" press=\".eB(['POPUP_OPEN'])\"/><Button id=\"btn_popover\" text=\"Popover\" press=\".eB(['POPOVER_OPEN'])\"/><Button text=\"Nest\" press=\".eB(['NEST_OPEN'])\"/><Button text=\"Nest2\" press=\".eB(['NEST2_OPEN'])\"/><VBox id=\"nest_anchor\"/><VBox id=\"nest2_anchor\"/></Page></mvc:View>"
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "SLOTS: act - POPUP_OPEN",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "E629E2C8FCCA4BBF8FE2066A7B784BDE",
+              "EVENT": "POPUP_OPEN"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_SLOTS",
+            "ID": "81D6AD0E53BE40B68A8FF3DFD0A3B3B0",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_SYSTEM": [
+                [
+                  "VIEW_SLOTS",
+                  "display",
+                  "POPUP",
+                  "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Dialog title=\"conformance popup\"><Input id=\"popup_text\" value=\"{/POPUP_TEXT}\"/><buttons><Button text=\"Close\" press=\".eB(['POPUP_CLOSE'])\"/><Button text=\"Close here\" press=\".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')\"/></buttons></Dialog></core:FragmentDefinition>"
+                ]
+              ]
+            }
+          },
+          "MODEL": {
+            "POPUP_TEXT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "NAV: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:39821",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_NAV"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_NAV",
+            "ID": "D7964D38EAE44AFBA11D0524BBC5222A",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_SYSTEM": [
+                [
+                  "VIEW_SLOTS",
+                  "display",
+                  "MAIN",
+                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav caller\"><Text id=\"result\" text=\"{/RESULT}\"/><Text id=\"returns\" text=\"{/RETURNS}\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
+                ]
+              ]
+            }
+          },
+          "MODEL": {
+            "RESULT": "",
+            "RETURNS": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "NAV: act - CALL",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "D7964D38EAE44AFBA11D0524BBC5222A",
+              "EVENT": "CALL"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_NAV_TGT",
+            "ID": "E38D0BC2180A4D82B77798F52D6ED542",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_SYSTEM": [
+                [
+                  "VIEW_SLOTS",
+                  "display",
+                  "MAIN",
+                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav target\" showNavButton=\"true\" navButtonPress=\".eB(['___ZZZ_NAL'])\"><Text id=\"input\" text=\"{/INPUT}\"/><Text id=\"output\" text=\"{/OUTPUT}\"/><Button text=\"Done\" press=\".eB(['DONE'])\"/></Page></mvc:View>"
+                ],
+                [
+                  "ROUTER",
+                  "sync",
+                  {
+                    "setNavRouting": "DEFAULT"
+                  }
+                ]
+              ]
+            }
+          },
+          "MODEL": {
+            "INPUT": "from caller",
+            "OUTPUT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "NAV: act - DONE",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "E38D0BC2180A4D82B77798F52D6ED542",
+              "EVENT": "DONE"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_NAV",
+            "ID": "5FD9812C557743C3BAE86BE0893854E7",
+            "PROTOCOL": 2,
+            "S_ACTION": {
+              "T_SYSTEM": [
+                [
+                  "VIEW_SLOTS",
+                  "display",
+                  "MAIN",
+                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav caller\"><Text id=\"result\" text=\"{/RESULT}\"/><Text id=\"returns\" text=\"{/RETURNS}\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>",
+                  {
+                    "appInstance": "24156F6768984A1FB2BE45E878B2ADED",
+                    "navBack": true
+                  }
+                ],
+                [
+                  "ROUTER",
+                  "sync",
+                  {
+                    "setNavRouting": "DEFAULT"
+                  }
+                ]
+              ]
+            }
+          },
+          "MODEL": {
+            "RESULT": "from caller!",
+            "RETURNS": 1
+          }
+        }
+      }
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "BIND: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "5EF509DACAFF4915819AB7CD465D6735",
+        "app": "Z2UI5_CL_CONF_BIND",
+        "title": "conformance - bind",
+        "layer": "main",
+        "fields": [
+          {
+            "id": "f1",
+            "path": "/NAME",
+            "name": "NAME",
+            "label": "NAME",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "start",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f2",
+            "path": "/QTY",
+            "name": "QTY",
+            "label": "QTY",
+            "control": "sap.m.StepInput",
+            "kind": "number",
+            "value": 1,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f3",
+            "path": "/FLAG",
+            "name": "FLAG",
+            "label": "Flag",
+            "control": "sap.m.CheckBox",
+            "kind": "boolean",
+            "value": false,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f4",
+            "path": "/S_ADDR/CITY",
+            "name": "S_ADDR-CITY",
+            "label": "S_ADDR-CITY",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "Berlin",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f5",
+            "path": "/S_ADDR/ZIP",
+            "name": "S_ADDR-ZIP",
+            "label": "S_ADDR-ZIP",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "10115",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          }
+        ],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "ADD_ROW",
+            "args": [],
+            "label": "Add row",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ITEMS",
+            "name": "T_ITEMS",
+            "label": "T_ITEMS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "TEXT",
+                "label": "TEXT"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 3,
+            "rows": [
+              {
+                "ID": 1,
+                "TEXT": "one",
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "TEXT": "two",
+                "DONE": false
+              },
+              {
+                "ID": 3,
+                "TEXT": "three",
+                "DONE": false
+              }
+            ],
+            "truncated": false,
+            "selectionMode": "None",
+            "editableCells": [
+              "TEXT",
+              "DONE"
+            ],
+            "layer": "main"
+          }
+        ],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "BIND: act - fill NAME and a cell, fire CHECK",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "1AB8E753AD024FB99E7B67D025D22DF8",
+        "app": "Z2UI5_CL_CONF_BIND",
+        "title": "conformance - bind",
+        "layer": "main",
+        "fields": [
+          {
+            "id": "f1",
+            "path": "/NAME",
+            "name": "NAME",
+            "label": "NAME",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "Ada",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f2",
+            "path": "/QTY",
+            "name": "QTY",
+            "label": "QTY",
+            "control": "sap.m.StepInput",
+            "kind": "number",
+            "value": 1,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f3",
+            "path": "/FLAG",
+            "name": "FLAG",
+            "label": "Flag",
+            "control": "sap.m.CheckBox",
+            "kind": "boolean",
+            "value": false,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f4",
+            "path": "/S_ADDR/CITY",
+            "name": "S_ADDR-CITY",
+            "label": "S_ADDR-CITY",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "Berlin",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f5",
+            "path": "/S_ADDR/ZIP",
+            "name": "S_ADDR-ZIP",
+            "label": "S_ADDR-ZIP",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "10115",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          }
+        ],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "ADD_ROW",
+            "args": [],
+            "label": "Add row",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ITEMS",
+            "name": "T_ITEMS",
+            "label": "T_ITEMS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "TEXT",
+                "label": "TEXT"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 3,
+            "rows": [
+              {
+                "ID": 1,
+                "TEXT": "one",
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "TEXT": "zwei",
+                "DONE": false
+              },
+              {
+                "ID": 3,
+                "TEXT": "three",
+                "DONE": false
+              }
+            ],
+            "truncated": false,
+            "selectionMode": "None",
+            "editableCells": [
+              "TEXT",
+              "DONE"
+            ],
+            "layer": "main"
+          }
+        ],
+        "messages": [],
+        "texts": [
+          "Ada;1;;Berlin;10115;1:one:,2:zwei:,3:three:"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "MSG: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "9DD6560ED8BE42EBB781DA5218937437",
+        "app": "Z2UI5_CL_CONF_MSG",
+        "title": "conformance - messages",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "TOAST",
+            "args": [],
+            "label": "Toast",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "BOX",
+            "args": [],
+            "label": "Box",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "BOX_CONFIRM",
+            "args": [],
+            "label": "Confirm",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "MSG: act - BOX_CONFIRM",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "117EEAFD734D481587666B7A9532A080",
+        "app": "Z2UI5_CL_CONF_MSG",
+        "title": "conformance - messages",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "TOAST",
+            "args": [],
+            "label": "Toast",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "BOX",
+            "args": [],
+            "label": "Box",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "BOX_CONFIRM",
+            "args": [],
+            "label": "Confirm",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a4",
+            "event": "BOX_CLOSED",
+            "args": [
+              "$action"
+            ],
+            "label": "close message box (OK | CANCEL)",
+            "control": "sap.m.MessageBox",
+            "trigger": "close",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [
+          {
+            "type": "info",
+            "text": "conformance confirm",
+            "source": "box"
+          }
+        ],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "SLOTS: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "E629E2C8FCCA4BBF8FE2066A7B784BDE",
+        "app": "Z2UI5_CL_CONF_SLOTS",
+        "title": "conformance - slots",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "POPUP_OPEN",
+            "args": [],
+            "label": "Popup",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "POPOVER_OPEN",
+            "args": [],
+            "label": "Popover",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "NEST_OPEN",
+            "args": [],
+            "label": "Nest",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a4",
+            "event": "NEST2_OPEN",
+            "args": [],
+            "label": "Nest2",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "SLOTS: act - POPUP_OPEN",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "81D6AD0E53BE40B68A8FF3DFD0A3B3B0",
+        "app": "Z2UI5_CL_CONF_SLOTS",
+        "title": "conformance popup",
+        "layer": "popup",
+        "fields": [
+          {
+            "id": "f1",
+            "path": "/POPUP_TEXT",
+            "name": "POPUP_TEXT",
+            "label": "POPUP_TEXT",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "",
+            "required": false,
+            "editable": true,
+            "layer": "popup"
+          }
+        ],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "POPUP_CLOSE",
+            "args": [],
+            "label": "Close",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "popup"
+          },
+          {
+            "id": "a2",
+            "event": "@CLOSE_POPUP",
+            "args": [],
+            "label": "Close here",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "popup"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "NAV: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "D7964D38EAE44AFBA11D0524BBC5222A",
+        "app": "Z2UI5_CL_CONF_NAV",
+        "title": "conformance - nav caller",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CALL",
+            "args": [],
+            "label": "Call",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [
+          "0"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "NAV: act - CALL",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "E38D0BC2180A4D82B77798F52D6ED542",
+        "app": "Z2UI5_CL_CONF_NAV_TGT",
+        "title": "conformance - nav target",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "___ZZZ_NAL",
+            "args": [],
+            "label": "Back",
+            "control": "sap.m.Page",
+            "trigger": "navButtonPress",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "DONE",
+            "args": [],
+            "label": "Done",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [
+          "from caller"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "NAV: act - DONE",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "5FD9812C557743C3BAE86BE0893854E7",
+        "app": "Z2UI5_CL_CONF_NAV",
+        "title": "conformance - nav caller",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CALL",
+            "args": [],
+            "label": "Call",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [
+          "from caller!",
+          "1"
+        ],
+        "unsupported": []
+      }
+    }
+  ]
+}

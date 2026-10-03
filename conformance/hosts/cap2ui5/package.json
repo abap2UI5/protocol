@@ -1,0 +1,27 @@
+{
+  "name": "abap2ui5-conformance-cap2ui5-host",
+  "private": true,
+  "description": "A minimal CAP project serving the cap2UI5 conformance apps (conformance/apps/cap2ui5) for the backend conformance suite. Nothing in here is cap2UI5-specific except the plugin and the app directory.",
+  "dependencies": {
+    "@cap-js/sqlite": "^3",
+    "@cap2ui5/cds-plugin": "0.4.0",
+    "@sap/cds": "^10"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": ":memory:"
+        }
+      },
+      "auth": "mocked",
+      "cap2ui5": {
+        "apps": "srv/apps",
+        "roles": [
+          "any"
+        ]
+      }
+    }
+  }
+}

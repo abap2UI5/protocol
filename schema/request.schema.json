@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abap2UI5/protocol/schema/request.schema.json",
+  "title": "abap2UI5 roundtrip request, protocol 2",
+  "description": "The JSON body of a roundtrip POST (spec/request.md). A frontend sends the payload wrapped as { \"value\": <payload> }; a backend also accepts the bare payload, because a launchpad shell or a gateway may strip the envelope (spec/transport.md).",
+  "anyOf": [
+    {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/payload"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "$ref": "#/$defs/payload"
+    }
+  ],
+  "$defs": {
+    "payload": {
+      "type": "object",
+      "properties": {
+        "S_FRONT": {
+          "$ref": "#/$defs/sFront"
+        },
+        "MODEL": {
+          "$ref": "#/$defs/modelDelta"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sFront": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "description": "The draft id of the response this request continues. Absent (or empty) on an app-start-shaped request.",
+          "type": "string"
+        },
+        "EVENT": {
+          "description": "The backend event name - the first element of the event array of the wire that fired.",
+          "type": "string"
+        },
+        "T_EVENT_ARG": {
+          "description": "The further arguments of the wire, as raw JSON values. The backend hands each to the app as a string (spec/request.md#event-arguments).",
+          "type": "array",
+          "maxItems": 100
+        },
+        "HASH": {
+          "description": "window.location.hash, on every request that has one (not for an embedded component).",
+          "type": "string"
+        },
+        "ORIGIN": {
+          "type": "string"
+        },
+        "PATHNAME": {
+          "type": "string"
+        },
+        "SEARCH": {
+          "description": "window.location.search - carries ?app_start=<CLASS> on an app start.",
+          "type": "string"
+        },
+        "MS_CLIENT_PREV": {
+          "description": "Duration of the previous roundtrip as the browser measured it, in milliseconds. Diagnostic only.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "CONFIG": {
+          "$ref": "#/$defs/config"
+        }
+      },
+      "additionalProperties": false
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "S_UI5": {
+          "type": "object",
+          "properties": {
+            "VERSION": {
+              "type": "string"
+            },
+            "BUILDTIMESTAMP": {
+              "type": "string"
+            },
+            "GAV": {
+              "type": "string"
+            },
+            "THEME": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "S_DEVICE": {
+          "type": "object",
+          "properties": {
+            "SYSTEM": {
+              "enum": [
+                "phone",
+                "tablet",
+                "desktop",
+                "combi"
+              ]
+            },
+            "ORIENTATION": {
+              "enum": [
+                "portrait",
+                "landscape"
+              ]
+            },
+            "BROWSER": {
+              "$ref": "#/$defs/nameVersion"
+            },
+            "OS": {
+              "$ref": "#/$defs/nameVersion"
+            },
+            "RESIZE": {
+              "type": "object",
+              "properties": {
+                "WIDTH": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "HEIGHT": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "additionalProperties": false
+            },
+            "SUPPORT": {
+              "type": "object",
+              "properties": {
+                "TOUCH": {
+                  "type": "boolean"
+                },
+                "POINTER": {
+                  "type": "boolean"
+                },
+                "RETINA": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "S_FOCUS": {
+          "type": "object",
+          "required": [
+            "ID"
+          ],
+          "properties": {
+            "ID": {
+              "type": "string"
+            },
+            "SELECTION_START": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "SELECTION_END": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "S_SCROLL": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "MAIN",
+              "NEST",
+              "NEST2",
+              "POPUP",
+              "POPOVER"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "ID"
+            ],
+            "properties": {
+              "ID": {
+                "type": "string"
+              },
+              "X": {
+                "type": "number"
+              },
+              "Y": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "ComponentData": {
+          "description": "The launchpad's component data (startupParameters, ...), as the shell handed it over.",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "nameVersion": {
+      "type": "object",
+      "properties": {
+        "NAME": {
+          "type": "string"
+        },
+        "VERSION": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "modelDelta": {
+      "description": "The model delta: per top-level attribute either its whole current value, or - for a table edited by row - { \"__delta\": { \"<0-based row>\": { \"<COLUMN>\": value | <nested delta> } } } (spec/request.md#the-model-delta).",
+      "type": "object",
+      "additionalProperties": {
+        "if": {
+          "type": "object",
+          "required": [
+            "__delta"
+          ],
+          "properties": {
+            "__delta": true
+          }
+        },
+        "then": {
+          "$ref": "#/$defs/tableDelta"
+        }
+      }
+    },
+    "tableDelta": {
+      "type": "object",
+      "required": [
+        "__delta"
+      ],
+      "properties": {
+        "__delta": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[0-9]+$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "if": {
+                "type": "object",
+                "required": [
+                  "__delta"
+                ],
+                "properties": {
+                  "__delta": true
+                }
+              },
+              "then": {
+                "$ref": "#/$defs/tableDelta"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

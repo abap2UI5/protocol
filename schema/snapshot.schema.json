@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/abap2UI5/protocol/schema/snapshot.schema.json",
+  "title": "abap2UI5 agent snapshot v1",
+  "description": "The semantic view of one screen (profiles/semantic.md). Consumers ignore keys they do not know and treat an unknown enum value as text - additions keep snapshotVersion 1.",
+  "type": "object",
+  "required": ["snapshotVersion", "session", "app", "title", "layer", "fields", "actions", "tables", "messages", "texts", "unsupported"],
+  "properties": {
+    "snapshotVersion": { "const": 1 },
+    "session": { "type": "string" },
+    "app": { "type": "string" },
+    "title": { "type": "string" },
+    "layer": { "$ref": "#/$defs/layer" },
+    "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } },
+    "tables": { "type": "array", "items": { "$ref": "#/$defs/table" } },
+    "messages": { "type": "array", "items": { "$ref": "#/$defs/message" } },
+    "texts": { "type": "array", "maxItems": 30, "items": { "type": "string", "maxLength": 200 } },
+    "unsupported": { "type": "array", "maxItems": 30, "items": { "type": "string" } },
+    "pending": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+  },
+  "$defs": {
+    "layer": { "type": "string", "description": "main | popup | popover" },
+    "field": {
+      "type": "object",
+      "required": ["id", "path", "name", "label", "control", "kind", "value", "required", "editable", "layer"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^f[0-9]+$" },
+        "path": { "type": "string" },
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "control": { "type": "string" },
+        "kind": { "type": "string", "description": "text | textarea | number | date | time | datetime | boolean | choice | multichoice" },
+        "value": true,
+        "required": { "type": "boolean" },
+        "editable": { "type": "boolean" },
+        "values": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "required": ["key", "text"],
+            "properties": {
+              "key": { "type": ["string", "number"] },
+              "text": { "type": "string" }
+            }
+          }
+        },
+        "layer": { "$ref": "#/$defs/layer" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["id", "event", "args", "label", "control", "trigger", "enabled", "scope", "layer"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^a[0-9]+$" },
+        "event": { "type": "string" },
+        "args": { "type": "array" },
+        "label": { "type": "string" },
+        "control": { "type": "string" },
+        "trigger": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "scope": { "enum": ["screen", "row"] },
+        "table": { "type": "string" },
+        "layer": { "$ref": "#/$defs/layer" },
+        "policy": { "type": "string", "description": "extension (cap2UI5, ABAP agent addon): confirm | forbidden" }
+      }
+    },
+    "table": {
+      "type": "object",
+      "required": ["id", "path", "name", "label", "control", "columns", "rowCount", "rows", "truncated", "selectionMode", "editableCells", "layer"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^t[0-9]+$" },
+        "path": { "type": "string" },
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "control": { "type": "string" },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "label"],
+            "properties": { "name": { "type": "string" }, "label": { "type": "string" } }
+          }
+        },
+        "rowCount": { "type": "integer", "minimum": 0 },
+        "rows": { "type": "array", "maxItems": 200, "items": { "type": "object" } },
+        "truncated": { "type": "boolean" },
+        "selectionMode": { "enum": ["None", "Single", "Multi"] },
+        "editableCells": { "type": "array", "items": { "type": "string" } },
+        "layer": { "$ref": "#/$defs/layer" },
+        "selectionField": { "type": "string" }
+      }
+    },
+    "message": {
+      "type": "object",
+      "required": ["type", "text", "source"],
+      "properties": {
+        "type": { "type": "string", "description": "success | info | warning | error" },
+        "text": { "type": "string", "maxLength": 1000 },
+        "source": { "type": "string", "description": "toast | box | strip | field | model | popover | messageview" },
+        "field": { "type": "string" },
+        "subtitle": { "type": "string", "maxLength": 1000 },
+        "description": { "type": "string", "maxLength": 1000 }
+      }
+    }
+  }
+}

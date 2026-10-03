@@ -1,0 +1,72 @@
+{
+  "name": "@abap2ui5/protocol",
+  "version": "0.1.0",
+  "description": "The abap2UI5 protocol: a versioned specification of the roundtrip between UI5 frontends and abap2UI5 backends, JSON Schemas for its messages, and conformance suites for both sides - so backends and frontends can be swapped.",
+  "type": "module",
+  "exports": {
+    ".": "./conformance/backend/index.mjs",
+    "./frontend": "./conformance/frontend/index.mjs",
+    "./schema/*": "./schema/*",
+    "./profiles/portable-v1.json": "./profiles/portable-v1.json",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "abap2ui5-conformance": "conformance/backend/bin/abap2ui5-conformance.mjs"
+  },
+  "files": [
+    "conformance/backend/",
+    "conformance/frontend/",
+    "schema/",
+    "spec/",
+    "profiles/",
+    "traffic/node-runtime/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "conformance:node-runtime": "node scripts/run-conformance.mjs node-runtime",
+    "conformance:cap2ui5": "node scripts/run-conformance.mjs cap2ui5",
+    "conformance:frontend:ui5": "node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter ui5",
+    "conformance:frontend:agent": "node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter agent",
+    "conformance:frontend:webcomponent": "node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter webcomponent",
+    "build:node-runtime": "node conformance/hosts/node-runtime/build.mjs",
+    "serve:node-runtime": "node conformance/hosts/node-runtime/serve.mjs --build",
+    "serve:cap2ui5": "node conformance/hosts/cap2ui5/serve.mjs",
+    "record": "node scripts/record-traffic.mjs node-runtime && node scripts/record-traffic.mjs cap2ui5",
+    "lint:abap": "cd conformance/apps && abaplint abaplint.jsonc",
+    "generate": "node scripts/gen-check-list.mjs && node scripts/render-portable.mjs",
+    "vendor:agent": "node scripts/vendor-agent-client.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abap2UI5/protocol.git"
+  },
+  "homepage": "https://github.com/abap2UI5/protocol#readme",
+  "bugs": {
+    "url": "https://github.com/abap2UI5/protocol/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "abap2ui5",
+    "ui5",
+    "protocol",
+    "specification",
+    "conformance",
+    "server-driven-ui",
+    "json-schema"
+  ],
+  "devDependencies": {
+    "@abap2ui5/node-runtime": "1.146.0",
+    "@abaplint/cli": "2.120.60",
+    "@abaplint/transpiler-cli": "2.13.93",
+    "@openui5/sap.m": "1.144.0",
+    "ajv": "8.20.0",
+    "express": "5.2.1",
+    "playwright-core": "1.56.1"
+  }
+}
