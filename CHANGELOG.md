@@ -38,7 +38,7 @@
   maintainer - the NEST rule, a new draft id per response, the URL in the
   error body, boolean arguments for non-ABAP backends, the detail of an
   app's error, and five from the frontend suite.
-- CI: a `frontend` job (Chromium, abap2UI5 `app/webapp` at `b812079`)
+- CI: a `frontend` job (Chromium, abap2UI5 `app/webapp` at `5d7e91f` (main))
   runs the UI5 SPA; `npm test` runs the agent client always.
 
 ## 0.1.0 - 2026-10-03
