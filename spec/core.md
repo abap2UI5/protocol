@@ -101,8 +101,10 @@ the portable profile is a property of the app, not of the backend.
   backend suite can verify it. Its conformance is reported per profile:
   `core`, or `ui5` (core plus [../profiles/ui5.md](../profiles/ui5.md)).
 - A **conforming frontend** implements every MUST that addresses a frontend,
-  and renders at least one view profile. Its suite is reserved
-  ([../conformance/frontend/README.md](../conformance/frontend/README.md)).
+  and renders at least one view profile. The frontend suite
+  ([../conformance/frontend/README.md](../conformance/frontend/README.md))
+  plays the backend for it and reports its conformance per profile: `core`,
+  `portable`, `ui5` (core, portable and the UI5 profile) or `semantic`.
 - An **in-process frontend** - one that calls the backend's handler without
   HTTP, as [HF] does - implements the request and response bodies and is
   exempt from [transport.md](transport.md).

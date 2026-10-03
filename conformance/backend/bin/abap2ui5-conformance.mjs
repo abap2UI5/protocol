@@ -5,13 +5,20 @@
  *   abap2ui5-conformance backend --url <endpoint> [--profile core|ui5]
  *                                [--header "Name: value"]... [--only <id part>]...
  *                                [--app KEY=CLASS]... [--json] [--verbose]
+ *   abap2ui5-conformance frontend --adapter ui5|agent|webcomponent|headless
+ *                                [--profile core|portable|ui5|semantic]
+ *                                [--only <id part>]... [--json] [--verbose]
  *
- * Exit code 0: no MUST check failed. 1: at least one did. 2: usage error.
+ * Exit code 0: no MUST check failed. 1: at least one did. 2: usage error, or
+ * the frontend adapter could not start.
  */
 import { runBackendSuite, DEFAULT_APPS } from "../index.mjs";
 import { formatResult, formatSummary } from "../lib/report.mjs";
 
 const USAGE = `usage: abap2ui5-conformance backend --url <endpoint> [options]
+       abap2ui5-conformance frontend --adapter <name> [options]
+
+backend - plays the frontend against a backend:
 
   --url <endpoint>        the roundtrip endpoint (the URL the page is served from)
   --profile core|ui5      core (default): the core protocol; ui5: plus the UI5 profile
@@ -22,10 +29,18 @@ const USAGE = `usage: abap2ui5-conformance backend --url <endpoint> [options]
   --verbose               show skipped checks' reasons and the traffic of failures
 
 The backend has to serve the conformance apps - conformance/apps/README.md.
-The frontend suite is not implemented yet (conformance/frontend/README.md).`;
+
+frontend - plays the backend (a scripted server) for a frontend:
+  --adapter <name>        ui5 (the UI5 SPA in Chromium), agent (mcp-server's agent
+                          client), webcomponent (frontend-webcomponent), headless (stub)
+  --profile <profile>     core | portable | ui5 | semantic (default: the adapter's widest)
+  --only, --json, --verbose  as above
+
+The ui5 adapter needs an abap2UI5 checkout (ABAP2UI5_HOME) and a Chromium;
+see conformance/frontend/README.md.`;
 
 function parse(argv) {
-  const o = { headers: {}, only: [], apps: {}, profile: "core", json: false, verbose: false };
+  const o = { headers: {}, only: [], apps: {}, profile: undefined, json: false, verbose: false };
   const [command, ...rest] = argv;
   o.command = command;
   for (let i = 0; i < rest.length; i += 1) {
@@ -36,6 +51,7 @@ function parse(argv) {
       return rest[i];
     };
     if (a === "--url") o.url = next();
+    else if (a === "--adapter") o.adapter = next();
     else if (a === "--profile") o.profile = next();
     else if (a === "--header") {
       const h = next();
@@ -71,10 +87,7 @@ async function main() {
     process.stdout.write(`${USAGE}\n`);
     return o.help ? 0 : 2;
   }
-  if (o.command === "frontend") {
-    process.stderr.write("the frontend suite is not implemented yet - see conformance/frontend/README.md\n");
-    return 2;
-  }
+  if (o.command === "frontend") return frontend(o);
   if (o.command !== "backend") {
     process.stderr.write(`unknown suite "${o.command}"\n\n${USAGE}\n`);
     return 2;
@@ -84,13 +97,35 @@ async function main() {
     return 2;
   }
   const report = await runBackendSuite({
-    url: o.url, profile: o.profile, headers: o.headers, apps: o.apps, only: o.only.length ? o.only : undefined,
+    url: o.url, profile: o.profile || "core", headers: o.headers, apps: o.apps, only: o.only.length ? o.only : undefined,
     onResult: o.json ? undefined : (r) => {
       if (r.status !== "skip" || o.verbose) process.stdout.write(`${formatResult(r, { verbose: o.verbose })}\n`);
     },
   });
   if (o.json) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   else process.stdout.write(`\n${formatSummary(report)}\n`);
+  return report.ok ? 0 : 1;
+}
+
+async function frontend(o) {
+  const { runFrontendSuite, ADAPTERS } = await import("../../frontend/index.mjs");
+  if (!o.adapter || !ADAPTERS[o.adapter]) {
+    process.stderr.write(`--adapter is one of ${Object.keys(ADAPTERS).join(", ")}\n\n${USAGE}\n`);
+    return 2;
+  }
+  const report = await runFrontendSuite({
+    adapter: o.adapter, profile: o.profile,
+    only: o.only.length ? o.only : undefined,
+    onResult: o.json ? undefined : (r) => {
+      if (r.status !== "skip" || o.verbose) process.stdout.write(`${formatResult(r, { verbose: o.verbose })}\n`);
+    },
+  });
+  if (o.json) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  else {
+    if (report.error) process.stdout.write(`\nthe ${report.adapter} adapter could not start: ${report.error}\n`);
+    process.stdout.write(`\n${formatSummary({ ...report, url: `${report.adapter} - ${report.version || report.description}` })}\n`);
+  }
+  if (report.error) return 2;
   return report.ok ? 0 : 1;
 }
 

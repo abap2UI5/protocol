@@ -32,7 +32,9 @@ repository writes it down.
  schema/     JSON Schemas (2020-12): request, response, snapshot, portable profile
  conformance/
    backend    the backend suite - plays the frontend over HTTP     (implemented)
-   frontend   the frontend suite - plays the backend               (reserved)
+   frontend   the frontend suite - plays the backend, adapters for (implemented)
+              the UI5 SPA (Playwright), the agent client, the
+              Web Components frontend
    apps       the conformance apps: ABAP classes + cap2UI5 twins
    hosts      the two reference backends, started with the apps deployed
  traffic/    real traffic of both reference backends and three frontends
@@ -43,7 +45,7 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 
 ## Status
 
-- **Protocol 2**, specification revision 0.1, derived from abap2UI5 1.146.0
+- **Protocol 2**, specification revision 0.2, derived from abap2UI5 1.146.0
   (commit `b812079`).
 - **Backend suite: 75 checks** (61 MUST, 14 SHOULD; 68 core, 7 UI5 profile).
   Green against both reference backends - `node-runtime` 75/75,
@@ -52,8 +54,14 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   snapshots, checked by the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
-- Frontend suite: reserved ([conformance/frontend/README.md](conformance/frontend/README.md)).
-  Not yet run against an ABAP system.
+- **Frontend suite: 81 checks** (66 MUST, 15 SHOULD; 66 core, 8 portable,
+  4 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
+  SPA passes every MUST but one - message box details stay empty on OpenUI5
+  >= 1.120; the agent client fails 5 MUSTs (no PROTOCOL check, no
+  `sap-contextid`, overlapping acts, popups kept across an app change, error
+  markup stripped) ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
+- Decisions still open for the maintainer: [spec/open-questions.md](spec/open-questions.md).
+- Not yet run against an ABAP system.
 
 ## Run the backend suite
 
@@ -74,11 +82,22 @@ To test your backend: deploy the [conformance apps](conformance/apps/README.md)
 Options, the library API and the check list:
 [conformance/backend/README.md](conformance/backend/README.md).
 
+## Run the frontend suite
+
+```bash
+npx abap2ui5-conformance frontend --adapter ui5      # the UI5 SPA (ABAP2UI5_HOME=<abap2UI5 checkout>) in Chromium
+npx abap2ui5-conformance frontend --adapter agent    # the agent client of abap2UI5/mcp-server
+```
+
+Adapters, options and the check list:
+[conformance/frontend/README.md](conformance/frontend/README.md).
+
 ## Develop
 
 ```bash
-npm test                 # schemas, traffic, docs, portable profile, CLI, and both backends
-                         # (PROTOCOL_SKIP_BACKENDS=1 skips the two backend runs)
+npm test                 # schemas, traffic, docs, portable profile, CLI, both backends,
+                         # the frontend suite (agent client; UI5 SPA with a checkout + Chromium)
+                         # (PROTOCOL_SKIP_BACKENDS=1 / PROTOCOL_SKIP_BROWSER=1 skip the slow parts)
 npm run record           # re-record traffic/ from both backends
 npm run lint:abap        # abaplint over the ABAP conformance apps
 npm run generate         # regenerate the check list and the portable-profile sections
@@ -86,7 +105,9 @@ npm run generate         # regenerate the check list and the portable-profile se
 
 Node 22 or later. The package has no runtime dependencies; the dev
 dependencies are the reference backend (`@abap2ui5/node-runtime`, the
-transpiler, express), abaplint and ajv.
+transpiler, express), abaplint, ajv, and for the UI5 adapter
+`playwright-core` and the `@openui5/sap.m` source packages (UI5 without a
+CDN).
 
 ## Related
 

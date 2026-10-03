@@ -6,7 +6,7 @@ swapped independently:
 | Suite | Plays | Tests | Status |
 |---|---|---|---|
 | [backend/](backend/README.md) | the frontend | a backend, over HTTP, against the conformance apps | implemented - 75 checks, `abap2ui5-conformance backend` |
-| [frontend/](frontend/README.md) | the backend | a frontend, by scripted responses | reserved |
+| [frontend/](frontend/README.md) | the backend | a frontend, by scripted responses (recorded traffic + synthetic edge cases), through an adapter per frontend | implemented - 81 checks, `abap2ui5-conformance frontend --adapter ui5\|agent\|webcomponent` |
 
 The **conformance apps** ([apps/](apps/README.md)) are what a backend serves
 for the backend suite: small apps with exactly specified behaviour, shipped
@@ -18,4 +18,5 @@ with the apps deployed: `hosts/node-runtime` (`@abap2ui5/node-runtime`, the
 ABAP apps transpiled on the fly) and `hosts/cap2ui5` (a minimal CAP project
 with `@cap2ui5/cds-plugin` and the JavaScript apps).
 
-Results per backend and the differences found: [RESULTS.md](RESULTS.md).
+Results per backend and per frontend, and the differences found:
+[RESULTS.md](RESULTS.md).

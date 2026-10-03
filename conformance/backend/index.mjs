@@ -16,3 +16,5 @@ export {
 } from "./lib/client.mjs";
 export { validate, compile, loadSchema, formatErrors, SCHEMA_DIR } from "./lib/schema.mjs";
 export { formatResult, formatSummary } from "./lib/report.mjs";
+// The frontend suite (conformance/frontend/) - also at "@abap2ui5/protocol/frontend".
+export { runFrontendSuite, ALL_FRONTEND_CHECKS, ADAPTERS, FRONTEND_PROFILES } from "../frontend/index.mjs";

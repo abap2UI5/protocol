@@ -65,9 +65,15 @@ The UI5 frontend ([SRV] `readHttp`, `responseError`; [EVW]):
 
 - A non-2xx answer is an error: the frontend MUST show the body to the user
   **as text** - never as markup ([EVW] renders it through `textContent`) -
-  and the status when the body is empty (`HTTP <status>`).
+  and the status when the body is empty (`HTTP <status>`). As text means
+  verbatim: a frontend MUST NOT strip, decode or otherwise interpret markup
+  in it - the body is `text/plain`, and what looks like a tag in it (a URL
+  reflected into the first frame, [H] `request_context_info`) is text. It
+  MAY shorten a long body.
 - A 2xx answer that is not JSON, or has no `S_FRONT`, or declares another
   `PROTOCOL` ([versioning.md](versioning.md)), is an error too.
+- *Frontend checks:* `error.shown`, `error.as-text`, `error.empty-body`,
+  `error.app-start`, `response.not-json`, `response.no-s-front`.
 - After a network failure, a timeout or a 502/503/504 the frontend MAY offer
   a retry that re-sends the same body; after a 500 it MUST NOT re-send
   automatically ([transport.md](transport.md#client-behaviour)).

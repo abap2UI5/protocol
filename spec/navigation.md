@@ -75,6 +75,7 @@ called `nav_app_leave( )` ([H] `main_process`). The UI5 profile writes it as
 `.eB(['___ZZZ_NAL'])`, typically on a Page's `navButtonPress`.
 
 - A backend MUST implement it; a frontend sends it like any other event.
+  *Frontend check:* `request.leave-event`.
   *Checked by:* `nav.leave-reserved-event`, `ui5.leave-wire`.
 
 ## Routes
@@ -173,3 +174,5 @@ Rules for the frontend:
 - With `setHashEvent` registered, a hash change raises that event as an
   ordinary event request; the new hash travels in `S_FRONT.HASH` ([RT]
   `dispatchAppHashChange`).
+- *Frontend checks:* `router.keep`, `router.back-restores`,
+  `router.app-state`, `router.hash-sent`.

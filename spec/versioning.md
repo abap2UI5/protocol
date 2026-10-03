@@ -10,10 +10,14 @@ integer - **2** today ([TY] `c_protocol`, stamped by [H]
   `response.protocol`.
 - A frontend MUST compare it with the number it was written for before it
   reads anything else, and treat a **present and different** number as an
-  error that says which side is older ([SRV] `readHttp`).
+  error that says which side is older ([SRV] `readHttp`) - nothing of such
+  a response is adopted or shown, its `ID` included. The message SHOULD
+  name both numbers.
 - A frontend SHOULD let a response **without** `PROTOCOL` through: a backend
   older than the field cannot be told from one that is merely older, and
   refusing it would break pairings that work.
+- *Frontend checks:* `response.protocol-mismatch`,
+  `response.protocol-mismatch-message`, `response.protocol-absent`.
 - Requests carry no protocol number; the backend reads what it knows and
   ignores the rest ([request.md](request.md)).
 
@@ -48,7 +52,7 @@ right.
 
 ## This specification's own version
 
-The specification has a revision of its own (0.1, see
+The specification has a revision of its own (0.2, see
 [README.md](README.md)), and the package `@abap2ui5/protocol` a semantic
 version. A revision that only clarifies text or adds checks keeps the
 protocol number; the conformance suite of a revision checks protocol 2 as

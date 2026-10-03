@@ -56,6 +56,15 @@ A roundtrip is one `POST <endpoint>` with a JSON body
 A frontend MAY send further headers (authentication); a backend MUST ignore
 headers it does not know.
 
+- A frontend MUST send `Content-Type: application/json` with every
+  roundtrip POST ([SRV] `_post`). *Frontend check:* `request.content-type`.
+- A frontend SHOULD send `sap-contextid-accept: header` with every roundtrip
+  POST: without it a backend that switches to a stateful session hands the
+  session id out as a cookie ([HTTP] `set_response`), which a frontend on
+  another origin or without a cookie jar (the agent client) never sends
+  back. *Frontend checks:* `transport.contextid-accept`,
+  `transport.contextid-only-when-held`.
+
 ### Response headers and caching
 
 - A roundtrip response SHOULD carry `Cache-Control: no-cache, no-store,
@@ -76,7 +85,7 @@ The UI5 frontend wraps the request payload as `{ "value": <payload> }`
 ([SRV] `readHttp`). A launchpad shell or a gateway may strip that envelope
 on the way.
 
-- A frontend MUST send the envelope.
+- A frontend MUST send the envelope. *Frontend check:* `request.envelope`.
 - A backend MUST accept both shapes: `{ "value": { "S_FRONT": ... } }` and
   the bare `{ "S_FRONT": ... }` - it detects the envelope by the presence
   of the key `value` at the root ([H] `request_parse_body`).
@@ -126,7 +135,8 @@ The backend runs a CSRF gate over every state-changing request - `POST` and
   `X-CSRF-Token: <token>`; it sends that token with every later POST
   ([SRV] `_csrfTokenRequired`, `_fetchCsrfToken`). A 403 without
   `X-CSRF-Token: Required` is the backend's own gate and final - a frontend
-  MUST NOT retry it.
+  MUST NOT retry it. *Frontend checks:* `transport.csrf-token`,
+  `transport.csrf-final`.
 
 ## HEAD: session terminate and token fetch
 
@@ -168,7 +178,10 @@ between roundtrips. The switch travels outside the body ([TY] `ty_s_next-s_state
   ([HTTP] `set_response`).
 - A frontend MUST keep the last valid `sap-contextid` response header and
   send it with every later POST; a response without the header MUST NOT
-  wipe an established id ([SRV] `readHttp`).
+  wipe an established id ([SRV] `readHttp`). This holds for every frontend
+  that talks HTTP, not only for browsers: a stateful ABAP app answers a
+  POST without its session id from a fresh work process.
+  *Frontend check:* `transport.contextid-kept`.
 - A frontend SHOULD end the session with the terminate HEAD when the page
   closes.
 - While a session is stateful the backend answers it from the app instance
@@ -193,11 +206,16 @@ These are rules for frontends; they keep a session consistent.
   - for a wire flagged queue-last - keeps the last one and sends it after
   the response ([V1] `eB`, `_dispatchQueuedEvent`). A restore triggered by
   browser history MAY supersede the request in flight; the older response
-  is then dropped ([SRV] `readHttp` `isStale`).
+  is then dropped ([SRV] `readHttp` `isStale`). A user event is whatever
+  the frontend's user asks for - a click, or a call of a program driving
+  the frontend (an agent's `act`): two overlapping requests on one session
+  continue the same draft, and the later answer silently drops what the
+  earlier one did. *Frontend checks:* `transport.one-at-a-time`,
+  `ui5.wire-queue-last`.
 - **Timeout.** The UI5 frontend gives up after 600 s ([SRV]
   `REQUEST_TIMEOUT_MS`); a frontend SHOULD have a timeout.
 - **Retry.** After a network failure, a timeout or a 502/503/504 a frontend
   MAY re-send the **same body** - it continues the same draft id, which the
   backend accepts ([sessions.md](sessions.md#drafts-are-snapshots)). A 500
   MUST NOT be retried automatically: the backend ran and failed, and would
-  fail again ([SRV] `readHttp`).
+  fail again ([SRV] `readHttp`). *Frontend check:* `transport.no-retry-500`.

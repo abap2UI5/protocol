@@ -45,6 +45,18 @@ missing one initial).
 A frontend MUST NOT send other keys in `S_FRONT`; a backend MUST ignore
 keys it does not know.
 
+- `ORIGIN`, `PATHNAME` and `SEARCH` belong to app-start-shaped requests:
+  the backend stores them with the draft ([H] `session_merge`), so a
+  frontend SHOULD leave them out of event requests once a response was
+  adopted ([SES] `location`). *Frontend check:* `request.location-once`.
+- `MS_CLIENT_PREV`, when sent, MUST be the measured duration of a roundtrip
+  this frontend made - an integer >= 0 - so it is never on the first
+  request of a page load ([SRV] `roundtrip` leaves it off until
+  `readHttp` measured one). *Frontend check:* `request.client-prev`.
+- A frontend that owns the page's URL SHOULD send a non-empty hash as
+  `HASH` with every request ([SRV] `roundtrip`): the backend reads routes
+  and the app-state hash from it. *Frontend check:* `router.hash-sent`.
+
 **Implementation note.** cap2UI5's own wire tests also send `APP` and an
 empty `XX` next to `MODEL` - leftovers of earlier protocol versions that
 the backend ignores.
@@ -61,6 +73,16 @@ it starts is decided by
 sends one on the page load (App controller -> `Server.roundtrip(ctx, {})`)
 and on every Back/Forward restore of a route ([SRV] `restoreFromRoute`).
 
+- A frontend that starts a named app MUST name it in the app-start
+  request - as `?app_start=<CLASS>` in `SEARCH` ([SES] `location`, [AC]
+  `start`) or as a route in `HASH`; a request that names none starts the
+  backend's own start app ([navigation.md](navigation.md#which-app-a-request-starts)).
+- It SHOULD send `ORIGIN` and `PATHNAME` of the endpoint as the user
+  reaches it: the backend builds URLs from them and keeps them with the
+  session. A frontend that does not run on that page takes them from its
+  embedder (the agent client's `location` option, [AC] `createAppClient`).
+- *Frontend checks:* `request.app-start`, `request.app-start-location`.
+
 ## Event requests
 
 A request **with** `ID` continues that draft. With `EVENT` set the backend
@@ -72,7 +94,9 @@ nothing). *Checked by:* `event.roundtrip`, `event.unknown-event`.
   ([../profiles/ui5.md](../profiles/ui5.md#event-wires)) or into a follow-up
   action that raises events (`onClose` of a message box, the event of
   `START_TIMER`, [actions.md](actions.md)). A frontend MUST send it
-  unchanged.
+  unchanged, with the `ID` of the response it adopted last
+  ([response.md](response.md#s_front)). *Frontend checks:* `request.event`,
+  `request.id-continuation`, `request.leave-event`.
 - A request with `ID` and without `EVENT` is valid (the app runs with no
   event); the UI5 frontend does not send one.
 - **Reserved event names.** `___ZZZ_NAL` is the leave event: the backend
@@ -104,6 +128,17 @@ The backend hands every argument to the app as a **string**
 - A backend SHOULD refuse more than 100 arguments with an error status
   ([H] `c_event_arg_limit` - each object argument costs a parse of its own,
   and 50,000 of them once held a work process for minutes).
+- A frontend MUST send every argument as the JSON value the wire resolved
+  to - a string as a string (an empty literal `''` as `""`, in its
+  place), a number as a number, a boolean as `true` / `false`, an object
+  as an object - and MUST NOT apply the conversion above itself ([V1]
+  `eB`: "Arguments travel as raw JSON values - the request body is
+  serialized exactly once"; [AC] `eventArgs`). The conversion is the
+  backend's: an object a frontend stringified would reach the app escaped
+  twice, and a backend for apps that are not ABAP may map booleans
+  differently ([open-questions.md](open-questions.md#4-boolean-event-arguments-for-backends-that-are-not-abap)).
+  A wire without arguments SHOULD send no `T_EVENT_ARG`.
+  *Frontend checks:* `request.event-arguments`, `request.event-no-arguments`.
 - **Implementation note.** The boolean mapping to `X`/empty is ABAP's; a
   JavaScript app on cap2UI5 sees the same strings ([CAP] `get_event_arg`).
 
@@ -127,6 +162,28 @@ The frontend builds the delta from the changed binding paths
 
 When one attribute is queued both whole and by row, the whole value wins
 (it carries every cell). A whole table value replaces the table.
+
+Rules for the frontend:
+
+- `MODEL` MUST name only attributes with a path the user edited since the
+  last roundtrip of that model - a value the backend pushed is no edit -
+  and is absent when nothing was edited ([V1] `eB` builds it from the
+  model's `_z2ui5ChangedPaths`, [SRV] `_clearSentPaths` clears what a won
+  request carried). An entry for an attribute the user did not touch
+  writes the frontend's copy over whatever the app holds.
+  *Frontend checks:* `model.only-edited`, `model.none-when-unedited`,
+  `model.unchanged-push-no-delta`.
+- An edited scalar or structure component MUST travel as the whole current
+  value of its top-level attribute. An edited table cell MUST travel as the
+  `__delta` above or as the whole current table, and SHOULD travel as the
+  `__delta` - a backend applies both, the delta keeps a large table off the
+  wire ([LIB] `buildDeltaFromPaths`). The whole value MUST win over a delta
+  of the same attribute. *Frontend checks:* `model.scalar`,
+  `model.number-and-boolean`, `model.structure-whole`, `model.table-cell`,
+  `model.table-row-delta`, `model.nested-table`, `model.whole-beats-delta`.
+- The delta is the edited model's: an event from a popup carries the
+  popup's edits, not MAIN's ([V1] `_pickModelForRoundtrip`).
+  *Frontend check:* `model.slot-model`.
 
 The backend applies the delta **before** the app runs ([ACT]
 `factory_by_frontend`, [MOD] `main_json_to_attri`):
@@ -174,3 +231,7 @@ What the browser says about itself. The backend stores it with the draft
 - The latches of the UI5 frontend advance only once the carrying request
   won (its response was adopted) - a dropped request re-sends ([SES]
   `confirmSent`).
+- A frontend that sends the session block SHOULD send it whole with
+  app-start-shaped requests and leave the static parts (`S_UI5`, the static
+  `S_DEVICE` fields, `ComponentData`) out of event requests once the backend
+  has them ([SES] `config`). *Frontend check:* `request.config-cadence`.

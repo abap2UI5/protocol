@@ -38,9 +38,10 @@ it in [SRV] `readHttp` and [V1] `_processAfterRendering`.
 - A backend SHOULD leave out empty values (an empty queue, an absent
   `S_ACTION`) - the reference filters empty values before it adds the
   queues ([H] `response_abap_to_json`). A frontend MUST read an absent
-  queue as an empty one.
+  queue as an empty one. *Frontend check:* `response.no-actions`.
 - A frontend MUST ignore keys it does not know (additive revisions,
-  [versioning.md](versioning.md)).
+  [versioning.md](versioning.md)) - in `S_FRONT`, at the root, in a slot's
+  and in the `ROUTER` options. *Frontend check:* `response.unknown-keys`.
 
 ## Action queues
 
@@ -133,6 +134,9 @@ Rules for the frontend ([SL], [V1]):
 - A frontend that cannot render a slot (a portable renderer without NEST,
   [../profiles/portable.md](../profiles/portable.md#2-documents-slots-and-namespaces))
   MUST still process the action without failing the roundtrip.
+- *Frontend checks:* `slots.main`, `slots.popup`, `slots.popover`,
+  `slots.popover-over-main`, `slots.main-tears-down`, `slots.app-change`,
+  `slots.nest-processed`, `ui5.nest`, `portable.view-replaced`.
 
 *Checked by:* `response.start-displays-main`, `response.rerender`,
 `slots.popup-display`, `slots.popup-destroy`, `slots.popover`, `slots.nest`,
@@ -177,7 +181,10 @@ A frontend:
   ran - not to a slot that holds another app's view (the caller's page
   behind a popup app keeps its model, [SL] `updateModelIfRequired`).
 - SHOULD re-apply edits made while the roundtrip was in flight and not yet
-  sent ([SRV] `_clearSentPaths`).
+  sent ([SRV] `_clearSentPaths`): only what the won request carried is
+  done with.
+- *Frontend checks:* `model.absent-keeps`, `model.push`,
+  `model.push-own-app`, `model.pending-survive-push`.
 
 ## Processing order
 

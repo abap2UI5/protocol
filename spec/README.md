@@ -1,6 +1,6 @@
 # The abap2UI5 protocol - specification
 
-**Protocol 2, specification revision 0.1 (2026-10-03).** Derived from the
+**Protocol 2, specification revision 0.2 (2026-10-03).** Derived from the
 implementations, not designed ahead of them: abap2UI5 commit `b812079`
 (framework version 1.146.0) for the backend and the UI5 frontend,
 `@abap2ui5/node-runtime` 1.146.0, `@cap2ui5/cds-plugin` 0.4.0
@@ -18,6 +18,7 @@ abap2UI5/headless-frontend `c1c24ba`.
 | [navigation.md](navigation.md) | which app a request starts, the app stack, routes, the app-state hash, the router action |
 | [errors.md](errors.md) | the error response and how a frontend treats it |
 | [versioning.md](versioning.md) | the protocol number, compatibility rules, this document's own version |
+| [open-questions.md](open-questions.md) | decisions taken provisionally, for the maintainer: current decision, alternatives |
 
 The view profiles are in [../profiles/](../profiles/README.md), the JSON
 Schemas in [../schema/](../schema/), the conformance suites in
@@ -36,7 +37,10 @@ in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
   it.
 - **Checked by** names the backend-suite checks
   ([../conformance/backend/](../conformance/backend/README.md)) that test a
-  statement.
+  statement; **Frontend check(s)** the frontend-suite checks
+  ([../conformance/frontend/](../conformance/frontend/README.md)).
+- Questions a maintainer still has to decide - with the current decision
+  and the alternatives - are in [open-questions.md](open-questions.md).
 - JSON keys are written as they travel (`S_FRONT.ID`). Keys of the request
   and response bodies are upper case; option objects inside actions are
   lower camel case.

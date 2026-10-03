@@ -45,7 +45,19 @@ unchanged ([section 10](#10-method-and-caveats), [portable-coverage.md](portable
   placeholder; an unknown frontend action is skipped with a log line - the
   same tolerance the UI5 frontend shows for an unknown action
   (`FrontendAction.execute`, abap2UI5 `app/webapp/core/FrontendAction.js`).
-- The UI5 frontend is a portable frontend by construction.
+- The UI5 frontend renders every portable app (the profile is a subset of
+  the UI5 profile), but the tolerance rule above is not its: a UI5-profile
+  frontend has no "outside" - any UI5 element may appear - and an element
+  it cannot load (an unknown namespace) fails the view like any view that
+  does not build ([FA] `executeSystem`, [errors.md](../spec/errors.md#what-a-frontend-does-with-it)).
+  The tolerance rule binds the portable renderers that are not UI5
+  frontends. (Revision 0.1 said "a portable frontend by construction"; the
+  frontend suite showed the UI5 SPA failing the view on
+  `<x:Gadget xmlns:x="com.example.conformance"/>` with a module load error.)
+- *Frontend checks:* `portable.default-aggregation`,
+  `portable.unknown-property`, `portable.unknown-control`,
+  `portable.excluded-action`, `portable.box-details`, `portable.timer`,
+  `portable.set-title`, `portable.view-replaced`.
 
 ## 2. Documents, slots and namespaces
 

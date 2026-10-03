@@ -80,7 +80,9 @@ arguments when the event fires, and the controller methods `eB`, `eBP` and
 - A control-valued argument (a UI5 control or an array of them) is
   marshalled to plain data before it is sent ([LIB] `normalizeEventArgs`).
 - A frontend implementing this profile MUST implement exactly these wire
-  forms: they are written by every deployed backend.
+  forms: they are written by every deployed backend. *Frontend checks:*
+  `ui5.wire-ebp`, `ui5.wire-source-argument`, `ui5.wire-queue-last`,
+  `request.event-arguments`, `request.leave-event`, `slots.frontend-close`.
 
 ## Frontend actions
 

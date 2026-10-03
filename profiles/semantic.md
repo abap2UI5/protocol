@@ -5,7 +5,10 @@ snapshot v1. It was moved here from abap2UI5/mcp-server
 `docs/agent-snapshot.md` (commit `ea4e9fa`); that copy is superseded and
 points here (the pointer lands in abap2UI5/mcp-server separately). The text
 is unchanged except for this header and the repository names in
-the implementation table. Schema:
+the implementation table. The frontend suite checks a semantic frontend
+with its `semantic.*` checks and every core check
+([`../conformance/frontend/`](../conformance/frontend/README.md)); the
+agent client of abap2UI5/mcp-server is its `agent` adapter. Schema:
 [`../schema/snapshot.schema.json`](../schema/snapshot.schema.json) - every
 snapshot recorded in [`../traffic/`](../traffic/) validates against it.
 

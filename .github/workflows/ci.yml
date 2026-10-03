@@ -7,6 +7,10 @@
 #   cap2ui5       a CAP project + @cap2ui5/cds-plugin + the JS apps
 # plus abaplint over the ABAP apps. Each backend run takes seconds; the
 # install dominates.
+# The frontend job runs the frontend suite against the UI5 SPA of abap2UI5
+# (the commit the spec is derived from, app/webapp only) in Chromium - the
+# test job skips that test, it has no browser and no checkout - and records
+# the reports of the UI5 SPA and the agent client.
 name: ci
 
 on:
@@ -65,4 +69,41 @@ jobs:
         with:
           name: conformance-reports
           path: report-*.json
+          if-no-files-found: ignore
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: abap2UI5 app/webapp (the frontend under test)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: abap2UI5/abap2UI5
+          ref: b812079aac93784070ed590b11ab13217c2d3f5c
+          path: deps/abap2UI5
+          sparse-checkout: app/webapp
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Chromium for playwright-core
+        run: npx playwright-core install --with-deps chromium
+      - name: frontend suite - UI5 SPA and agent client
+        env:
+          PROTOCOL_REQUIRE_BROWSER: '1'
+          PROTOCOL_FRONTEND_REPORT: report-frontend-ui5.json
+        run: node --test test/frontend.test.mjs
+      - name: frontend suite report - agent client
+        if: ${{ !cancelled() }}
+        run: node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter agent --json > report-frontend-agent.json || true
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: frontend-reports
+          path: report-frontend-*.json
           if-no-files-found: ignore

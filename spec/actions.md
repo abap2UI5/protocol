@@ -16,6 +16,12 @@ it as its last element ([FE] `build_global_call`).
   with the next one; an action MUST NOT fail the response ([FA] `execute`).
 - Trailing empty arguments are dropped, an empty argument between filled
   ones keeps its place ([EV] `get_event_client_ajson`).
+- A frontend SHOULD report the action it skipped - a log line, or (a
+  semantic frontend) an `unsupported` entry of its snapshot ([FA]
+  `execute` logs `unknown action`, [AC] `analyzeScreen`).
+- *Frontend checks:* `action.order`, `action.after-render`,
+  `action.unknown-skipped`, `action.unknown-reported`,
+  `portable.excluded-action`.
 
 The vocabulary is the `cs_event` constants of the client API ([IC]) plus the
 whitelisted global targets of `CONTROL_GLOBAL` ([CC] `GLOBAL_TARGETS`). It
@@ -44,17 +50,23 @@ prefix ([FE] `msg_toast`, `msg_box`):
   `message.box-close-event`.
 - `details` is HTML from the backend; a frontend MUST sanitise it before
   rendering ([LIB] `sanitizeMessageDetails` rebuilds it from a tag
-  whitelist).
+  whitelist). A frontend that renders message boxes MUST show the details
+  with the box: what `message_box_display( )` renders out of a table or a
+  structure is the message itself ([CC] `expandBoxDetails` shows them
+  expanded instead of behind UI5's "View Details" link).
 - *Checked by:* `message.toast`, `message.box`, `message.box-options`.
+- *Frontend checks:* `message.toast`, `message.box`,
+  `message.box-close-event`, `message.details-sanitized`,
+  `portable.box-details`.
 
 ## Vocabulary
 
 | Action | Arguments | Profile |
 |---|---|---|
 | `SET_FOCUS` | control id, selection start?, selection end? | portable |
-| `START_TIMER` | backend event, delay in ms, no-busy flag? | portable - the event is an ordinary roundtrip when the delay ends. *Checked by:* `action.timer` |
+| `START_TIMER` | backend event, delay in ms, no-busy flag? | portable - the event is an ordinary roundtrip when the delay ends; a semantic frontend offers it as an action. *Checked by:* `action.timer`. *Frontend checks:* `portable.timer`, `semantic.timer-action` |
 | `SCROLL_TO`, `SCROLL_INTO_VIEW` | control id, ... | portable |
-| `SET_TITLE`, `SET_FAVICON` | text / URL | portable |
+| `SET_TITLE`, `SET_FAVICON` | text / URL | portable. *Frontend check:* `portable.set-title` |
 | `CLIPBOARD_COPY`, `DOWNLOAD_B64_FILE`, `OPEN_NEW_TAB`, `URLHELPER`, `LOCATION_RELOAD`, `SYSTEM_LOGOUT`, `STORE_DATA`, `KEYBOARD_SHORTCUT`, `PLAY_AUDIO` | per [IC] `follow_up_action` | portable (MAY be a no-op where the platform lacks it) |
 | `MESSAGE_TOAST`, `MESSAGE_BOX` | above | portable |
 | `BUSY_INDICATOR`, `INVISIBLE_MESSAGE`, `THEMING` | method, args | portable (via `CONTROL_GLOBAL`) |
@@ -81,4 +93,6 @@ SUPPLIED`; [EV] `get_event_client`). The wire form is the UI5 profile's
 ([../profiles/ui5.md](../profiles/ui5.md#event-wires)); the actions are the
 same as above. `cs_event-popup_close` and `popover_close` are written as
 `.eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP'|'POPOVER')` - one
-teardown path for the frontend ([EV] `map_client_event`).
+teardown path for the frontend ([EV] `map_client_event`). A frontend MUST
+run such a wire without a roundtrip; the draft id stays the one it adopted
+last. *Frontend check:* `slots.frontend-close`.
