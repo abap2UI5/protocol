@@ -2,6 +2,50 @@
 
 ## Unreleased
 
+- **Specification revision 0.3 - the maintainer's decisions** on the ten
+  open questions ([spec/open-questions.md](spec/open-questions.md), each now
+  "Decided (revision 0.3)" with its rationale):
+  - NEST/NEST2 stay tolerated-not-rendered by portable renderers; portable
+    *apps* must not use them - the abap2UI5 linter's portable rule
+    (`profiles/portable.md` section 2).
+  - A backend MUST NOT reflect request data it did not validate into the
+    error body (`spec/errors.md`); new backend check **`error.no-reflection`**
+    (MUST). Both reference backends (abap2UI5 1.146.0 via
+    `@abap2ui5/node-runtime`, cap2UI5 on it) fail it - the URL is reflected
+    verbatim by [H] `request_context_info`; the fix is made in abap2UI5
+    core. Pinned as an expected failure in `test/lib/expected.mjs`; the
+    suite traffic is recorded again (`counts.fail` 1 on both).
+  - Message box details shown expanded (the UI5 frontend is being fixed),
+    one roundtrip at a time with the client queueing (`spec/transport.md`),
+    `sap-contextid` kept by every HTTP frontend - as they were.
+  - **`portable-v1.json` separates the client API from the wire**: a new
+    `actions` object with `actions.api` (the `follow_up_action( )` names a
+    portable app may call) and `actions.wire` (what a renderer receives:
+    `VIEW_SLOTS`, `ROUTER` with its `routerOptions`, the names folded into
+    `ROUTER` - `foldedIntoRouter` - and the `T_CUSTOM` / `.eF` names).
+    Additive: `frontendActions` stays as it was (`allowed` = `actions.api`),
+    the profile stays version 1; consumers that copy the file (the Web
+    Components frontend) keep working and re-copy it to read the new key.
+    Schema, `scripts/render-portable.mjs` (a generated table in
+    `profiles/portable.md` section 6) and `scripts/gen-portable-profile.mjs`
+    follow.
+- **Adaptive Cards renderer prototype** (`renderers/adaptive-cards/`,
+  export `@abap2ui5/protocol/renderers/adaptive-cards`): an abap2UI5
+  response (portable profile) -> an Adaptive Card 1.5, and an
+  `Action.Submit` payload -> the next protocol request (event, arguments,
+  the model delta of the changed inputs, whose ids are binding paths). All
+  65 controls of portable profile v1 mapped (the README's mapping table is
+  generated from `mapping.mjs`), unknown controls as placeholders listed in
+  `unsupported`, a minimal card host speaking the protocol over HTTP, a demo
+  for the designer, golden cards of recorded traffic. Pure Node, built on
+  the vendored mcp-server `viewxml` / `snapshot` modules.
+- **Frontend adapter `adaptive-cards`** (in process): the renderer passes
+  every one of the 65 checks of the portable profile it can be driven
+  through (16 skipped: URL, DOM, focus, title, model edits; UI5 and semantic
+  profiles). Pinned in `test/frontend.test.mjs`; CI uploads its report.
+- The UI5 SPA pin accepts `portable.box-details` passing (its fix is under
+  way); CI checks that `npm run generate` leaves no diff.
+
 - **Frontend conformance suite** (`abap2ui5-conformance frontend --adapter
   ui5|agent|webcomponent [--profile core|portable|ui5|semantic]`, library
   `runFrontendSuite`, also at `@abap2ui5/protocol/frontend`): a scripted

@@ -1,0 +1,43 @@
+{
+  "S_FRONT": {
+    "APP": "Z2UI5_CL_AC_SAMPLER",
+    "ID": "00000000000000000000000000000001",
+    "PROTOCOL": 2,
+    "S_ACTION": {
+      "T_SYSTEM": [
+        [
+          "VIEW_SLOTS",
+          "display",
+          "MAIN",
+          "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\" xmlns:core=\"sap.ui.core\" xmlns:f=\"sap.ui.layout.form\" xmlns:l=\"sap.ui.layout\" xmlns:tnt=\"sap.tnt\" xmlns:x=\"com.example.unknown\"><Shell><Page title=\"Adaptive Cards sampler\" showNavButton=\"true\" navButtonPress=\".eB(['___ZZZ_NAL'])\"><headerContent><Button icon=\"sap-icon://action-settings\" tooltip=\"Settings\" press=\".eB(['SETTINGS'])\"/></headerContent><MessageStrip text=\"{/STRIP}\" type=\"Warning\"/><f:SimpleForm editable=\"true\" title=\"Customer\"><f:content><core:Title text=\"Address\"/><Label text=\"Name\"/><Input value=\"{/NAME}\" placeholder=\"Your name\" submit=\".eB(['SUBMIT'])\"/><Label text=\"Amount\"/><Input type=\"Number\" value=\"{/AMOUNT}\"/><Label text=\"Since\"/><DatePicker value=\"{/SINCE}\" valueFormat=\"yyyy-MM-dd\"/><Label text=\"Country\"/><Select selectedKey=\"{/COUNTRY}\" items=\"{/T_COUNTRIES}\"><core:Item key=\"{KEY}\" text=\"{TEXT}\"/></Select><Label text=\"Notes\"/><TextArea value=\"{/NOTES}\" rows=\"3\"/><Label text=\"Active\"/><Switch state=\"{/ACTIVE}\"/><CheckBox text=\"Accept terms\" selected=\"{/ACCEPT}\"/><Label text=\"Size\"/><SegmentedButton selectedKey=\"{/SIZE}\"><items><SegmentedButtonItem key=\"S\" text=\"Small\"/><SegmentedButtonItem key=\"L\" text=\"Large\"/></items></SegmentedButton><Label text=\"Tags\"/><MultiComboBox selectedKeys=\"{/TAGS}\"><core:Item key=\"A\" text=\"Alpha\"/><core:Item key=\"B\" text=\"Beta\"/></MultiComboBox></f:content></f:SimpleForm><Panel headerText=\"Status\"><HBox><ObjectStatus title=\"State\" text=\"{/STATE}\" state=\"Success\"/><ObjectNumber number=\"{/AMOUNT}\" unit=\"EUR\"/><tnt:InfoLabel text=\"new\"/></HBox><ProgressIndicator percentValue=\"{/PERCENT}\" displayValue=\"{= ${/PERCENT} + ' %' }\"/><Text text=\"Hidden\" visible=\"{= ${/PERCENT} > 100 }\"/><Link text=\"Docs\" href=\"https://abap2ui5.github.io/docs/\"/></Panel><Table headerText=\"Items\" items=\"{/T_ITEMS}\" mode=\"MultiSelect\" itemPress=\".eB(['ROW'], ${ID})\"><columns><Column><Text text=\"Id\"/></Column><Column><Text text=\"Text\"/></Column></columns><items><ColumnListItem type=\"Navigation\" selected=\"{SEL}\"><cells><Text text=\"{ID}\"/><Input value=\"{TEXT}\"/></cells></ColumnListItem></items></Table><List headerText=\"Facts\" items=\"{/T_FACTS}\"><StandardListItem title=\"{TITLE}\" description=\"{DESC}\"/></List><IconTabBar><items><IconTabFilter text=\"One\" key=\"1\"><Text text=\"tab one\"/></IconTabFilter><IconTabFilter text=\"Two\" key=\"2\"><Text text=\"tab two\"/></IconTabFilter></items></IconTabBar><x:Gadget size=\"3\"/><footer><OverflowToolbar><ToolbarSpacer/><Button text=\"Save\" type=\"Emphasized\" press=\".eB(['SAVE'], ${/NAME}, 'literal')\"/><Button text=\"Cancel\" type=\"Reject\" press=\".eB(['CANCEL'])\"/></OverflowToolbar></footer></Page></Shell></mvc:View>"
+        ]
+      ]
+    }
+  },
+  "MODEL": {
+    "STRIP": "Check the amount",
+    "NAME": "Ada",
+    "AMOUNT": 12.5,
+    "SINCE": "2026-10-03",
+    "COUNTRY": "DE",
+    "T_COUNTRIES": [
+      { "KEY": "DE", "TEXT": "Germany" },
+      { "KEY": "FR", "TEXT": "France" }
+    ],
+    "NOTES": "",
+    "ACTIVE": true,
+    "ACCEPT": false,
+    "SIZE": "L",
+    "TAGS": ["A"],
+    "STATE": "ok",
+    "PERCENT": 40,
+    "T_ITEMS": [
+      { "ID": 1, "TEXT": "one", "SEL": false },
+      { "ID": 2, "TEXT": "two", "SEL": true }
+    ],
+    "T_FACTS": [
+      { "TITLE": "Owner", "DESC": "Ada" },
+      { "TITLE": "Created", "DESC": "today" }
+    ]
+  }
+}

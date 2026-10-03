@@ -5,7 +5,7 @@
  *   abap2ui5-conformance backend --url <endpoint> [--profile core|ui5]
  *                                [--header "Name: value"]... [--only <id part>]...
  *                                [--app KEY=CLASS]... [--json] [--verbose]
- *   abap2ui5-conformance frontend --adapter ui5|agent|webcomponent|headless
+ *   abap2ui5-conformance frontend --adapter ui5|agent|webcomponent|adaptive-cards|headless
  *                                [--profile core|portable|ui5|semantic]
  *                                [--only <id part>]... [--json] [--verbose]
  *
@@ -32,7 +32,9 @@ The backend has to serve the conformance apps - conformance/apps/README.md.
 
 frontend - plays the backend (a scripted server) for a frontend:
   --adapter <name>        ui5 (the UI5 SPA in Chromium), agent (mcp-server's agent
-                          client), webcomponent (frontend-webcomponent), headless (stub)
+                          client), webcomponent (frontend-webcomponent),
+                          adaptive-cards (the Adaptive Cards renderer of this
+                          package, in process), headless (stub)
   --profile <profile>     core | portable | ui5 | semantic (default: the adapter's widest)
   --only, --json, --verbose  as above
 

@@ -1,0 +1,207 @@
+{
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "Container",
+        "id": "slot-MAIN",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance - bind",
+            "wrap": true,
+            "size": "Large",
+            "weight": "Bolder",
+            "style": "heading"
+          },
+          {
+            "type": "Input.Text",
+            "id": "/NAME",
+            "value": "start"
+          },
+          {
+            "type": "Input.Number",
+            "id": "/QTY",
+            "value": 1
+          },
+          {
+            "type": "Input.Toggle",
+            "id": "/FLAG",
+            "title": "Flag",
+            "value": "false",
+            "valueOn": "true",
+            "valueOff": "false"
+          },
+          {
+            "type": "Input.Text",
+            "id": "/S_ADDR/CITY",
+            "value": "Berlin"
+          },
+          {
+            "type": "Input.Text",
+            "id": "/S_ADDR/ZIP",
+            "value": "10115"
+          },
+          {
+            "type": "TextBlock",
+            "text": "",
+            "wrap": true
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Check",
+                "data": {
+                  "event": "CHECK"
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "Add row",
+                "data": {
+                  "event": "ADD_ROW"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Table",
+            "columns": [
+              {
+                "width": 1
+              },
+              {
+                "width": 1
+              },
+              {
+                "width": 1
+              }
+            ],
+            "rows": [
+              {
+                "type": "TableRow",
+                "cells": [
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "1",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Text",
+                        "id": "/T_ITEMS/0/TEXT",
+                        "value": "one"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Toggle",
+                        "id": "/T_ITEMS/0/DONE",
+                        "title": "On",
+                        "value": "false",
+                        "valueOn": "true",
+                        "valueOff": "false"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "TableRow",
+                "cells": [
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "2",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Text",
+                        "id": "/T_ITEMS/1/TEXT",
+                        "value": "two"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Toggle",
+                        "id": "/T_ITEMS/1/DONE",
+                        "title": "On",
+                        "value": "false",
+                        "valueOn": "true",
+                        "valueOff": "false"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "TableRow",
+                "cells": [
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "3",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Text",
+                        "id": "/T_ITEMS/2/TEXT",
+                        "value": "three"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Toggle",
+                        "id": "/T_ITEMS/2/DONE",
+                        "title": "On",
+                        "value": "false",
+                        "valueOn": "true",
+                        "valueOff": "false"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "firstRowAsHeader": false
+          }
+        ]
+      }
+    ]
+  },
+  "unsupported": []
+}

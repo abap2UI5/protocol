@@ -1,13 +1,15 @@
 # Results
 
-Backend suite, profile `ui5` (75 checks: 68 core, 7 UI5-profile; 61 MUST,
+Backend suite, profile `ui5` (76 checks: 69 core, 7 UI5-profile; 62 MUST,
 14 SHOULD), run 2026-10-03 with `npm run conformance:<backend>`. The traffic
-of these runs is recorded in [`../traffic/`](../traffic/).
+of these runs is recorded in [`../traffic/`](../traffic/). Revision 0.3 added
+`error.no-reflection` (MUST, [open question 3](../spec/open-questions.md#3-the-request-url-reflected-into-the-error-body));
+both reference backends fail it - see [below](#the-request-url-reflected-into-the-error-body).
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| `node-runtime` | `@abap2ui5/node-runtime` 1.146.0 (abap2UI5 1.146.0, transpiled) | the ABAP apps, transpiled with `@abaplint/transpiler-cli` 2.13.93 | 75 | 0 | 0 | 0 | conformant, `core` and `ui5` |
-| `cap2ui5` | `@cap2ui5/cds-plugin` 0.4.0 on `@abap2ui5/node-runtime` 1.146.0, `@sap/cds` 10 | the JavaScript apps | 74 | 0 | 1 | 0 | conformant, `core` and `ui5` |
+| `node-runtime` | `@abap2ui5/node-runtime` 1.146.0 (abap2UI5 1.146.0, transpiled) | the ABAP apps, transpiled with `@abaplint/transpiler-cli` 2.13.93 | 75 | 1 | 0 | 0 | one MUST failed: `error.no-reflection` (fix in abap2UI5 core, pinned) |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.4.0 on `@abap2ui5/node-runtime` 1.146.0, `@sap/cds` 10 | the JavaScript apps | 74 | 1 | 1 | 0 | one MUST failed: `error.no-reflection` (inherited from the runtime, pinned) |
 
 Per area (both backends identical except `errors`):
 
@@ -22,12 +24,36 @@ Per area (both backends identical except `errors`):
 | action | 3 | 3 pass | 3 pass |
 | nav / route | 14 | 14 pass | 14 pass |
 | session | 5 | 5 pass | 5 pass |
-| error | 4 | 4 pass | 3 pass, 1 warn (`error.details`) |
+| error | 5 | 4 pass, 1 fail (`error.no-reflection`) | 3 pass, 1 fail (`error.no-reflection`), 1 warn (`error.details`) |
 | ui5 | 7 | 7 pass | 7 pass |
 
 The ABAP system itself (abap2UI5 on NetWeaver / ABAP Cloud) has not been run
 yet - it needs a system with the apps pulled in by abapGit; the transpiled
 runtime is the same framework source.
+
+## The request URL reflected into the error body
+
+`error.no-reflection` (MUST since revision 0.3) starts an unknown app with
+`<script>`, `<img>` and quotes in the request URL and requires the 500 body
+not to contain them verbatim. Both reference backends fail it, identically:
+
+```
+Request failed, no event (initial rendering), app_start Z2UI5_CL_CONF_DOES_NOT_EXIST,
+url /?app_start=Z2UI5_CL_CONF_DOES_NOT_EXIST&conformance=<script>alert("conformance-probe")</script><img src='conf...
+```
+
+The class name is stripped to name characters ([ACT] `app_start_safe`),
+the URL is not (abap2UI5 1.146.0, [H] `request_context_info`). *The
+backend is wrong* (the maintainer's decision on
+[open question 3](../spec/open-questions.md#3-the-request-url-reflected-into-the-error-body)):
+the fix strips the URL like the class name and is made in abap2UI5 core
+(`ed8115b` "Strip the request URL to safe characters in the 500 body", on
+its working branch on 2026-10-03); cap2UI5 hosts the same framework and
+gets it with the runtime. Until both
+reference hosts run a release with the fix, the failure is pinned in
+[`../test/lib/expected.mjs`](../test/lib/expected.mjs) (the tests fail
+when it starts to pass, so the pin is removed with the bump) and the
+recorded traffic carries it (`counts.fail` 1 on both).
 
 ## Differences between the two backends
 
@@ -76,10 +102,11 @@ records - as a rule, or as an implementation note:
   (retry safety, [../spec/sessions.md](../spec/sessions.md#drafts-are-snapshots)).
 - **Unknown draft on an event = error; on a route = fresh start + toast** -
   normative, both behaviours of the reference.
-- **The request URL is reflected unescaped into the 500 body** - safe only
-  as `text/plain` + `nosniff` + a frontend that renders text; recorded as an
-  implementation note, the headers as SHOULD
-  ([../spec/errors.md](../spec/errors.md#the-error-response)).
+- **The request URL is reflected unescaped into the 500 body** - recorded
+  as an implementation note in revision 0.1 (safe only as `text/plain` +
+  `nosniff` + a frontend that renders text); since revision 0.3 a backend
+  MUST NOT reflect unvalidated request data (`error.no-reflection`, above;
+  [../spec/errors.md](../spec/errors.md#the-error-response)).
 - **`DEFAULT` routing mode on every hop to an app without a mode** -
   normative ([../spec/navigation.md](../spec/navigation.md#the-router-action)).
 - **Event argument conversion** (`true` -> `X`, `null`/`false` -> empty,
@@ -100,12 +127,18 @@ perform.
 |---|---|---|---:|---:|---:|---:|---|
 | UI5 SPA (`ui5`) | abap2UI5 1.146.0 `b812079` `app/webapp` (identical at main `5d7e91f`, which CI pins), OpenUI5 1.144.0 (npm), Chromium 141 | ui5 | 76 | 1 | 0 | 4 | one MUST deviation: `portable.box-details` |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `ea4e9fa` (vendored) | semantic | 53 | 5 | 3 | 20 | not conformant: 5 MUSTs |
+| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 65 | 0 | 0 | 16 | every check it can be driven through holds |
 | Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from `6997c40` (in development) | portable | 63 | 4 | 1 | 13 | work in progress: router not implemented, error markup stripped |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
 The UI5 SPA run is stable (two consecutive runs, identical results) and
-takes about two minutes; `test/frontend.test.mjs` pins both the UI5 and the
-agent result check by check.
+takes about two minutes; `test/frontend.test.mjs` pins the UI5, the agent
+and the Adaptive Cards result check by check. The UI5 pin accepts
+`portable.box-details` passing: the fix of the UI5 frontend is under way
+(open question 7, decided: expanded), and a local run against an abap2UI5
+checkout that carries it (2026-10-03, abap2UI5 `ed8115b` on top of `833b5b8` "Show message box
+details on UI5 1.120 and later", on its working branch, not on main yet)
+passed it - every MUST held, 77 pass, 4 skip.
 
 ### Findings - the UI5 SPA
 
@@ -181,6 +214,38 @@ pending edits of the model after its response, not only the ones it sent
 (`model.pending-survive-push`); the PROTOCOL message (follows from 1).
 Skipped: the URL, DOM and focus checks (no browser), a nested-table cell
 (the snapshot does not describe nested tables), a programmatic model edit.
+
+### Findings - the Adaptive Cards renderer
+
+A renderer that is not a browser, run in process
+([../renderers/adaptive-cards/](../renderers/adaptive-cards/README.md)):
+the card host speaks the protocol to the scripted backend, each answer is
+rendered into an Adaptive Card 1.5 and the suite reads the card; a "press"
+submits what a card host submits - the action's data merged with every input
+value, ids being binding paths - and the renderer turns that back into the
+request. All 65 checks that apply pass, two runs identical: the envelope,
+ID continuation, raw event arguments (model arguments re-read after the
+edits of the same submit), every delta rule including nested `__delta`
+rows (the edits are found by comparing the submitted values with the model
+the card was rendered from), `sap-contextid`, the CSRF handshake, no retry
+of a 500, one roundtrip at a time (a submit in flight queues the next, open
+question 8), PROTOCOL 3 refused, the slot rules (popup modal, popover not:
+a press in MAIN closes it, as UI5 does), the NEST placeholder, toasts,
+boxes and their close event, START_TIMER, an unknown and an excluded
+follow-up action skipped and logged, the tolerance rule (an unknown control
+becomes a placeholder and an `unsupported` entry), and an error body shown
+verbatim (a `TextRun`, not markdown). Skipped: a URL (routing, Back, the
+app-state hash), a DOM (the sanitizer probe, the box-details text probe -
+the card shows the details expanded, as text), focus, a document title and
+programmatic model edits; the UI5 and semantic profiles are not claimed.
+Every golden card also validates with the Adaptive Cards JavaScript SDK
+3.0.6 (`AdaptiveCard.parse` + `validateProperties`, no issue; run by hand,
+not a dependency).
+
+Found on the way, *the spec held*: nothing in the portable profile needed
+a browser to be rendered; what a card cannot do (raise `change` events,
+show a URL) the profile already lets a renderer drop or the edit travels
+with the next action.
 
 ### Findings - the Web Components frontend (in development)
 

@@ -69,11 +69,17 @@ unchanged ([section 10](#10-method-and-caveats), [portable-coverage.md](portable
 - **Slots.** A portable app uses the slots MAIN (`view_display`), POPUP
   (`popup_display`, `popup_destroy`) and POPOVER (`popover_display( xml
   by_id )`, `popover_destroy`). The nested slots NEST and NEST2 are not in v1
-  (6 core apps use them; [section 9](#9-v11-candidates-informative)): a
-  portable frontend that receives a NEST/NEST2 display MAY show a
-  placeholder for it, but MUST process the action (it is core protocol,
-  [../spec/response.md](../spec/response.md#view-slots)) without failing the
-  roundtrip.
+  (6 core apps use them; [section 9](#9-v11-candidates-informative)), and
+  the two sides of that are separate rules (decided in revision 0.3,
+  [open question 1](../spec/open-questions.md#1-the-nest-slots-in-portable-renderers)):
+  - A portable **app** MUST NOT use them (`nest_view_display`,
+    `nest2_view_display` and their destroys are outside the client API of
+    [section 6](#6-frontend-actions)). The abap2UI5 linter's portable rule
+    reports the calls; an app that needs nested views is a UI5-profile app.
+  - A portable **renderer** tolerates them: one that receives a NEST/NEST2
+    display MAY show a placeholder for it, but MUST process the action (it
+    is core protocol, [../spec/response.md](../spec/response.md#view-slots))
+    without failing the roundtrip. *Frontend check:* `slots.nest-processed`.
 - **Namespaces.** `sap.m`, `sap.ui.core`, `sap.ui.core.mvc`, `sap.ui.layout`,
   `sap.ui.layout.form`, `sap.tnt`.
 - **Elements.** An element whose local name starts with an upper-case letter
@@ -341,6 +347,58 @@ frontend MUST perform:
 | `BUSY_INDICATOR show/hide`, `INVISIBLE_MESSAGE announce`, `THEMING setTheme` (via `CONTROL_GLOBAL`) | 3 | busy overlay, aria-live region, theme switch |
 | `SET_PUSH_STATE`, `HASH_REPLACE`, `HASH_BACK`, `HASH_ATTACH_CHANGED`, `SET_NAV_ROUTING`, `SET_APP_STATE_ACTIVE` | 1-3 each | URL hash handling ([../spec/navigation.md](../spec/navigation.md)); MAY be a no-op without a URL (native) |
 | `SET_SIZE_LIMIT` | 1 | a UI5 list limit - MAY be a no-op |
+
+**Names on the client API and on the wire are not the same list**
+(decided in revision 0.3,
+[open question 10](../spec/open-questions.md#10-navigation-actions-in-the-portable-action-list)).
+The table above names what a portable app may *call*. The navigation family
+among them is folded by the backend into the one `ROUTER` system action
+([../spec/actions.md](../spec/actions.md#vocabulary),
+[../spec/navigation.md](../spec/navigation.md#the-router-action), [CL]
+`follow_up_action`, [FE] `check_on_event`): a renderer never receives
+`SET_PUSH_STATE`, `HASH_REPLACE`, `HASH_ATTACH_CHANGED`, `SET_NAV_ROUTING`
+or `SET_APP_STATE_ACTIVE` - it receives `ROUTER` with options, and
+`HASH_BACK` as a follow-up action. `portable-v1.json` says both:
+`actions.api` (what an app may call; `frontendActions.allowed` is the same
+list, kept for readers of revision 0.2) and `actions.wire` (what a renderer
+implements):
+
+<!-- portable:actions:begin - generated from portable-v1.json by scripts/render-portable.mjs, do not edit -->
+
+| Client API (`actions.api`) | What the renderer receives (`actions.wire`) |
+|---|---|
+| `SET_FOCUS` | `SET_FOCUS` (`T_CUSTOM`, `.eF`) |
+| `START_TIMER` | `START_TIMER` (`T_CUSTOM`, `.eF`) |
+| `DOWNLOAD_B64_FILE` | `DOWNLOAD_B64_FILE` (`T_CUSTOM`, `.eF`) |
+| `CLIPBOARD_COPY` | `CLIPBOARD_COPY` (`T_CUSTOM`, `.eF`) |
+| `URLHELPER` | `URLHELPER` (`T_CUSTOM`, `.eF`) |
+| `OPEN_NEW_TAB` | `OPEN_NEW_TAB` (`T_CUSTOM`, `.eF`) |
+| `SCROLL_TO` | `SCROLL_TO` (`T_CUSTOM`, `.eF`) |
+| `SCROLL_INTO_VIEW` | `SCROLL_INTO_VIEW` (`T_CUSTOM`, `.eF`) |
+| `SET_TITLE` | `SET_TITLE` (`T_CUSTOM`, `.eF`) |
+| `SET_FAVICON` | `SET_FAVICON` (`T_CUSTOM`, `.eF`) |
+| `LOCATION_RELOAD` | `LOCATION_RELOAD` (`T_CUSTOM`, `.eF`) |
+| `SYSTEM_LOGOUT` | `SYSTEM_LOGOUT` (`T_CUSTOM`, `.eF`) |
+| `STORE_DATA` | `STORE_DATA` (`T_CUSTOM`, `.eF`) |
+| `KEYBOARD_SHORTCUT` | `KEYBOARD_SHORTCUT` (`T_CUSTOM`, `.eF`) |
+| `PLAY_AUDIO` | `PLAY_AUDIO` (`T_CUSTOM`, `.eF`) |
+| `SET_PUSH_STATE` | the `ROUTER` option `setPushState` - never `SET_PUSH_STATE` itself |
+| `HASH_REPLACE` | the `ROUTER` option `setHashReplace` - never `HASH_REPLACE` itself |
+| `HASH_BACK` | `HASH_BACK` (`T_CUSTOM`, `.eF`) |
+| `HASH_ATTACH_CHANGED` | the `ROUTER` option `setHashEvent` - never `HASH_ATTACH_CHANGED` itself |
+| `SET_NAV_ROUTING` | the `ROUTER` option `setNavRouting` - never `SET_NAV_ROUTING` itself |
+| `SET_APP_STATE_ACTIVE` | the `ROUTER` option `setAppStateActive` - never `SET_APP_STATE_ACTIVE` itself |
+| `SET_SIZE_LIMIT` | `SET_SIZE_LIMIT` (`T_CUSTOM`, `.eF`) |
+| (`MESSAGE_TOAST`) | `MESSAGE_TOAST` show (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`MESSAGE_BOX`) | `MESSAGE_BOX` show / alert / confirm / information / warning / error / success (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`BUSY_INDICATOR`) | `BUSY_INDICATOR` show / hide (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`INVISIBLE_MESSAGE`) | `INVISIBLE_MESSAGE` announce (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`THEMING`) | `THEMING` setTheme (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`VIEW_SLOTS`) | `VIEW_SLOTS` destroy (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+
+System actions (`T_SYSTEM`): `VIEW_SLOTS` display / destroy, `ROUTER` sync; the `ROUTER` options: `setNavRouting`, `checkNavAppCall`, `navAppCallPrevApp`, `navAppCallPrevId`, `setPushState`, `setHashReplace`, `setHashEvent`, `setAppStateActive`. MAY be a no-op where the platform has no counterpart: `ROUTER`, `HASH_BACK`, `SET_SIZE_LIMIT`.
+
+<!-- portable:actions:end -->
 
 **Excluded:** `CONTROL_BY_ID` (open-ended UI5 method calls, 16 core apps;
 a closed whitelist is a v1.1 candidate), `BINDING_CALL` (v1.1 candidate),

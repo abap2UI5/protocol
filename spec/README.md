@@ -1,6 +1,6 @@
 # The abap2UI5 protocol - specification
 
-**Protocol 2, specification revision 0.2 (2026-10-03).** Derived from the
+**Protocol 2, specification revision 0.3 (2026-10-03).** Derived from the
 implementations, not designed ahead of them: abap2UI5 commit `b812079`
 (framework version 1.146.0) for the backend and the UI5 frontend,
 `@abap2ui5/node-runtime` 1.146.0, `@cap2ui5/cds-plugin` 0.4.0

@@ -1,8 +1,10 @@
 // The frontend suite: the scripted backend, the runner's classification,
 // the check metadata, the vendored agent client, the CLI - and the suite
-// against two real frontends:
+// against three real frontends:
 //   agent  the agent client of abap2UI5/mcp-server (vendored, in process) -
 //          always; its result is pinned check by check (RESULTS.md)
+//   adaptive-cards  the Adaptive Cards renderer of this repository (in
+//          process) - always; pinned the same way
 //   ui5    the UI5 SPA of an abap2UI5 checkout in Chromium - when a checkout
 //          (ABAP2UI5_HOME, ../abap2UI5, deps/abap2UI5) and a Chromium are
 //          there; PROTOCOL_SKIP_BROWSER=1 skips it, PROTOCOL_REQUIRE_BROWSER=1
@@ -166,9 +168,32 @@ test("the agent client: the frontend suite's result is the one RESULTS.md record
   assert.deepEqual(r.results.filter((x) => x.status === "warn").map((x) => x.id), AGENT_WARNS);
 });
 
+// The Adaptive Cards renderer of this repository (renderers/adaptive-cards/):
+// every check it can be driven through holds; the skips are what a card has
+// not (a URL, a DOM, focus, a document title, programmatic model edits) and
+// the profiles it does not claim.
+const CARDS_SKIPS = [
+  "model.whole-beats-delta", "action.after-render", "message.details-sanitized",
+  "router.keep", "router.hash-sent", "router.back-restores", "router.app-state", "portable.box-details", "portable.set-title",
+  "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
+  "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
+];
+
+test("the Adaptive Cards renderer: every portable-profile check it can be driven through holds", { timeout: 120_000 }, async () => {
+  const r = await runFrontendSuite({ adapter: "adaptive-cards" });
+  assert.equal(r.profile, "portable");
+  const bad = r.results.filter((x) => x.status === "fail" || x.status === "warn");
+  assert.deepEqual(bad.map((x) => `${x.id}: ${x.message}`), []);
+  assert.deepEqual(r.results.filter((x) => x.status === "skip").map((x) => x.id), CARDS_SKIPS);
+  if (process.env.PROTOCOL_CARDS_REPORT) fs.writeFileSync(process.env.PROTOCOL_CARDS_REPORT, `${JSON.stringify(r, null, 2)}\n`);
+});
+
 const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER is set" : false;
-// The UI5 SPA's one deviation (RESULTS.md): message box details stay empty on OpenUI5 >= 1.120.
-const UI5_FAILS = ["portable.box-details"];
+// The UI5 SPA's one deviation (RESULTS.md): message box details stay empty on
+// OpenUI5 >= 1.120. The fix is under way in abap2UI5 (open question 7, decided
+// in revision 0.3: expanded), so a checkout that carries it passes the check -
+// the pin accepts both; every other failure fails the test.
+const UI5_KNOWN_FAILS = ["portable.box-details"];
 
 test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { skip: skipBrowser, timeout: 900_000 }, async (t) => {
   if (!locateWebapp()) {
@@ -183,7 +208,9 @@ test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { s
     return;
   }
   const failed = r.results.filter((x) => x.status === "fail");
-  assert.deepEqual(failed.map((x) => x.id), UI5_FAILS, failed.map((x) => `${x.id}: ${x.message}`).join("\n"));
+  const unknown = failed.filter((x) => !UI5_KNOWN_FAILS.includes(x.id));
+  assert.deepEqual(unknown.map((x) => x.id), [], unknown.map((x) => `${x.id}: ${x.message}`).join("\n"));
+  for (const id of UI5_KNOWN_FAILS) if (!failed.some((x) => x.id === id)) t.diagnostic(`${id} passes - this checkout carries the fix; unpin it once CI's abap2UI5 commit does`);
   assert.deepEqual(r.results.filter((x) => x.status === "warn").map((x) => `${x.id}: ${x.message}`), []);
   if (process.env.PROTOCOL_FRONTEND_REPORT) fs.writeFileSync(process.env.PROTOCOL_FRONTEND_REPORT, `${JSON.stringify(r, null, 2)}\n`);
 });

@@ -25,6 +25,16 @@ plain-text body** - never with a 2xx and never with a response object
 - The body is for a **human**: its content is not normative. A backend
   SHOULD name the failure the app raised (the developer's only diagnostic);
   it MAY hide every detail on purpose. *Checked by:* `error.details`.
+- A backend MUST NOT reflect request data it did not validate into the
+  body. What it repeats from the request for diagnosis - the URL, the class
+  name of an app start, an event name - is first reduced to characters that
+  cannot be read as markup or close a quoted value (the reference strips the
+  class name to `A-Z a-z 0-9 _ /`, [ACT] `app_start_safe`; the same strip
+  applies to the URL, [H] `request_context_info`). The `text/plain` and
+  `nosniff` rules above are the second line of defence, not the first: a
+  body that is logged, mailed or pasted into a ticket leaves its headers
+  behind. *Checked by:* `error.no-reflection`. (Decided in revision 0.3,
+  [open question 3](open-questions.md#3-the-request-url-reflected-into-the-error-body).)
 
 The reference body - unless the user exit hides details
 ([EXIT] `check_hide_error_details`, then it is `Internal Server Error`):
@@ -48,10 +58,13 @@ and attributes of every cause ([HTTP] `_error_body`).
 
 **Implementation notes.**
 
-- The reference reflects the request URL into the body verbatim (the class
-  name in it is stripped to name characters, the URL is not, [H]
-  `request_context_info`). That is safe only because nothing renders the
-  body as markup - see the frontend rule below.
+- abap2UI5 1.146.0 - the release both reference hosts run - still reflects
+  the request URL into the first frame verbatim (the class name in it is
+  stripped, the URL is not, [H] `request_context_info`) and fails
+  `error.no-reflection`; the fix strips the URL like the class name
+  ([../conformance/RESULTS.md](../conformance/RESULTS.md)). The frontend
+  rule below (the body is shown as text, never as markup) keeps that body
+  harmless on screen.
 - cap2UI5 answers an exception that a **JavaScript** app throws with
   `roundtrip failed (<correlation id>)` and logs the cause on the server
   ([CAP] `cds-plugin.js` `roundtrip`): such an exception is not an ABAP
@@ -67,9 +80,9 @@ The UI5 frontend ([SRV] `readHttp`, `responseError`; [EVW]):
   **as text** - never as markup ([EVW] renders it through `textContent`) -
   and the status when the body is empty (`HTTP <status>`). As text means
   verbatim: a frontend MUST NOT strip, decode or otherwise interpret markup
-  in it - the body is `text/plain`, and what looks like a tag in it (a URL
-  reflected into the first frame, [H] `request_context_info`) is text. It
-  MAY shorten a long body.
+  in it - the body is `text/plain`, and what looks like a tag in it (an
+  exception text, or a URL a backend reflected against the rule above) is
+  text. It MAY shorten a long body.
 - A 2xx answer that is not JSON, or has no `S_FRONT`, or declares another
   `PROTOCOL` ([versioning.md](versioning.md)), is an error too.
 - *Frontend checks:* `error.shown`, `error.as-text`, `error.empty-body`,

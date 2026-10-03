@@ -1,0 +1,497 @@
+{
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "Container",
+        "id": "slot-MAIN",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "Adaptive Cards sampler",
+            "wrap": true,
+            "size": "Large",
+            "weight": "Bolder",
+            "style": "heading"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Back",
+                "data": {
+                  "event": "___ZZZ_NAL"
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "Settings",
+                "tooltip": "Settings",
+                "data": {
+                  "event": "SETTINGS"
+                }
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Check the amount",
+            "wrap": true,
+            "color": "Warning"
+          },
+          {
+            "type": "Container",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Customer",
+                "wrap": true,
+                "size": "Medium",
+                "weight": "Bolder",
+                "style": "heading"
+              },
+              {
+                "type": "TextBlock",
+                "text": "Address",
+                "wrap": true,
+                "size": "Medium",
+                "weight": "Bolder",
+                "style": "heading"
+              },
+              {
+                "type": "Input.Text",
+                "id": "/NAME",
+                "value": "Ada",
+                "inlineAction": {
+                  "type": "Action.Submit",
+                  "title": "Submit",
+                  "data": {
+                    "event": "SUBMIT"
+                  }
+                },
+                "placeholder": "Your name",
+                "label": "Name"
+              },
+              {
+                "type": "Input.Number",
+                "id": "/AMOUNT",
+                "value": 12.5,
+                "label": "Amount"
+              },
+              {
+                "type": "Input.Date",
+                "id": "/SINCE",
+                "value": "2026-10-03",
+                "label": "Since"
+              },
+              {
+                "type": "Input.ChoiceSet",
+                "id": "/COUNTRY",
+                "style": "compact",
+                "choices": [
+                  {
+                    "title": "Germany",
+                    "value": "DE"
+                  },
+                  {
+                    "title": "France",
+                    "value": "FR"
+                  }
+                ],
+                "value": "DE",
+                "label": "Country"
+              },
+              {
+                "type": "Input.Text",
+                "id": "/NOTES",
+                "value": "",
+                "isMultiline": true,
+                "label": "Notes"
+              },
+              {
+                "type": "Input.Toggle",
+                "id": "/ACTIVE",
+                "title": "On",
+                "value": "true",
+                "valueOn": "true",
+                "valueOff": "false",
+                "label": "Active"
+              },
+              {
+                "type": "Input.Toggle",
+                "id": "/ACCEPT",
+                "title": "Accept terms",
+                "value": "false",
+                "valueOn": "true",
+                "valueOff": "false"
+              },
+              {
+                "type": "Input.ChoiceSet",
+                "id": "/SIZE",
+                "style": "expanded",
+                "choices": [
+                  {
+                    "title": "Small",
+                    "value": "S"
+                  },
+                  {
+                    "title": "Large",
+                    "value": "L"
+                  }
+                ],
+                "value": "L",
+                "label": "Size"
+              },
+              {
+                "type": "Input.ChoiceSet",
+                "id": "/TAGS",
+                "style": "compact",
+                "choices": [
+                  {
+                    "title": "Alpha",
+                    "value": "A"
+                  },
+                  {
+                    "title": "Beta",
+                    "value": "B"
+                  }
+                ],
+                "value": "A",
+                "isMultiSelect": true,
+                "label": "Tags"
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Status",
+                "wrap": true,
+                "weight": "Bolder"
+              },
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "State: ok",
+                        "wrap": true,
+                        "color": "Good"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "12.5 EUR",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "new",
+                        "wrap": true,
+                        "isSubtle": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "TextBlock",
+                "text": "40 %",
+                "wrap": true
+              },
+              {
+                "type": "ActionSet",
+                "actions": [
+                  {
+                    "type": "Action.OpenUrl",
+                    "title": "Docs",
+                    "url": "https://abap2ui5.github.io/docs/"
+                  }
+                ]
+              }
+            ],
+            "style": "emphasis"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Items",
+            "wrap": true,
+            "weight": "Bolder"
+          },
+          {
+            "type": "Table",
+            "columns": [
+              {
+                "width": 1
+              },
+              {
+                "width": 1
+              },
+              {
+                "width": 1
+              }
+            ],
+            "rows": [
+              {
+                "type": "TableRow",
+                "cells": [
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": " ",
+                        "wrap": true,
+                        "weight": "Bolder"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Id",
+                        "wrap": true,
+                        "weight": "Bolder"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Text",
+                        "wrap": true,
+                        "weight": "Bolder"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "TableRow",
+                "cells": [
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Toggle",
+                        "id": "/T_ITEMS/0/SEL",
+                        "title": "row 1",
+                        "value": "false",
+                        "valueOn": "true",
+                        "valueOff": "false"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "1",
+                        "wrap": true
+                      }
+                    ],
+                    "selectAction": {
+                      "type": "Action.Submit",
+                      "title": "Open",
+                      "data": {
+                        "event": "ROW",
+                        "args": [
+                          1
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Text",
+                        "id": "/T_ITEMS/0/TEXT",
+                        "value": "one"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "TableRow",
+                "cells": [
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Toggle",
+                        "id": "/T_ITEMS/1/SEL",
+                        "title": "row 2",
+                        "value": "true",
+                        "valueOn": "true",
+                        "valueOff": "false"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "2",
+                        "wrap": true
+                      }
+                    ],
+                    "selectAction": {
+                      "type": "Action.Submit",
+                      "title": "Open",
+                      "data": {
+                        "event": "ROW",
+                        "args": [
+                          2
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "Input.Text",
+                        "id": "/T_ITEMS/1/TEXT",
+                        "value": "two"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "firstRowAsHeader": true
+          },
+          {
+            "type": "TextBlock",
+            "text": "Facts",
+            "wrap": true,
+            "weight": "Bolder"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "Owner",
+                "value": "Ada"
+              },
+              {
+                "title": "Created",
+                "value": "today"
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "items": [
+              {
+                "type": "Container",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "One",
+                    "wrap": true,
+                    "size": "Default",
+                    "weight": "Bolder",
+                    "style": "heading"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "tab one",
+                    "wrap": true
+                  }
+                ]
+              },
+              {
+                "type": "Container",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Two",
+                    "wrap": true,
+                    "size": "Default",
+                    "weight": "Bolder",
+                    "style": "heading"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "tab two",
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "[com.example.unknown.Gadget - not rendered]",
+            "isSubtle": true,
+            "wrap": true
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Save",
+                "style": "positive",
+                "data": {
+                  "event": "SAVE",
+                  "args": [
+                    "Ada",
+                    "literal"
+                  ],
+                  "refs": [
+                    "/NAME"
+                  ]
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "Cancel",
+                "style": "destructive",
+                "data": {
+                  "event": "CANCEL"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "unsupported": [
+    {
+      "slot": "MAIN",
+      "control": "com.example.unknown.Gadget",
+      "reason": "not in the portable profile - placeholder"
+    }
+  ]
+}

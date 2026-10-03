@@ -141,6 +141,7 @@ fails when it is out of date).
 | `error.details` | SHOULD | core | The error body names the app or the failure, so a developer can find the cause | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
 | `error.unknown-app` | MUST | core | An app start naming a class that is no app is refused with an error status | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
 | `error.not-sniffable` | SHOULD | core | An error body is served as text/plain with X-Content-Type-Options: nosniff | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
+| `error.no-reflection` | MUST | core | Request data the backend did not validate is not reflected into the error body | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
 | `ui5.page` | MUST | ui5 | GET of the endpoint answers the HTML page that boots the UI5 frontend | [ui5.md#the-page](../../profiles/ui5.md#the-page) |
 | `ui5.page-revalidation` | SHOULD | ui5 | The page carries an ETag and answers a matching If-None-Match with 304 | [ui5.md#the-page](../../profiles/ui5.md#the-page) |
 | `ui5.view-roots` | MUST | ui5 | MAIN and nested views are sap.ui.core.mvc.View XML, popups and popovers core:FragmentDefinition | [ui5.md#views](../../profiles/ui5.md#views) |

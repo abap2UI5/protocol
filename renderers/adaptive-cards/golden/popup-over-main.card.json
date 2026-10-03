@@ -1,0 +1,70 @@
+{
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "Container",
+        "id": "slot-POPUP",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance popup",
+            "wrap": true,
+            "size": "Medium",
+            "weight": "Bolder",
+            "style": "heading"
+          },
+          {
+            "type": "Input.Text",
+            "id": "/POPUP_TEXT",
+            "value": ""
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Close",
+                "data": {
+                  "event": "POPUP_CLOSE",
+                  "slot": "POPUP"
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "Close here",
+                "data": {
+                  "client": [
+                    "CONTROL_GLOBAL",
+                    "VIEW_SLOTS",
+                    "destroy",
+                    "POPUP"
+                  ],
+                  "slot": "POPUP"
+                }
+              }
+            ]
+          }
+        ],
+        "style": "emphasis"
+      },
+      {
+        "type": "Container",
+        "id": "slot-MAIN",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance - slots",
+            "wrap": true,
+            "size": "Large",
+            "weight": "Bolder",
+            "style": "heading"
+          }
+        ]
+      }
+    ]
+  },
+  "unsupported": []
+}

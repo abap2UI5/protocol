@@ -1,0 +1,60 @@
+{
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "Container",
+        "id": "message-box",
+        "style": "emphasis",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance confirm",
+            "wrap": true
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "OK",
+                "data": {
+                  "box": "OK"
+                }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "CANCEL",
+                "data": {
+                  "box": "CANCEL"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "slot-MAIN",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "conformance - messages",
+            "wrap": true,
+            "size": "Large",
+            "weight": "Bolder",
+            "style": "heading"
+          },
+          {
+            "type": "TextBlock",
+            "text": "",
+            "wrap": true
+          }
+        ]
+      }
+    ]
+  },
+  "unsupported": []
+}

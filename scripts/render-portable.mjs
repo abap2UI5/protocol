@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /*
  * Render the generated sections of profiles/portable.md - the control list
- * (section 3), the v1.1 candidates (section 9) and the Web Components
+ * (section 3), the client API's actions against what a renderer receives
+ * (section 6), the v1.1 candidates (section 9) and the Web Components
  * mapping (Appendix A) - from profiles/portable-v1.json, between their
  * <!-- portable:<name>:begin/end --> markers.
  *
@@ -42,9 +43,18 @@ export function render(profile) {
     }
     mapping.push("");
   }
+  const { api, wire } = profile.actions;
+  const code = (xs) => xs.map((x) => `\`${x}\``).join(", ");
+  const actions = ["| Client API (`actions.api`) | What the renderer receives (`actions.wire`) |", "|---|---|"];
+  for (const a of api) {
+    const opt = wire.foldedIntoRouter[a];
+    actions.push(`| \`${a}\` | ${opt ? `the \`ROUTER\` option \`${opt}\` - never \`${a}\` itself` : (wire.custom.includes(a) ? `\`${a}\` (\`T_CUSTOM\`, \`.eF\`)` : "-")} |`);
+  }
+  for (const [g, methods] of Object.entries(wire.customGlobals)) actions.push(`| (\`${g}\`) | \`${g}\` ${methods.join(" / ")} (\`T_CUSTOM\` or \`.eF\`, directly or as a \`CONTROL_GLOBAL\` target) |`);
+  actions.push("", `System actions (\`T_SYSTEM\`): ${Object.entries(wire.system).map(([k, m]) => `\`${k}\` ${m.join(" / ")}`).join(", ")}; the \`ROUTER\` options: ${code(wire.routerOptions)}. MAY be a no-op where the platform has no counterpart: ${code(wire.noOpAllowed || [])}.`);
   const v11 = ["| Family | Controls | Core apps blocked in v1 | Web Component | Fit / note |", "|---|---|---:|---|---|"];
   for (const r of profile.v11Candidates) v11.push(`| ${r.family} | ${r.controls} | ${r.coreAppsBlocked} | ${r.webComponent} | ${r.note} |`);
-  return { controls: controls.join("\n").trim(), v11: v11.join("\n"), mapping: mapping.join("\n").trim() };
+  return { controls: controls.join("\n").trim(), actions: actions.join("\n"), v11: v11.join("\n"), mapping: mapping.join("\n").trim() };
 }
 
 export function apply(md, parts) {

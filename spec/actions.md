@@ -53,7 +53,9 @@ prefix ([FE] `msg_toast`, `msg_box`):
   whitelist). A frontend that renders message boxes MUST show the details
   with the box: what `message_box_display( )` renders out of a table or a
   structure is the message itself ([CC] `expandBoxDetails` shows them
-  expanded instead of behind UI5's "View Details" link).
+  expanded instead of behind UI5's "View Details" link; a link that reveals
+  them is not enough - decided in revision 0.3,
+  [open question 7](open-questions.md#7-message-box-details-shown-or-behind-a-link)).
 - *Checked by:* `message.toast`, `message.box`, `message.box-options`.
 - *Frontend checks:* `message.toast`, `message.box`,
   `message.box-close-event`, `message.details-sanitized`,
