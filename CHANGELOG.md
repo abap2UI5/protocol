@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+- **Terminal renderer** (`renderers/terminal/`, export
+  `@abap2ui5/protocol/renderers/terminal`, CLI `abap2ui5-tui <url> [--app
+  <CLASS>] [--user u --password p | --cookie c] [--print] [--no-color]`):
+  an abap2UI5 app in a terminal. Its session speaks the protocol to any
+  backend - the node runtime, cap2UI5, an SAP system's ICF node (basic
+  auth, cookies, the CSRF token handshake, `sap-contextid`, the terminate
+  HEAD) - and keeps a hash history synchronised like the UI5 router, so
+  Back restores routes. All 65 portable controls as keyboard widgets
+  (fields edited in place, toggles, pick lists, buttons and links, tables
+  with row selection and row actions, banners, overlay frames for dialogs,
+  popovers and message boxes), unknown controls as visible placeholders;
+  edits travel as the UI5 frontend's delta, field events (`change`,
+  `select`, `submit`, ...) are raised. Respects the width (wrapping,
+  ellipsis, wide characters), colors only when wanted (`NO_COLOR`,
+  `--no-color`), `--print` renders once as plain text. Text from the
+  backend is sanitised of control characters. Pure Node, no dependencies.
+  The README's mapping table is generated from `mapping.mjs`
+  (`scripts/render-terminal.mjs`, part of `npm run generate`).
+- **Frontend adapter `terminal`** (in process, driven with keys through the
+  renderer's state machine): 72 pass, 0 fail, 9 skip (a DOM, a programmatic
+  model edit; the UI5 and semantic profiles) - the router checks included.
+  Pinned in `test/frontend.test.mjs`; `test/terminal.test.mjs` holds golden
+  screens, the keys down to the request body, width, colors, sanitising
+  and the CLI; `test/backends.test.mjs` drives the renderer against the
+  node-runtime host after the backend suite.
+- **`renderers/common/`**: the render-agnostic half of the Adaptive Cards
+  renderer (view helpers over the vendored `viewxml` / `snapshot` modules,
+  the payload -> request step) moved out for both renderers; the card
+  renderer re-exports it unchanged (its golden cards are byte-identical).
+- **`portable.box-details` no longer asks for a DOM** - it reads only the
+  text on screen. The Adaptive Cards renderer now runs and passes it (66
+  pass, 15 skip).
+
 - **Specification revision 0.3 - the maintainer's decisions** on the ten
   open questions ([spec/open-questions.md](spec/open-questions.md), each now
   "Decided (revision 0.3)" with its rationale):

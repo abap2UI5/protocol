@@ -1,0 +1,36 @@
+[ < ] Adaptive Cards sampler                                        [ Settings ]
+================================================================================
+Warning: Check the amount
+Customer
+Address
+Name:    [Ada_____________________________________]
+Amount:  [12.5____________________________________]
+Since:   [2026-10-03______________________________]
+Country: [Germany                                v]
+Notes:   [________________________________________]
+         [________________________________________]
+         [________________________________________]
+Active:  [On ] [ ] Accept terms
+Size:    [ ( ) Small  (o) Large ]
+Tags:    [Alpha                                  v]
++- Status ---------------------------------------------------------------------+
+| State: ok 12.5 EUR (new)                                                     |
+| [########------------] 40 %                                                  |
+| Docs <https://abap2ui5.github.io/docs/>                                      |
++------------------------------------------------------------------------------+
+Items
+      Id | Text
+      ---+---------------
+  [ ] 1  | [one_________]
+  [x] 2  | [two_________]
+Facts
+Owner    Ada
+Created  today
+One
+tab one
+Two
+tab two
+[? com.example.unknown.Gadget - not rendered]
+--------------------------------------------------------------------------------
+                                                             [ Save ] [ Cancel ]
+# unsupported: com.example.unknown.Gadget (MAIN) - not in the portable profile - placeholder

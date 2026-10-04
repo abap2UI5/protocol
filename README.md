@@ -34,12 +34,16 @@ repository writes it down.
    backend    the backend suite - plays the frontend over HTTP     (implemented)
    frontend   the frontend suite - plays the backend, adapters for (implemented)
               the UI5 SPA (Playwright), the agent client, the
-              Web Components frontend, the Adaptive Cards renderer
+              Web Components frontend, the Adaptive Cards and the
+              terminal renderer
    apps       the conformance apps: ABAP classes + cap2UI5 twins
    hosts      the two reference backends, started with the apps deployed
  renderers/
    adaptive-cards  a portable renderer without a browser: response -> Adaptive
               Card 1.5, Action.Submit -> request                    (prototype)
+   terminal   an abap2UI5 app in a terminal: keys in, text screen out,
+              the CLI abap2ui5-tui (node runtime, cap2UI5, SAP systems)
+   common     what both renderers share: view helpers, payload -> request
  traffic/    real traffic of both reference backends and three frontends
 ```
 
@@ -64,12 +68,20 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 - **Frontend suite: 81 checks** (66 MUST, 15 SHOULD; 66 core, 8 portable,
   4 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
   SPA passes every MUST but one - message box details stay empty on OpenUI5
-  >= 1.120 (fix under way); the agent client (mcp-server `a4d9f07`) and the
-  Adaptive Cards renderer pass every check that applies to them (61 and 65);
-  the Web Components frontend 68 of 68, with one intermittent failure ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
+  >= 1.120 (fix under way); the agent client (mcp-server `a4d9f07`), the
+  Adaptive Cards renderer and the terminal renderer pass every check that
+  applies to them (61, 66 and 72 - the terminal's include the router
+  checks); the Web Components frontend 68 of 68, with one intermittent
+  failure ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
 - **Adaptive Cards renderer** (prototype, [renderers/adaptive-cards/](renderers/adaptive-cards/README.md)):
   all 65 portable controls mapped onto Adaptive Cards 1.5, the way back from
   an `Action.Submit` to the next request, golden cards of recorded traffic.
+- **Terminal renderer** ([renderers/terminal/](renderers/terminal/README.md)):
+  an abap2UI5 app in a terminal - `npx abap2ui5-tui <url> --app <CLASS>`
+  against the node runtime, cap2UI5 or an SAP system (basic auth, cookies,
+  CSRF, `sap-contextid`), all 65 portable controls as keyboard-driven
+  widgets, a hash history so Back works, `--print` for logs, CI and screen
+  readers; pure Node, no dependencies.
 - Not yet run against an ABAP system.
 
 ## Run the backend suite
@@ -97,7 +109,18 @@ Options, the library API and the check list:
 npx abap2ui5-conformance frontend --adapter ui5      # the UI5 SPA (ABAP2UI5_HOME=<abap2UI5 checkout>) in Chromium
 npx abap2ui5-conformance frontend --adapter agent    # the agent client of abap2UI5/mcp-server
 npx abap2ui5-conformance frontend --adapter adaptive-cards   # the Adaptive Cards renderer of this package
+npx abap2ui5-conformance frontend --adapter terminal         # the terminal renderer of this package
 ```
+
+## Run an app in the terminal
+
+```bash
+npm run serve:node-runtime &                     # the conformance apps on http://localhost:3000/
+npx abap2ui5-tui http://localhost:3000/ --app Z2UI5_CL_CONF_BIND
+npx abap2ui5-tui "https://host/sap/bc/z2ui5?sap-client=100" --app Z2UI5_CL_MY_APP --user ME --print
+```
+
+Keys, options and the control mapping: [renderers/terminal/README.md](renderers/terminal/README.md).
 
 Adapters, options and the check list:
 [conformance/frontend/README.md](conformance/frontend/README.md).
@@ -106,13 +129,14 @@ Adapters, options and the check list:
 
 ```bash
 npm test                 # schemas, traffic, docs, portable profile, CLI, both backends,
-                         # the frontend suite (agent client, Adaptive Cards renderer;
-                         # UI5 SPA with a checkout + Chromium), the golden cards
+                         # the frontend suite (agent client, Adaptive Cards and terminal
+                         # renderer; UI5 SPA with a checkout + Chromium), the golden
+                         # cards and screens, the terminal against the node runtime
                          # (PROTOCOL_SKIP_BACKENDS=1 / PROTOCOL_SKIP_BROWSER=1 skip the slow parts)
 npm run record           # re-record traffic/ from both backends
 npm run lint:abap        # abaplint over the ABAP conformance apps
 npm run generate         # regenerate the check lists, the portable-profile sections and
-                         # the Adaptive Cards mapping table
+                         # the Adaptive Cards and terminal mapping tables
 npm run demo:adaptive-cards -- slots.popup-destroy 0 1   # a recorded response as card JSON
 ```
 

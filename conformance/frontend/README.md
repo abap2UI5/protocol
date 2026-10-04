@@ -24,16 +24,18 @@ npx abap2ui5-conformance frontend --adapter ui5            # the UI5 SPA in Chro
 npx abap2ui5-conformance frontend --adapter agent          # mcp-server's agent client
 npx abap2ui5-conformance frontend --adapter webcomponent   # frontend-webcomponent
 npx abap2ui5-conformance frontend --adapter adaptive-cards # the Adaptive Cards renderer of this package
+npx abap2ui5-conformance frontend --adapter terminal       # the terminal renderer of this package
 
 # from this repository
 npm run conformance:frontend:ui5
 npm run conformance:frontend:agent
 npm run conformance:frontend:adaptive-cards
+npm run conformance:frontend:terminal
 ```
 
 | Option | |
 |---|---|
-| `--adapter <name>` | the frontend: `ui5`, `agent`, `webcomponent`, `adaptive-cards`, `headless` (stub) |
+| `--adapter <name>` | the frontend: `ui5`, `agent`, `webcomponent`, `adaptive-cards`, `terminal`, `headless` (stub) |
 | `--profile core\|portable\|ui5\|semantic` | the checks to run: `core`; `portable` (core + portable); `ui5` (core + portable + UI5); `semantic` (core + semantic). Default: the widest profile the adapter claims |
 | `--only <id part>` | run only checks whose id contains it (repeatable) |
 | `--json` | the report as JSON |
@@ -68,6 +70,7 @@ frontend cannot perform throws `Unsupported`.
 | `agent` | abap2UI5/mcp-server `lib/appclient.mjs` | core, semantic | in process: `start` / `act`, the snapshot is the state. Vendored at the commit [adapters/vendor/mcp-server/source.json](adapters/vendor/mcp-server/source.json) names (`npm run vendor:agent` re-vendors; `MCP_SERVER_HOME` runs a checkout instead) |
 | `webcomponent` | abap2UI5/frontend-webcomponent `dist/abap2ui5-wc.js` | core, portable | Chromium: `<abap2ui5-app standalone>` on its standalone page; needs a built checkout (`WC_FRONTEND_HOME`, else `../frontend-webcomponent`) |
 | `adaptive-cards` | the Adaptive Cards renderer prototype of this repository ([../../renderers/adaptive-cards/](../../renderers/adaptive-cards/README.md)) | core, portable | in process: its card host speaks HTTP to the scripted backend, every answer is rendered into an Adaptive Card 1.5 and the state is read from the card (a `Container` per slot, inputs with binding paths as ids). `fill` types into a card input, `press` submits what a card host submits for the action - its data and every input value |
+| `terminal` | the terminal renderer of this repository ([../../renderers/terminal/](../../renderers/terminal/README.md)) | core, portable | in process, with keys: its session speaks HTTP to the scripted backend, the adapter drives its state machine as a user does - `fill` Tabs to the field bound to the path and types the value, `press` Tabs to the action and presses Enter, `back` is Alt+Left - and reads the state from the screen (a layer per slot, the bound fields, the hash, the title, the focused widget's id). No TTY needed |
 | `headless` | abap2UI5/headless-frontend (ABAP) | - | **not drivable yet** - see below |
 
 What the `ui5` adapter needs: an abap2UI5 checkout (`ABAP2UI5_HOME`, else
@@ -195,7 +198,7 @@ check requires.
 | `portable.unknown-property` | MUST | portable | - | An unknown property of a known control is ignored | [portable.md#conformance](../../profiles/portable.md#conformance) |
 | `portable.unknown-control` | MUST | portable | - | An element of an unknown control does not fail the view (a placeholder instead) | [portable.md#conformance](../../profiles/portable.md#conformance) |
 | `portable.excluded-action` | MUST | portable | - | A follow-up action outside the portable list does not fail the response | [portable.md#6-frontend-actions](../../profiles/portable.md#6-frontend-actions) |
-| `portable.box-details` | MUST | portable | dom | The details of a message box are shown | [portable.md#6-frontend-actions](../../profiles/portable.md#6-frontend-actions) |
+| `portable.box-details` | MUST | portable | - | The details of a message box are shown | [portable.md#6-frontend-actions](../../profiles/portable.md#6-frontend-actions) |
 | `portable.timer` | MUST | portable | timers | START_TIMER fires its event as an ordinary roundtrip after the delay | [actions.md#vocabulary](../../spec/actions.md#vocabulary) |
 | `portable.set-title` | MUST | portable | title | SET_TITLE sets the document title | [portable.md#6-frontend-actions](../../profiles/portable.md#6-frontend-actions) |
 | `portable.view-replaced` | MUST | portable | - | A second MAIN display replaces the first | [response.md#view_slots-display](../../spec/response.md#view_slots-display) |

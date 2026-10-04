@@ -1,0 +1,5 @@
+conformance - slots
+================================================================================
+[ Popup ] [ Popover ] [ Nest ] [ Nest2 ]
+[? NEST view - not rendered]
+# unsupported: NEST (NEST) - nested view slot - not in portable profile v1, placeholder

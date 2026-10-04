@@ -9,10 +9,12 @@
     "./schema/*": "./schema/*",
     "./profiles/portable-v1.json": "./profiles/portable-v1.json",
     "./renderers/adaptive-cards": "./renderers/adaptive-cards/index.mjs",
+    "./renderers/terminal": "./renderers/terminal/index.mjs",
     "./package.json": "./package.json"
   },
   "bin": {
-    "abap2ui5-conformance": "conformance/backend/bin/abap2ui5-conformance.mjs"
+    "abap2ui5-conformance": "conformance/backend/bin/abap2ui5-conformance.mjs",
+    "abap2ui5-tui": "renderers/terminal/bin/abap2ui5-tui.mjs"
   },
   "files": [
     "conformance/backend/",
@@ -34,13 +36,15 @@
     "conformance:frontend:agent": "node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter agent",
     "conformance:frontend:webcomponent": "node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter webcomponent",
     "conformance:frontend:adaptive-cards": "node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter adaptive-cards",
+    "conformance:frontend:terminal": "node conformance/backend/bin/abap2ui5-conformance.mjs frontend --adapter terminal",
     "demo:adaptive-cards": "node renderers/adaptive-cards/demo.mjs",
+    "tui": "node renderers/terminal/bin/abap2ui5-tui.mjs",
     "build:node-runtime": "node conformance/hosts/node-runtime/build.mjs",
     "serve:node-runtime": "node conformance/hosts/node-runtime/serve.mjs --build",
     "serve:cap2ui5": "node conformance/hosts/cap2ui5/serve.mjs",
     "record": "node scripts/record-traffic.mjs node-runtime && node scripts/record-traffic.mjs cap2ui5",
     "lint:abap": "cd conformance/apps && abaplint abaplint.jsonc",
-    "generate": "node scripts/gen-check-list.mjs && node scripts/render-portable.mjs && node scripts/render-adaptive-cards.mjs",
+    "generate": "node scripts/gen-check-list.mjs && node scripts/render-portable.mjs && node scripts/render-adaptive-cards.mjs && node scripts/render-terminal.mjs",
     "vendor:agent": "node scripts/vendor-agent-client.mjs"
   },
   "engines": {
@@ -62,7 +66,9 @@
     "specification",
     "conformance",
     "server-driven-ui",
-    "json-schema"
+    "json-schema",
+    "terminal",
+    "tui"
   ],
   "devDependencies": {
     "@abap2ui5/node-runtime": "1.146.0",
