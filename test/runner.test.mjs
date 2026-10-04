@@ -70,7 +70,7 @@ test("the CLI prints its usage and refuses bad arguments with exit code 2", () =
   assert.equal(spawnSync(process.execPath, [CLI, "backend", "--url", "http://x", "--bogus"]).status, 2);
   const fe = spawnSync(process.execPath, [CLI, "frontend"], { encoding: "utf8" });
   assert.equal(fe.status, 2);
-  assert.match(fe.stderr, /--adapter is one of ui5, agent, webcomponent, adaptive-cards, headless/);
+  assert.match(fe.stderr, /--adapter is one of ui5, agent, webcomponent, adaptive-cards, terminal, headless/);
 });
 
 test("the CLI against an unreachable backend reports failures with exit code 1", () => {

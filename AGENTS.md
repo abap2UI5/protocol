@@ -51,7 +51,8 @@ down, and the spec records what the implementations do.
 - **Generated sections are generated.** `conformance/backend/README.md`
   (check list), `profiles/portable.md` (between the `portable:*` markers,
   from `profiles/portable-v1.json`), `renderers/adaptive-cards/README.md`
-  (the mapping table, from `mapping.mjs`) - run `npm run generate`.
+  and `renderers/terminal/README.md` (the mapping tables, from each
+  renderer's `mapping.mjs`) - run `npm run generate`.
 - **Known failures of a reference are pinned, not hidden.** A backend check
   the reference backends fail goes into `test/lib/expected.mjs` with the
   place of its fix; the tests fail when it starts to pass (unpin it, record
@@ -72,8 +73,10 @@ down, and the spec records what the implementations do.
 | `profiles/` | UI5, portable (v1 + `portable-v1.json` + coverage) and semantic profiles |
 | `schema/` | JSON Schemas 2020-12 |
 | `conformance/backend/` | the backend suite - the published package's entry (`index.mjs`, `bin/`) |
-| `conformance/frontend/` | the frontend suite - `lib/` (scripted backend `mock.mjs`, runner, response builders, `checks/`), `adapters/` (`ui5` Playwright + the boot page, `agent` + the vendored mcp-server client, `webcomponent`, `adaptive-cards` (in process, the renderer below), `headless` stub) |
+| `conformance/frontend/` | the frontend suite - `lib/` (scripted backend `mock.mjs`, runner, response builders, `checks/`), `adapters/` (`ui5` Playwright + the boot page, `agent` + the vendored mcp-server client, `webcomponent`, `adaptive-cards` and `terminal` (in process, the renderers below), `headless` stub) |
 | `renderers/adaptive-cards/` | a prototype portable renderer: response -> Adaptive Card 1.5 and `Action.Submit` payload -> request (`render.mjs`, `mapping.mjs` - the control table the README's mapping section is generated from, `submit.mjs`, `host.mjs`, `demo.mjs`), golden cards in `golden/` (`UPDATE_GOLDEN=1 node --test test/adaptive-cards.test.mjs` rewrites them) |
+| `renderers/terminal/` | a portable renderer for the terminal: keys in, a text screen out, the CLI `abap2ui5-tui` (`bin/`), `session.mjs` (the protocol over HTTP: transport rules, basic auth, cookies, follow-up actions, the hash history), `app.mjs` (the state machine: focus, edits, keys; `frame()`, `print()`), `render.mjs` + `mapping.mjs` (the control table the README's mapping section is generated from), `layout.mjs`, `text.mjs`, `tty.mjs`; golden screens in `golden/` (`UPDATE_GOLDEN=1 node --test test/terminal.test.mjs` rewrites them) |
+| `renderers/common/` | what the renderers share: `view.mjs` (bindings, aggregations, list bindings, event wires over the vendored `viewxml`/`snapshot` modules) and `request.mjs` (an action payload -> the next request, the model delta) |
 | `conformance/apps/` | the conformance apps (ABAP + cap2UI5) and their abaplint config |
 | `conformance/hosts/` | `node-runtime` (build + serve) and `cap2ui5` (a CAP project) reference hosts |
 | `traffic/` | recorded traffic per backend: `suite.json`, `ui5-frontend.json`, `agent-client.json` |
@@ -88,9 +91,11 @@ recorded traffic, cross-backend equality, docs links and anchors, the
 portable profile, the conformance apps' abapGit format, the CLI, the
 full backend suite against both reference backends (`PROTOCOL_SKIP_BACKENDS=1`
 skips those; the cap2UI5 run skips itself when its host is not installed),
-and the frontend suite against the agent client and the Adaptive Cards
-renderer (always, golden cards included) and the UI5 SPA
-(when an abap2UI5 checkout and a Chromium are there;
+and the frontend suite against the agent client, the Adaptive Cards
+renderer and the terminal renderer (always, golden cards and screens
+included; the terminal also end to end against the node-runtime host,
+inside the backend run) and the UI5 SPA (when an abap2UI5 checkout and a
+Chromium are there;
 `PROTOCOL_SKIP_BROWSER=1` skips it, `PROTOCOL_REQUIRE_BROWSER=1` fails
 without them). CI runs the same on Node 22 and 24, and the UI5 SPA in a
 job of its own with Chromium. Never `playwright install` in a sandbox that

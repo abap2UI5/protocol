@@ -5,6 +5,8 @@
 //          always; its result is pinned check by check (RESULTS.md)
 //   adaptive-cards  the Adaptive Cards renderer of this repository (in
 //          process) - always; pinned the same way
+//   terminal  the terminal renderer of this repository (in process, driven
+//          with keys) - always; pinned the same way
 //   ui5    the UI5 SPA of an abap2UI5 checkout in Chromium - when a checkout
 //          (ABAP2UI5_HOME, ../abap2UI5, deps/abap2UI5) and a Chromium are
 //          there; PROTOCOL_SKIP_BROWSER=1 skips it, PROTOCOL_REQUIRE_BROWSER=1
@@ -183,7 +185,7 @@ test("the agent client: the frontend suite's result is the one RESULTS.md record
 // the profiles it does not claim.
 const CARDS_SKIPS = [
   "model.whole-beats-delta", "action.after-render", "message.details-sanitized",
-  "router.keep", "router.hash-sent", "router.back-restores", "router.app-state", "portable.box-details", "portable.set-title",
+  "router.keep", "router.hash-sent", "router.back-restores", "router.app-state", "portable.set-title",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
 ];
@@ -195,6 +197,26 @@ test("the Adaptive Cards renderer: every portable-profile check it can be driven
   assert.deepEqual(bad.map((x) => `${x.id}: ${x.message}`), []);
   assert.deepEqual(r.results.filter((x) => x.status === "skip").map((x) => x.id), CARDS_SKIPS);
   if (process.env.PROTOCOL_CARDS_REPORT) fs.writeFileSync(process.env.PROTOCOL_CARDS_REPORT, `${JSON.stringify(r, null, 2)}\n`);
+});
+
+// The terminal renderer of this repository (renderers/terminal/), driven
+// with keys through its state machine: every check it can be driven through
+// holds - the router checks too (it keeps a hash history); the skips are
+// what a terminal has not (a DOM, programmatic model edits) and the
+// profiles it does not claim.
+const TERMINAL_SKIPS = [
+  "model.whole-beats-delta", "message.details-sanitized",
+  "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
+  "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
+];
+
+test("the terminal renderer: every portable-profile check it can be driven through holds", { timeout: 120_000 }, async () => {
+  const r = await runFrontendSuite({ adapter: "terminal" });
+  assert.equal(r.profile, "portable");
+  const bad = r.results.filter((x) => x.status === "fail" || x.status === "warn");
+  assert.deepEqual(bad.map((x) => `${x.id}: ${x.message}`), []);
+  assert.deepEqual(r.results.filter((x) => x.status === "skip").map((x) => x.id), TERMINAL_SKIPS);
+  if (process.env.PROTOCOL_TERMINAL_REPORT) fs.writeFileSync(process.env.PROTOCOL_TERMINAL_REPORT, `${JSON.stringify(r, null, 2)}\n`);
 });
 
 const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER is set" : false;

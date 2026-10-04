@@ -67,7 +67,7 @@ export default [
     title: "The details of a message box are shown",
     level: "MUST",
     profile: "portable",
-    needs: ["dom"],
+    // reads the text on screen only: every portable frontend reports it, a DOM is not needed
     spec: `${P}#6-frontend-actions`,
     async run(t) {
       await startApp(t, nextButton);

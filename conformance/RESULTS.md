@@ -115,7 +115,8 @@ records - as a rule, or as an implementation note:
 ## Frontend suite
 
 Frontend suite, 81 checks (66 MUST, 15 SHOULD; 66 core, 8 portable, 4 UI5,
-3 semantic), run 2026-10-03 with
+3 semantic), run 2026-10-03 (the terminal renderer and the Adaptive Cards
+renderer again 2026-10-04) with
 `abap2ui5-conformance frontend --adapter <name>` (each frontend at its
 widest profile). The scripted backend answers from
 [`../traffic/node-runtime/`](../traffic/node-runtime/) plus synthetic edge
@@ -127,13 +128,14 @@ perform.
 |---|---|---|---:|---:|---:|---:|---|
 | UI5 SPA (`ui5`) | abap2UI5 1.146.0 `b812079` `app/webapp` (identical at main `5d7e91f`, which CI pins), OpenUI5 1.144.0 (npm), Chromium 141 | ui5 | 76 | 1 | 0 | 4 | one MUST deviation: `portable.box-details` |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `a4d9f07` (main, PR #44; vendored) | semantic | 61 | 0 | 0 | 20 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
-| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 65 | 0 | 0 | 16 | every check it can be driven through holds |
+| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 66 | 0 | 0 | 15 | every check it can be driven through holds |
+| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 72 | 0 | 0 | 9 | every check it can be driven through holds, the router checks included |
 | Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
 The UI5 SPA run is stable (two consecutive runs, identical results) and
-takes about two minutes; `test/frontend.test.mjs` pins the UI5, the agent
-and the Adaptive Cards result check by check. The UI5 pin accepts
+takes about two minutes; `test/frontend.test.mjs` pins the UI5, the agent,
+the Adaptive Cards and the terminal result check by check. The UI5 pin accepts
 `portable.box-details` passing: the fix of the UI5 frontend is under way
 (open question 7, decided: expanded), and a local run against an abap2UI5
 checkout that carries it (2026-10-03, abap2UI5 `ed8115b` on top of `833b5b8` "Show message box
@@ -217,7 +219,7 @@ the card host speaks the protocol to the scripted backend, each answer is
 rendered into an Adaptive Card 1.5 and the suite reads the card; a "press"
 submits what a card host submits - the action's data merged with every input
 value, ids being binding paths - and the renderer turns that back into the
-request. All 65 checks that apply pass, two runs identical: the envelope,
+request. All 66 checks that apply pass, two runs identical: the envelope,
 ID continuation, raw event arguments (model arguments re-read after the
 edits of the same submit), every delta rule including nested `__delta`
 rows (the edits are found by comparing the submitted values with the model
@@ -225,13 +227,16 @@ the card was rendered from), `sap-contextid`, the CSRF handshake, no retry
 of a 500, one roundtrip at a time (a submit in flight queues the next, open
 question 8), PROTOCOL 3 refused, the slot rules (popup modal, popover not:
 a press in MAIN closes it, as UI5 does), the NEST placeholder, toasts,
-boxes and their close event, START_TIMER, an unknown and an excluded
+boxes (their details shown expanded, as text) and their close event,
+START_TIMER, an unknown and an excluded
 follow-up action skipped and logged, the tolerance rule (an unknown control
 becomes a placeholder and an `unsupported` entry), and an error body shown
 verbatim (a `TextRun`, not markdown). Skipped: a URL (routing, Back, the
-app-state hash), a DOM (the sanitizer probe, the box-details text probe -
-the card shows the details expanded, as text), focus, a document title and
+app-state hash), a DOM (the sanitizer probe), focus, a document title and
 programmatic model edits; the UI5 and semantic profiles are not claimed.
+(`portable.box-details` asked for a DOM until 2026-10-04 and was skipped;
+it reads only the text on screen, which every adapter reports, and now
+runs - see the terminal renderer below.)
 Every golden card also validates with the Adaptive Cards JavaScript SDK
 3.0.6 (`AdaptiveCard.parse` + `validateProperties`, no issue; run by hand,
 not a dependency).
@@ -240,6 +245,50 @@ Found on the way, *the spec held*: nothing in the portable profile needed
 a browser to be rendered; what a card cannot do (raise `change` events,
 show a URL) the profile already lets a renderer drop or the edit travels
 with the next action.
+
+### Findings - the terminal renderer
+
+A renderer for a text terminal, run in process
+([../renderers/terminal/](../renderers/terminal/README.md)): its session
+speaks the protocol to the scripted backend, and the adapter drives its
+state machine the way a user drives it - `fill` Tabs to the field bound to
+the path and types the value (Ctrl+U, the characters, Tab to commit),
+`press` Tabs to the action raising the event and presses Enter, `back` is
+Alt+Left; the state is read from the screen (a layer per slot, the bound
+fields' values). All 72 checks that apply pass, five runs identical: the
+envelope, ID continuation, raw event arguments, every delta rule
+including nested `__delta` rows (the edits are the committed fields' paths,
+as in the UI5 frontend - an edit typed and typed back is none),
+`sap-contextid`, the CSRF handshake, no retry of a 500, one roundtrip at a
+time (queued), PROTOCOL 3 refused, the slot rules, the NEST placeholder,
+toasts, boxes with their details expanded and their close event,
+START_TIMER, SET_FOCUS (the focus moves to the widget with that id after
+the views are built), SET_TITLE, an unknown and an excluded follow-up
+action skipped and named in the status line, the tolerance rule, an error
+body shown verbatim - and, unlike the card, the four router checks: the
+renderer keeps the hash a browser would show and its history, synchronised
+once per response like the UI5 router, sends it as `HASH` and restores the
+caller's route on Back with an app-start-shaped request. Skipped: a DOM
+(the sanitizer probe - the terminal's own sanitizing, every control
+character a backend sends replaced before it reaches the terminal, is
+tested in `test/terminal.test.mjs`), a programmatic model edit
+(`model.whole-beats-delta`: a user cannot type a whole table); the UI5 and
+semantic profiles are not claimed. `test/backends.test.mjs` also drives it
+against the node-runtime host (BIND, ROUTE with Back, NAV, `--print`).
+
+Found on the way:
+
+1. **`portable.box-details` asked for a DOM but reads only the text on
+   screen** - *the suite was wrong.* The check needs no capability: the
+   text is part of every adapter's normalized state. It now runs for every
+   portable frontend; the Adaptive Cards renderer and the terminal pass it
+   (the UI5 SPA's result is unchanged - it has a DOM).
+2. *The spec held* for a frontend with a hash but no browser: the router
+   rules (spec/navigation.md) are written against the URL hash, and a
+   history kept in memory satisfies all of them; nothing in the portable
+   profile needed a browser. Where a terminal has no counterpart (a URL to
+   open, a file to download) the profile's MAY-be-a-no-op already covers
+   it - the terminal names the URL in its status line.
 
 ### Findings - the Web Components frontend
 

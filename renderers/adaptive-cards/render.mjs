@@ -25,185 +25,20 @@
  * of a popup or popover names its slot in its data (`slot`), so the reverse
  * step knows whose inputs and model it submits.
  */
-import { parseViewXml, parseBinding, parseWire, evalExpression, isAggregation, controlName } from "../../conformance/frontend/adapters/vendor/mcp-server/viewxml.mjs";
-import { getAt } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import {
+  LEAVE_EVENT, modelKeyOf, liveSlots, absolutePath, resolve, boundPath, text, truthy, falsy,
+  children, aggregation, contentChildren, rowsOf, wireData, parseSlot, htmlToText, controlName, isAggregation,
+} from "../common/view.mjs";
 import { CONTROLS, TOLERATED } from "./mapping.mjs";
 
 export const CARD_SCHEMA = "http://adaptivecards.io/schemas/adaptive-card.json";
 export const CARD_VERSION = "1.5";
 
-/** The reserved leave event (spec/navigation.md#the-reserved-leave-event). */
-export const LEAVE_EVENT = "___ZZZ_NAL";
-
-const MODEL_OWNING = { MAIN: "MAIN", NEST: "MAIN", NEST2: "MAIN", POPUP: "POPUP", POPOVER: "POPOVER" };
-export const modelKeyOf = (slot) => MODEL_OWNING[slot] || "MAIN";
-
-/**
- * The slots whose inputs and actions are live. A message box and a popup are
- * modal: only they are. A popover is not (UI5 closes it on a press outside):
- * the popover and MAIN are live, a press in MAIN closes the popover first.
- */
-export function liveSlots(state, messages = []) {
-  const slots = (state && state.slots) || {};
-  if (messages.some((m) => m.kind === "box")) return ["BOX"];
-  if (slots.POPUP) return ["POPUP"];
-  if (slots.POPOVER) return ["POPOVER", "MAIN"];
-  return ["MAIN"];
-}
-
-// ------------------------------------------------------------ values ----
-
-const join = (base, rel) => `${base.replace(/\/$/, "")}/${rel.replace(/^\//, "")}`;
-
-/** The absolute model path of a relative or absolute binding path. */
-export function absolutePath(path, base) {
-  if (path.startsWith("/")) return path;
-  return join(base || "", path);
-}
-
-/** A model reference of an expression or a composite binding. */
-function refValue(ref, ctx) {
-  const r = String(ref).trim();
-  if (/^[A-Za-z_][\w.-]*>/.test(r)) return undefined; // a named model (device>): not ours
-  return getAt(ctx.model, absolutePath(r, ctx.base));
-}
-
-/** A property value, with its bindings resolved against the model. */
-export function resolve(value, ctx) {
-  const b = parseBinding(value);
-  switch (b.kind) {
-    case "literal":
-      return b.value;
-    case "path":
-      return b.model ? undefined : getAt(ctx.model, absolutePath(b.path, ctx.base));
-    case "expression":
-      return evalExpression(b.expression, (r) => refValue(r, ctx));
-    default:
-      return b.parts.map((p) => {
-        if (p.text !== undefined) return p.text;
-        if (p.path !== undefined && !p.model) {
-          const v = getAt(ctx.model, absolutePath(p.path, ctx.base));
-          return v === undefined || v === null ? "" : String(v);
-        }
-        return "";
-      }).join("");
-  }
-}
-
-/** The model path a two-way property is bound to, or null. */
-export function boundPath(value, ctx) {
-  if (value === undefined) return null;
-  const b = parseBinding(value);
-  if (b.kind !== "path" || b.model) return null;
-  return absolutePath(b.path, ctx.base);
-}
-
-export const text = (v) => (v === undefined || v === null ? "" : String(v));
-const truthy = (v) => v === true || v === "true" || v === "X";
-const falsy = (v) => v === false || v === "false" || v === "" || v === null;
-
-// ------------------------------------------------------------- nodes ----
-
-/** The control children of a node: its own, and those of its aggregation
- *  elements (all of them, or the ones named). */
-export function children(node, names) {
-  const out = [];
-  for (const c of node.children) {
-    if (isAggregation(c)) {
-      if (!names || names.includes(c.local)) out.push(...c.children.filter((x) => !isAggregation(x)));
-    } else if (!names || names.includes(defaultAggregationOf(node))) {
-      out.push(c);
-    }
-  }
-  return out;
-}
-
-/** The children of one named aggregation (the default aggregation also
- *  takes the children written without its element). */
-export function aggregation(node, name) {
-  return children(node, [name]);
-}
-
-function defaultAggregationOf(node) {
-  const m = CONTROLS[controlName(node)];
-  return (m && m.defaultAggregation) || "content";
-}
-
-const SKIP_AGGREGATIONS = new Set(["layoutData", "customData", "dependents", "tooltip"]);
-
-/** Every control child except the non-visual aggregations. */
-export function contentChildren(node, except = []) {
-  const out = [];
-  for (const c of node.children) {
-    if (isAggregation(c)) {
-      if (SKIP_AGGREGATIONS.has(c.local) || except.includes(c.local)) continue;
-      out.push(...c.children.filter((x) => !isAggregation(x)));
-    } else {
-      out.push(c);
-    }
-  }
-  return out;
-}
-
-/** The rows of a list binding: [{ base, node }] per row, or the static
- *  children as rows with the current base. */
-export function rowsOf(node, aggName, ctx) {
-  const binding = node.attrs[aggName];
-  const items = aggregation(node, aggName);
-  if (binding !== undefined) {
-    const p = boundPath(binding, ctx) || listPath(binding, ctx);
-    const template = items[0];
-    const data = p ? getAt(ctx.model, p) : undefined;
-    if (!template || !Array.isArray(data)) return [];
-    return data.map((_, i) => ({ base: `${p}/${i}`, node: template, index: i }));
-  }
-  return items.map((n, i) => ({ base: ctx.base, node: n, index: i }));
-}
-
-function listPath(binding, ctx) {
-  const b = parseBinding(binding);
-  if (b.kind === "composite" && b.parts.length === 1 && b.parts[0].path !== undefined && !b.parts[0].model) return absolutePath(b.parts[0].path, ctx.base);
-  return null;
-}
-
-// ------------------------------------------------------------ events ----
-
-/** An event wire of a control as Action.Submit data, or null. */
-export function wireData(node, eventName, ctx) {
-  const raw = node.attrs[eventName];
-  if (raw === undefined) return null;
-  const w = parseWire(raw);
-  if (!w) {
-    ctx.report(node, `event ${eventName}: "${String(raw).slice(0, 60)}" is no abap2UI5 wire`);
-    return null;
-  }
-  const args = [];
-  const refs = [];
-  for (const [i, a] of w.args.entries()) {
-    if (a.static) {
-      args.push(a.value);
-      continue;
-    }
-    if (a.kind === "model" || a.kind === "row") {
-      const p = absolutePath(a.path, ctx.base);
-      args.push(getAt(ctx.model, p) ?? null);
-      if (a.kind === "model") refs[i] = p;
-      continue;
-    }
-    if (a.kind === "source") {
-      args.push(resolve(node.attrs[a.prop], ctx) ?? null);
-      continue;
-    }
-    ctx.report(node, `event ${eventName}: argument ${a.describe} needs the UI5 runtime - sent as null`);
-    args.push(null);
-  }
-  const data = w.fn === "eF" ? { client: [w.action, ...args] } : { event: w.event };
-  if (w.fn !== "eF" && args.length) data.args = args;
-  if (refs.some(Boolean)) data.refs = Array.from(refs, (r) => r || null);
-  // the slot of the action, when it is not MAIN: its inputs and model are the slot's
-  if (modelKeyOf(ctx.slot) !== "MAIN") data.slot = ctx.slot;
-  return data;
-}
+// the view helpers shared with the terminal renderer (../common/view.mjs)
+export {
+  LEAVE_EVENT, modelKeyOf, liveSlots, absolutePath, resolve, boundPath, text,
+  children, aggregation, contentChildren, rowsOf, wireData, htmlToText,
+};
 
 /** An Action.Submit for an event wire (or a disabled one without a wire). */
 export function submitAction(title, data, { style, enabled = true, tooltip } = {}) {
@@ -312,26 +147,6 @@ export function readOnly(labelText, value) {
 }
 
 // -------------------------------------------------------------- card ----
-
-/** The text of a message box's HTML details, for a TextBlock: tags dropped,
- *  entities decoded - nothing of the markup is rendered. */
-export function htmlToText(html) {
-  return String(html || "")
-    .replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, " ")
-    .replace(/<(br|\/p|\/li|\/div|\/h[1-6])\b[^>]*>/gi, "\n")
-    .replace(/<li\b[^>]*>/gi, "- ")
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&amp;/g, "&")
-    .split("\n").map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean).join("\n");
-}
-
-function parseSlot(xml) {
-  const root = parseViewXml(xml);
-  // the document element (mvc:View / core:FragmentDefinition) carries no UI
-  const doc = root.children.find((c) => !isAggregation(c)) || root;
-  return /^(View|FragmentDefinition)$/.test(doc.local) ? doc.children : [doc];
-}
 
 function renderSlot(state, slot, { interactive, unsupported, ids, typed }) {
   const s = state.slots[slot];
