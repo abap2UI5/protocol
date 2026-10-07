@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Adaptive Cards: app text is never Markdown.** A `TextBlock` or `Fact`
+  whose text has Markdown syntax is a `RichTextBlock` `TextRun` now: a
+  model value or toast like `[verify your account](https://evil.example)`
+  was a live link in Teams and Copilot.
+- **`htmlToText` is linear.** Its patterns scanned from every `<` to the
+  end of the text (and the `<script>` pattern lazily to every later
+  closing tag): 100k characters of `<` in a message box's details held the
+  renderer for seconds. A lone `<` is now kept as text.
 - **Terminal renderer** (`renderers/terminal/`, export
   `@abap2ui5/protocol/renderers/terminal`, CLI `abap2ui5-tui <url> [--app
   <CLASS>] [--user u --password p | --cookie c] [--print] [--no-color]`):

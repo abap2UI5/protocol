@@ -56,10 +56,14 @@
         "id": "slot-NEST",
         "items": [
           {
-            "type": "TextBlock",
-            "text": "[NEST view - not rendered]",
-            "isSubtle": true,
-            "wrap": true
+            "type": "RichTextBlock",
+            "inlines": [
+              {
+                "type": "TextRun",
+                "text": "[NEST view - not rendered]",
+                "isSubtle": true
+              }
+            ]
           }
         ]
       }

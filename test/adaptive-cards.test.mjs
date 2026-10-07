@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import {
-  renderResponses, submitToRequest, createCardHost, cardText, walk, CONTROLS, TOLERATED, CARD_VERSION,
+  renderResponses, submitToRequest, createCardHost, cardText, walk, htmlToText, CONTROLS, TOLERATED, CARD_VERSION,
 } from "../renderers/adaptive-cards/index.mjs";
 import { renderMapping, apply, README } from "../scripts/render-adaptive-cards.mjs";
 import { startMock } from "../conformance/frontend/index.mjs";
@@ -125,6 +125,41 @@ test("the cards say what the views say", () => {
   assert.ok(!kinds.some((k) => k.startsWith("Input.") || k.startsWith("Action.") || k === "ActionSet"), kinds.join());
   const { unsupported } = renderResponses([sampler()]);
   assert.deepEqual(unsupported.map((u) => u.control), ["com.example.unknown.Gadget"]);
+});
+
+test("app text is never Markdown: a text or fact with Markdown syntax is a TextRun", () => {
+  const link = "Customer [click me](https://evil.example)";
+  const xml = '<mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"><Page title="T">'
+    + '<Text text="{/C}"/><Title text="**bold** title"/><Text text="plain"/>'
+    + '<List items="{/L}"><StandardListItem title="{T}" description="{D}"/></List></Page></mvc:View>';
+  const response = {
+    S_FRONT: { ID: "1", APP: "Z_T", S_ACTION: { T_SYSTEM: [["VIEW_SLOTS", "display", "MAIN", xml]] } },
+    MODEL: { C: link, L: [{ T: "a", D: "[x](https://evil.example)" }] },
+  };
+  const toast = "**[verify your account](https://evil.example/login)**";
+  const { card } = renderResponses([response], { messages: [{ kind: "toast", text: toast }] });
+  assert.deepEqual(cardProblems(card), []);
+  const blocks = [];
+  const runs = [];
+  walk(card.body, (e) => {
+    if (e.type === "TextBlock") blocks.push(e.text);
+    if (e.type === "FactSet") blocks.push(...e.facts.flatMap((f) => [f.title, f.value]));
+    if (e.type === "RichTextBlock") runs.push(...e.inlines.map((i) => i.text));
+  });
+  assert.ok(blocks.includes("plain"), "a plain text stays a TextBlock");
+  assert.ok(!blocks.some((t) => /\]\(|\*\*/.test(t)), `no Markdown reaches a TextBlock or a Fact: ${blocks.join(" | ")}`);
+  for (const t of [link, "**bold** title", toast, "[x](https://evil.example)"]) assert.ok(runs.includes(t), `${t} as a TextRun`);
+});
+
+test("htmlToText: script and style dropped to their closing tag, and linear on unclosed markup", () => {
+  assert.equal(htmlToText("<p>a</p><script>x<b>y</b></script><STYLE>z</style >b<br>c<br><ul><li>d</li></ul>"), "a\nb\nc\n- d");
+  assert.equal(htmlToText("a < b <i>c</i>"), "a < b c", "a lone < is text");
+  assert.equal(htmlToText("<script>never closed <b>x</b>"), "never closed x", "an unclosed block stays");
+  for (const flood of ["<".repeat(100000), "<script".repeat(20000), "<br".repeat(30000)]) {
+    const t0 = Date.now();
+    htmlToText(flood);
+    assert.ok(Date.now() - t0 < 500, `${flood.slice(0, 8)}...: ${Date.now() - t0} ms`);
+  }
 });
 
 // ---------------------------------------------------- the reverse step ----

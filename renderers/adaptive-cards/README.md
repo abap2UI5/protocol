@@ -85,6 +85,15 @@ node renderers/adaptive-cards/demo.mjs --file response.json       # a response o
 - **Errors** are shown verbatim in a `RichTextBlock` `TextRun` - not
   markdown, so nothing of an error body is interpreted
   ([spec/errors.md](../../spec/errors.md#what-a-frontend-does-with-it)).
+- **App text is never Markdown.** A `TextBlock` and a `Fact` render their
+  text as Markdown, and their text is the app's: a model value
+  `[click me](https://evil.example)` was a live link in Teams. A text with
+  Markdown syntax (`* _ [ ] # ~` and backticks, a backslash, a list or quote
+  marker at a line start) is a `RichTextBlock` of one `TextRun` instead,
+  with the weight, size, color and subtlety it had (`maxLines` and the
+  heading style are the `TextBlock`'s own); a `FactSet` with such a fact is
+  a `Container` of one `RichTextBlock` per fact. Plain text stays a
+  `TextBlock`.
 - **Tolerance.** An element outside the profile becomes a placeholder
   `TextBlock` and an entry of `unsupported` (`{ slot, control, id?, reason
   }`), as do event wires a card cannot raise (`change`, `liveChange`,
