@@ -234,8 +234,43 @@ export function renderCard(state, { messages = [], error = null, typed = null } 
     if (slot !== "MAIN") c.style = "emphasis";
     body.push(c);
   }
+  verbatim(body);
   const card = { type: "AdaptiveCard", $schema: CARD_SCHEMA, version: CARD_VERSION, body };
   return { card, unsupported };
+}
+
+/* A TextBlock renders its text as Markdown, and its text is the app's: a
+ * customer named "[click me](https://evil.example)" or a toast with
+ * "**[verify your account](...)**" was a live link in Teams and Copilot,
+ * where the UI5 frontend shows the text as it is (a Fact the same). A text with Markdown
+ * syntax becomes a RichTextBlock of one TextRun - never Markdown, as the
+ * error container already is - keeping weight, size, color and subtlety;
+ * a plain text stays a TextBlock (maxLines and the heading style are
+ * TextBlock's own). */
+const MARKDOWN = /[\\*_[\]`~#]|^\s*(?:[-+>]|\d+[.)])\s/m;
+const RUN_PROPS = ["weight", "size", "color", "isSubtle", "fontType"];
+const KEPT_PROPS = ["id", "spacing", "separator", "isVisible", "horizontalAlignment", "height"];
+
+function verbatim(body) {
+  walk(body, (e) => {
+    // a Fact's title and value are Markdown too: a FactSet with any becomes
+    // a Container of one RichTextBlock per fact, the title bolder
+    if (e.type === "FactSet" && Array.isArray(e.facts) && e.facts.some((f) => MARKDOWN.test(`${f.title}\n${f.value}`))) {
+      const items = e.facts.map((f) => ({ type: "RichTextBlock", inlines: [{ type: "TextRun", text: `${f.title} `, weight: "Bolder" }, { type: "TextRun", text: String(f.value) }] }));
+      const kept = {};
+      for (const k of KEPT_PROPS) if (e[k] !== undefined) kept[k] = e[k];
+      for (const k of Object.keys(e)) delete e[k];
+      Object.assign(e, { type: "Container", ...kept, items });
+      return;
+    }
+    if (e.type !== "TextBlock" || typeof e.text !== "string" || !MARKDOWN.test(e.text)) return;
+    const run = { type: "TextRun", text: e.text };
+    for (const k of RUN_PROPS) if (e[k] !== undefined) run[k] = e[k];
+    const block = { type: "RichTextBlock", inlines: [run] };
+    for (const k of KEPT_PROPS) if (e[k] !== undefined) block[k] = e[k];
+    for (const k of Object.keys(e)) delete e[k];
+    Object.assign(e, block);
+  });
 }
 
 /** The text a card shows (for tests and the conformance adapter). */

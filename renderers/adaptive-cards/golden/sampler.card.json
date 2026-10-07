@@ -450,10 +450,14 @@
             ]
           },
           {
-            "type": "TextBlock",
-            "text": "[com.example.unknown.Gadget - not rendered]",
-            "isSubtle": true,
-            "wrap": true
+            "type": "RichTextBlock",
+            "inlines": [
+              {
+                "type": "TextRun",
+                "text": "[com.example.unknown.Gadget - not rendered]",
+                "isSubtle": true
+              }
+            ]
           },
           {
             "type": "ActionSet",

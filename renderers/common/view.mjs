@@ -235,14 +235,42 @@ export function parseSlot(xml) {
   return /^(View|FragmentDefinition)$/.test(doc.local) ? doc.children : [doc];
 }
 
+/* <script> and <style> blocks with their content, each to its first closing
+ * tag; one without a closing tag stays (its tag goes with the other tags),
+ * and so does every later one of that name - none can close either. */
+function dropBlocks(s) {
+  const open = /<(script|style)\b/gi;
+  const unclosed = new Set();
+  let out = "";
+  let at = 0;
+  let m;
+  while ((m = open.exec(s))) {
+    const name = m[1].toLowerCase();
+    if (unclosed.has(name)) continue;
+    const close = new RegExp(`</${name}\\s*>`, "gi");
+    close.lastIndex = open.lastIndex;
+    const c = close.exec(s);
+    if (!c) {
+      unclosed.add(name);
+      continue;
+    }
+    out += `${s.slice(at, m.index)} `;
+    at = close.lastIndex;
+    open.lastIndex = at;
+  }
+  return out + s.slice(at);
+}
+
 /** The text of HTML (a message box's details, core:HTML): tags dropped,
  *  entities decoded - nothing of the markup is rendered. */
 export function htmlToText(html) {
-  return String(html || "")
-    .replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, " ")
-    .replace(/<(br|\/p|\/li|\/div|\/h[1-6])\b[^>]*>/gi, "\n")
-    .replace(/<li\b[^>]*>/gi, "- ")
-    .replace(/<[^>]*>/g, "")
+  // no pattern here scans past the next "<": /<[^>]*>/ and the lazy
+  // <script>...</script> tried every "<" to the end of the text - quadratic,
+  // 100k characters of "<" held the renderer for seconds
+  return dropBlocks(String(html || ""))
+    .replace(/<(br|\/p|\/li|\/div|\/h[1-6])\b[^<>]*>/gi, "\n")
+    .replace(/<li\b[^<>]*>/gi, "- ")
+    .replace(/<[^<>]*>/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&amp;/g, "&")
     .split("\n").map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean).join("\n");
