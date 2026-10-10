@@ -126,7 +126,7 @@ perform.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 1.146.0 `b812079` `app/webapp` (identical at main `5d7e91f`, which CI pins), OpenUI5 1.144.0 (npm), Chromium 141 | ui5 | 76 | 1 | 0 | 4 | one MUST deviation: `portable.box-details` |
+| UI5 SPA (`ui5`) | abap2UI5 1.146.0 `b812079` `app/webapp` (identical at main `5d7e91f`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 141 | ui5 | 76 | 1 | 0 | 4 | one MUST deviation: `portable.box-details` |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `a4d9f07` (main, PR #44; vendored) | semantic | 61 | 0 | 0 | 20 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 66 | 0 | 0 | 15 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 72 | 0 | 0 | 9 | every check it can be driven through holds, the router checks included |
