@@ -126,7 +126,7 @@ perform.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 1.146.0 `b812079` `app/webapp` (identical at main `5d7e91f`, which CI pins), OpenUI5 1.144.0 (npm), Chromium 141 | ui5 | 76 | 1 | 0 | 4 | one MUST deviation: `portable.box-details` |
+| UI5 SPA (`ui5`) | abap2UI5 main `1bbb9d4` `app/webapp` (which CI pins), OpenUI5 1.153.0 (npm), Chromium 141 | ui5 | 77 | 0 | 0 | 4 | conformant (ui5) - `portable.box-details` fixed in abap2UI5 `72c86cc` |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `a4d9f07` (main, PR #44; vendored) | semantic | 61 | 0 | 0 | 20 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 66 | 0 | 0 | 15 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 72 | 0 | 0 | 9 | every check it can be driven through holds, the router checks included |
@@ -135,17 +135,18 @@ perform.
 
 The UI5 SPA run is stable (two consecutive runs, identical results) and
 takes about two minutes; `test/frontend.test.mjs` pins the UI5, the agent,
-the Adaptive Cards and the terminal result check by check. The UI5 pin accepts
-`portable.box-details` passing: the fix of the UI5 frontend is under way
-(open question 7, decided: expanded), and a local run against an abap2UI5
-checkout that carries it (2026-10-03, abap2UI5 `ed8115b` on top of `833b5b8` "Show message box
-details on UI5 1.120 and later", on its working branch, not on main yet)
-passed it - every MUST held, 77 pass, 4 skip.
+the Adaptive Cards and the terminal result check by check. Until 2026-10-10
+CI pinned abap2UI5 `5d7e91f` (`app/webapp` as at `b812079`, 1.146.0), where
+the UI5 SPA failed `portable.box-details` (finding 1 below; 76 pass, 1 fail,
+4 skip, with OpenUI5 1.144.0 and 1.153.0 alike). abap2UI5 fixed it on main in
+`72c86cc` (open question 7, decided: expanded); CI pins a main that carries
+the fix, and the pin is gone - every MUST holds, 77 pass, 4 skip.
 
 ### Findings - the UI5 SPA
 
 1. **Message box details are not shown on OpenUI5 >= 1.120** -
-   `portable.box-details`, MUST; *the frontend is wrong.* A
+   `portable.box-details`, MUST; *the frontend is wrong* (fixed in abap2UI5
+   `72c86cc`, after 1.146.0). A
    `MESSAGE_BOX` with `details` shows the text and an empty details area.
    Evidence (OpenUI5 1.144.0): the box's VBox holds `Text` (visible),
    `Link "View Details"` (hidden), `MessageStrip "Details could not be

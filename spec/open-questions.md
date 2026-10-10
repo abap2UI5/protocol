@@ -214,8 +214,9 @@ structure *is* the message; behind a link it is easily never seen.
 fills the details text only when its "View Details" link is pressed - 1.120
 does, 1.71 set it at creation) the UI5 frontend shows **no** details at
 all: `expandBoxDetails` makes the still-empty `FormattedText` visible and
-hides the link that would have filled it. The UI5 frontend is being fixed
-(abap2UI5 `app/webapp/core/actions/ControlCall.js`); filed in
+hides the link that would have filled it. Fixed on abap2UI5's main in
+`72c86cc` (`app/webapp/core/actions/ControlCall.js`, after 1.146.0), which
+CI's frontend job runs; filed in
 [../conformance/RESULTS.md](../conformance/RESULTS.md#frontend-suite).
 
 **Alternatives considered.**
