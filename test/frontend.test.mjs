@@ -220,11 +220,11 @@ test("the terminal renderer: every portable-profile check it can be driven throu
 });
 
 const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER is set" : false;
-// The UI5 SPA's one deviation (RESULTS.md): message box details stay empty on
-// OpenUI5 >= 1.120. The fix is under way in abap2UI5 (open question 7, decided
-// in revision 0.3: expanded), so a checkout that carries it passes the check -
-// the pin accepts both; every other failure fails the test.
-const UI5_KNOWN_FAILS = ["portable.box-details"];
+// The UI5 SPA's known deviations (RESULTS.md) - none since CI's abap2UI5
+// commit carries the fix of portable.box-details (abap2UI5 72c86cc: message
+// box details on OpenUI5 >= 1.120). A deviation found later goes here with
+// the place of its fix; every other failure fails the test.
+const UI5_KNOWN_FAILS = [];
 
 test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { skip: skipBrowser, timeout: 900_000 }, async (t) => {
   if (!locateWebapp()) {

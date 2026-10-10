@@ -88,7 +88,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: abap2UI5/abap2UI5
-          ref: 5d7e91f904bf37b282e8e1c0ecb2b3eeae4c5842   # main; app/webapp as at b812079
+          ref: 1bbb9d47e9dce37015f2aa15f405689465f5b909   # main; carries the box-details fix (72c86cc)
           path: deps/abap2UI5
           sparse-checkout: app/webapp
           persist-credentials: false
