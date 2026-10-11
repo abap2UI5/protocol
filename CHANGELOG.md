@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **The UI5 SPA is conformant (ui5 profile).** CI's frontend job pins
+  abap2UI5 main `1bbb9d4`, which carries the fix of `portable.box-details`
+  (abap2UI5 `72c86cc`); `test/frontend.test.mjs` no longer accepts that
+  deviation, so a frontend that loses the fix fails the test. 77 pass,
+  0 fail, 4 skip (RESULTS.md).
 - **Adaptive Cards: app text is never Markdown.** A `TextBlock` or `Fact`
   whose text has Markdown syntax is a `RichTextBlock` `TextRun` now: a
   model value or toast like `[verify your account](https://evil.example)`
