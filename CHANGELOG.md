@@ -15,6 +15,9 @@
   end of the text (and the `<script>` pattern lazily to every later
   closing tag): 100k characters of `<` in a message box's details held the
   renderer for seconds. A lone `<` is now kept as text.
+- **Terminal session: a cookie the system deletes is dropped.** A
+  `Set-Cookie` with `Max-Age=0` or an `Expires` in the past (an ended
+  session, a logoff) was kept in the jar and sent on every later request.
 - **Terminal renderer** (`renderers/terminal/`, export
   `@abap2ui5/protocol/renderers/terminal`, CLI `abap2ui5-tui <url> [--app
   <CLASS>] [--user u --password p | --cookie c] [--print] [--no-color]`):

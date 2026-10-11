@@ -72,10 +72,21 @@ export function parseRoute(h) {
 
 const route = (app, draft) => `app/${app}${draft ? `/${draft}` : ""}`;
 
-/** The cookies of a fetch response: name=value of every Set-Cookie. */
+/** Whether a Set-Cookie deletes its cookie: Max-Age zero or less, or an
+ *  Expires in the past - how a system ends a session or a logon ticket. */
+function expired(c, now = Date.now()) {
+  const maxAge = /;\s*max-age\s*=\s*(-?\d+)/i.exec(c);
+  if (maxAge) return Number(maxAge[1]) <= 0;
+  const expires = /;\s*expires\s*=\s*([^;]+)/i.exec(c);
+  if (!expires) return false;
+  const at = Date.parse(expires[1]);
+  return !Number.isNaN(at) && at <= now;
+}
+
+/** The cookies of a fetch response: [name, value, expired] of every Set-Cookie. */
 function setCookies(headers) {
   const list = typeof headers.getSetCookie === "function" ? headers.getSetCookie() : (headers.get("set-cookie") ? [headers.get("set-cookie")] : []);
-  return list.map((c) => /^\s*([^=;\s]+)=([^;]*)/.exec(c)).filter(Boolean).map((m) => [m[1], m[2]]);
+  return list.map((c) => [/^\s*([^=;\s]+)=([^;]*)/.exec(c), c]).filter(([m]) => m).map(([m, c]) => [m[1], m[2], expired(c)]);
 }
 
 export function createSession({
@@ -146,7 +157,13 @@ export function createSession({
   }
 
   function remember(res) {
-    for (const [k, v] of setCookies(res.headers)) jar.set(k, v);
+    // a cookie the system deletes is dropped, as a browser drops it - kept,
+    // the ended session or the old logon ticket went out again on every
+    // request
+    for (const [k, v, gone] of setCookies(res.headers)) {
+      if (gone) jar.delete(k);
+      else jar.set(k, v);
+    }
   }
 
   async function post(body) {
