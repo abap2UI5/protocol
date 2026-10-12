@@ -270,6 +270,30 @@ test("the session: cookies, basic auth, the CSRF token and the sap-contextid of 
   }
 });
 
+test("the session: a cookie the system deletes (Max-Age=0, Expires in the past) is not sent again", async () => {
+  const mock = await startMock();
+  try {
+    const run = mock.run();
+    const [first] = recorded("model.scalar", 0);
+    const [next] = recorded("model.scalar", 1);
+    run.reply({ body: first, headers: { "set-cookie": "SAP_SESSIONID_X=abc; path=/; HttpOnly" } });
+    run.reply({ body: next, headers: { "set-cookie": "SAP_SESSIONID_X=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" } });
+    run.reply({ body: next, headers: { "set-cookie": "MYSAPSSO2=old; Max-Age=0; path=/" } });
+    run.reply({ body: next });
+    const session = createSession({ url: run.url, cookie: "MYSAPSSO2=t", location: undefined });
+    const app = createTerminalApp({ session });
+    await session.start("Z2UI5_CL_CONF_BIND");
+    while (app.focused().label !== "Check") await app.key("tab");
+    await app.key("enter");
+    await app.key("enter");
+    await app.key("enter");
+    const cookies = run.posts().map((p) => p.headers.cookie);
+    assert.deepEqual(cookies, ["MYSAPSSO2=t", "MYSAPSSO2=t; SAP_SESSIONID_X=abc", "MYSAPSSO2=t", undefined]);
+  } finally {
+    await mock.close();
+  }
+});
+
 // ------------------------------------------------- width, color, text ----
 
 test("width: text wraps, columns shrink with an ellipsis, wide characters take two columns", () => {
