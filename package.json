@@ -72,7 +72,7 @@
   ],
   "devDependencies": {
     "@abap2ui5/node-runtime": "1.146.0",
-    "@abaplint/cli": "2.120.73",
+    "@abaplint/cli": "2.120.75",
     "@abaplint/transpiler-cli": "2.13.93",
     "@openui5/sap.m": "1.153.0",
     "ajv": "8.20.0",
