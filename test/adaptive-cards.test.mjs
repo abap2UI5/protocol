@@ -234,6 +234,43 @@ test("the host: app start, a submit, a box close, an app change and an error, ag
   }
 });
 
+test("the host: a 403 without a token is answered with its own body; an echoed Required is no token", async () => {
+  const calls = [];
+  const fetchImpl = async (u, init) => {
+    calls.push(`${init.method} ${init.headers["x-csrf-token"] || ""}`);
+    return new Response(init.method === "HEAD" ? null : "CSRF token validation failed", { status: init.method === "HEAD" ? 200 : 403, headers: { "x-csrf-token": "Required" } });
+  };
+  const host = createCardHost({ url: "http://host.invalid/sap/bc/z2ui5", fetchImpl, timers: false });
+  await host.start("Z2UI5_CL_CONF_BIND");
+  assert.deepEqual(calls, ["POST ", "HEAD Fetch"]);
+  assert.equal(host.error.text, "HTTP 403\nCSRF token validation failed");
+});
+
+test("the host: edits stay pending until a request carrying them wins", async () => {
+  const mock = await startMock();
+  try {
+    const run = mock.run();
+    const [first, next] = recorded("model.scalar", 0, 1);
+    run.reply({ body: first });
+    run.reply({ status: 500, headers: { "content-type": "text/plain" }, body: "boom" });
+    run.reply({ body: next });
+    run.reply({ body: next });
+    const host = createCardHost({ url: run.url, timers: false });
+    await host.start("Z2UI5_CL_CONF_BIND");
+    await host.submit({ event: "CHECK", "/NAME": "Ada" });
+    assert.equal(host.error.text, "HTTP 500\nboom");
+    // the failed request's edit goes with the next one
+    await host.submit({ event: "CHECK" });
+    assert.deepEqual(run.posts()[2].json.value.MODEL, { NAME: "Ada" });
+    assert.equal(host.error, null);
+    // and, once won, no more
+    await host.submit({ event: "CHECK" });
+    assert.equal(run.posts()[3].json.value.MODEL, undefined);
+  } finally {
+    await mock.close();
+  }
+});
+
 // ------------------------------------------------------- the generated ----
 
 test("every control of portable profile v1 has a mapping entry, and nothing else does", () => {

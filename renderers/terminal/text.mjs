@@ -135,7 +135,10 @@ export function truncateLine(line, w, glyphs = GLYPHS.ascii) {
       used += sw;
       continue;
     }
-    out.push({ ...s, text: truncate(s.text, w - used, glyphs) });
+    // the line goes on past this segment: the ellipsis is shown even when
+    // the segment itself would fit
+    const room = Math.max(0, w - used);
+    out.push({ ...s, text: room >= e ? sliceWidth(s.text, room - e) + glyphs.ellipsis : sliceWidth(s.text, room) });
     break;
   }
   return out;

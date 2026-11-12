@@ -19,6 +19,8 @@
   "files": [
     "conformance/backend/",
     "conformance/frontend/",
+    "conformance/apps/",
+    "conformance/RESULTS.md",
     "schema/",
     "spec/",
     "profiles/",
