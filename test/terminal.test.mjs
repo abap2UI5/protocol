@@ -16,6 +16,7 @@ import {
   printResponses, createSession, createTerminalApp, runTui, CONTROLS, colorWanted, strWidth, truncate, wrap, clean, keyName, parseRoute, fitColumns,
 } from "../renderers/terminal/index.mjs";
 import { TOLERATED } from "../renderers/common/view.mjs";
+import { truncateLine, lineText } from "../renderers/terminal/text.mjs";
 import { renderMapping, apply, README } from "../scripts/render-terminal.mjs";
 import { startMock } from "../conformance/frontend/index.mjs";
 import { load, ROOT } from "./lib/traffic.mjs";
@@ -270,6 +271,38 @@ test("the session: cookies, basic auth, the CSRF token and the sap-contextid of 
   }
 });
 
+test("the session: a 403 without a token is answered with its own body; an echoed Required is no token", async () => {
+  const calls = [];
+  const fetchImpl = async (u, init) => {
+    calls.push(init.method);
+    return new Response(init.method === "HEAD" ? null : "CSRF token validation failed", { status: init.method === "HEAD" ? 200 : 403, headers: { "x-csrf-token": "Required" } });
+  };
+  const session = createSession({ url: "http://host.invalid/sap/bc/z2ui5", fetchImpl, timers: false, location: undefined });
+  await session.start("Z2UI5_CL_CONF_BIND");
+  assert.deepEqual(calls, ["POST", "HEAD"]);
+  assert.equal(session.error.text, "HTTP 403\nCSRF token validation failed");
+});
+
+test("the session: edits stay pending until a request carrying them wins", async () => {
+  const mock = await startMock();
+  try {
+    const [first] = recorded("model.scalar", 0);
+    const { run, session } = await started(mock, first);
+    session.edit("MAIN", "/NAME", "Ada");
+    run.reply({ status: 500, headers: { "content-type": "text/plain" }, body: "boom" });
+    await session.fire({ event: "CHECK" });
+    assert.equal(session.error.text, "HTTP 500\nboom");
+    assert.deepEqual(session.pendingPaths(), ["/NAME"]);
+    run.reply({ body: recorded("model.scalar", 1)[0] });
+    await session.fire({ event: "CHECK" });
+    assert.deepEqual(run.posts().at(-1).json.value.MODEL, { NAME: "Ada" });
+    assert.equal(session.error, null);
+    assert.deepEqual(session.pendingPaths(), []);
+  } finally {
+    await mock.close();
+  }
+});
+
 test("the session: a cookie the system deletes (Max-Age=0, Expires in the past) is not sent again", async () => {
   const mock = await startMock();
   try {
@@ -305,6 +338,10 @@ test("width: text wraps, columns shrink with an ellipsis, wide characters take t
   assert.deepEqual(wrap("the quick brown fox", 9), ["the quick", "brown fox"]);
   assert.deepEqual(wrap("abcdefghijkl", 5), ["abcde", "fghij", "kl"]);
   assert.deepEqual(fitColumns([5, 40, 30], 50), [5, 23, 22]);
+  // a segment that fits is still cut when the line goes on past it
+  assert.equal(lineText(truncateLine([{ text: "abcdefgh" }, { text: "ijkl" }], 10)), "abcdefg...");
+  assert.equal(lineText(truncateLine([{ text: "abcd" }, { text: "efghijkl" }], 10)), "abcdefg...");
+  assert.equal(lineText(truncateLine([{ text: "abc" }, { text: "def" }], 10)), "abcdef");
   const view = "<Text text=\"one two three four five six seven eight nine ten\"/>"
     + "<Table items=\"{/T}\"><columns><Column><Text text=\"Name\"/></Column><Column><Text text=\"Description of the program\"/></Column></columns>"
     + "<items><ColumnListItem><cells><Text text=\"{N}\"/><Text text=\"{D}\"/></cells></ColumnListItem></items></Table>";

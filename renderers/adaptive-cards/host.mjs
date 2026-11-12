@@ -64,19 +64,26 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
       return fetchImpl(url, { method: "POST", headers, body: text });
     };
     let res = await send();
+    // the refusal's body is read once; without a token it is the answer
+    let refusal = null;
     if (res.status === 403 && /^required$/i.test(res.headers.get("x-csrf-token") || "")) {
-      await res.text();
+      refusal = await res.text();
       const head = await fetchImpl(url, { method: "HEAD", headers: { "x-csrf-token": "Fetch" } });
-      csrf = head.headers.get("x-csrf-token") || null;
-      if (csrf) res = await send();
+      const token = head.headers.get("x-csrf-token") || "";
+      // an echoed Required/Fetch is no token
+      csrf = token && !/^(required|fetch)$/i.test(token) ? token : null;
+      if (csrf) {
+        res = await send();
+        refusal = null;
+      }
     }
     const id = res.headers.get("sap-contextid");
     if (validContextId(id)) contextId = id;
-    return { status: res.status, type: res.headers.get("content-type") || "", text: await res.text() };
+    return { status: res.status, type: res.headers.get("content-type") || "", text: refusal ?? await res.text() };
   }
 
   /** One response read and, when it is a valid one, adopted. */
-  function adopt(r) {
+  function adopt(r, sent) {
     if (r.status < 200 || r.status >= 300) {
       // the body is shown verbatim - it is text/plain, never markup (spec/errors.md)
       error = { text: r.text ? `HTTP ${r.status}\n${r.text}` : `HTTP ${r.status}` };
@@ -99,6 +106,7 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
       return;
     }
     error = null;
+    settle(sent);
     // a response of another app takes popup and popover down (spec/response.md#view-slots)
     if (json.S_FRONT.APP && state.app && json.S_FRONT.APP !== state.app) {
       state = { ...state, slots: { ...state.slots }, models: { ...state.models } };
@@ -182,7 +190,7 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
     for (const p of edits) pending[key].set(p, getAt(model, p));
   }
 
-  async function roundtrip(body) {
+  async function roundtrip(body, sent) {
     let r;
     try {
       r = await post(body);
@@ -190,7 +198,20 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
       error = { text: `the backend did not answer: ${(e && e.message) || e}` };
       return;
     }
-    adopt(r);
+    adopt(r, sent);
+  }
+
+  /** The edits of `key` a request carries, as they were when it left. */
+  function snapshot(key) {
+    return { key, edits: new Map(pending[key]) };
+  }
+
+  /** A won request: what it carried is no longer pending; what was typed
+   *  meanwhile is (spec/request.md#the-model-delta, [SRV] _clearSentPaths). */
+  function settle(sent) {
+    if (!sent) return;
+    const map = pending[sent.key];
+    for (const [path, v] of sent.edits) if (map.has(path) && JSON.stringify(map.get(path)) === JSON.stringify(v)) map.delete(path);
   }
 
   /** Run one queued job; the payload is built when it leaves. */
@@ -219,13 +240,12 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
       keepEdits(r.slot, r.model, r.edits);
       const box = messages.find((m) => m.kind === "box");
       messages = messages.filter((m) => m.kind !== "box");
-      if (box && box.onClose) await roundtrip(eventRequest(state, String(box.onClose), [r.action], buildPending(key)));
+      if (box && box.onClose) await roundtrip(eventRequest(state, String(box.onClose), [r.action], buildPending(key)), snapshot(key));
       return;
     }
-    // what is sent is no longer pending; what is typed meanwhile is
-    if (state.models[key]) state.models[key].data = r.model;
-    pending[key].clear();
-    await roundtrip(r.request);
+    // what is sent stays pending until its response is adopted
+    keepEdits(r.slot, r.model, r.edits);
+    await roundtrip(r.request, snapshot(key));
   }
 
   function buildPending(key) {
@@ -233,7 +253,6 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
     const m = state.models[key];
     if (!m || !pending[key].size) return {};
     const req = submitToRequest(state, { event: "_", ...(key !== "MAIN" ? { slot: key } : {}) }, { pending: [...pending[key].keys()], ids: [] });
-    pending[key].clear();
     return req.request.MODEL || {};
   }
 

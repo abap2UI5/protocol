@@ -137,7 +137,7 @@ fails when it is out of date).
 | `session.id-reuse` | MUST | core | An earlier draft id continues from the state it named (the retry of a lost response) | [sessions.md#drafts-are-snapshots](../../spec/sessions.md#drafts-are-snapshots) |
 | `session.unknown-draft` | MUST | core | An event on a draft id the backend never issued is refused with an error status | [sessions.md#unknown-and-expired-drafts](../../spec/sessions.md#unknown-and-expired-drafts) |
 | `session.failed-roundtrip-not-persisted` | MUST | core | A roundtrip that fails leaves the draft it started from usable, its changes discarded | [sessions.md#failed-roundtrips](../../spec/sessions.md#failed-roundtrips) |
-| `error.app-exception` | MUST | core | An exception in the app is answered with a 5xx and a plain-text body | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
+| `error.app-exception` | MUST | core | An exception in the app is answered with a 5xx and a non-empty error body | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
 | `error.details` | SHOULD | core | The error body names the app or the failure, so a developer can find the cause | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
 | `error.unknown-app` | MUST | core | An app start naming a class that is no app is refused with an error status | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
 | `error.not-sniffable` | SHOULD | core | An error body is served as text/plain with X-Content-Type-Options: nosniff | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |

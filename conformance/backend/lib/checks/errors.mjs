@@ -4,7 +4,7 @@ const E = "spec/errors.md";
 export default [
   {
     id: "error.app-exception",
-    title: "An exception in the app is answered with a 5xx and a plain-text body",
+    title: "An exception in the app is answered with a 5xx and a non-empty error body",
     level: "MUST",
     profile: "core",
     spec: `${E}#the-error-response`,
@@ -14,7 +14,7 @@ export default [
       t.ok(r.status >= 500 && r.status < 600, `expected 5xx, got ${r.status}`);
       t.ok(!(r.json && r.json.S_FRONT), "the error body must not be a roundtrip response");
       t.ok(r.text.trim().length > 0, "the error body must not be empty");
-      t.ok(/^text\/plain\b/i.test(r.headers["content-type"] || ""), `Content-Type must be text/plain, is "${r.headers["content-type"]}"`);
+      // text/plain is a SHOULD (spec/errors.md), checked by error.not-sniffable
     },
   },
   {

@@ -177,8 +177,10 @@ export function createSession({
     let res = await send();
     remember(res);
     // a token layer's refusal: fetch a token, send the same body once more
+    // the refusal's body is read once; without a token it is the answer
+    let refusal = null;
     if (res.status === 403 && /^required$/i.test(res.headers.get("x-csrf-token") || "")) {
-      await res.text();
+      refusal = await res.text();
       const head = await fetchImpl(url, { method: "HEAD", headers: { ...baseHeaders(), "x-csrf-token": "Fetch" }, signal });
       remember(head);
       const token = head.headers.get("x-csrf-token") || "";
@@ -186,11 +188,12 @@ export function createSession({
       if (csrf) {
         res = await send();
         remember(res);
+        refusal = null;
       }
     }
     const id = res.headers.get("sap-contextid");
     if (validContextId(id)) contextId = id;
-    return { status: res.status, type: res.headers.get("content-type") || "", text: await res.text() };
+    return { status: res.status, type: res.headers.get("content-type") || "", text: refusal ?? await res.text() };
   }
 
   // ---------------------------------------------------------- router ----
@@ -278,7 +281,7 @@ export function createSession({
   // ---------------------------------------------------------- adopt ----
 
   /** One response read and, when it is a valid one, adopted. */
-  function adopt(r) {
+  function adopt(r, sent) {
     notices = [];
     if (r.status < 200 || r.status >= 300) {
       // the body is shown verbatim - it is text/plain, never markup (spec/errors.md)
@@ -302,6 +305,7 @@ export function createSession({
       return;
     }
     error = null;
+    settle(sent);
     // a response of another app takes popup and popover down (spec/response.md#view-slots)
     if (json.S_FRONT.APP && state.app && json.S_FRONT.APP !== state.app) {
       state = { ...state, slots: { ...state.slots }, models: { ...state.models } };
@@ -421,7 +425,7 @@ export function createSession({
     followUp(action);
   }
 
-  async function roundtrip(body) {
+  async function roundtrip(body, sent) {
     // the non-empty hash goes with every request (spec/request.md#s_front)
     if (hash()) body.S_FRONT.HASH = hash();
     let r;
@@ -432,7 +436,20 @@ export function createSession({
       error = { text: `the backend did not answer: ${(e && e.message) || e}` };
       return;
     }
-    adopt(r);
+    adopt(r, sent);
+  }
+
+  /** The edits of `key` a request carries, as they were when it left. */
+  function snapshot(key) {
+    return { key, edits: new Map(pending[key]) };
+  }
+
+  /** A won request: what it carried is no longer pending; what was typed
+   *  meanwhile is (spec/request.md#the-model-delta, [SRV] _clearSentPaths). */
+  function settle(sent) {
+    if (!sent) return;
+    const map = pending[sent.key];
+    for (const [path, v] of sent.edits) if (map.has(path) && JSON.stringify(map.get(path)) === JSON.stringify(v)) map.delete(path);
   }
 
   function buildDelta(key) {
@@ -440,7 +457,6 @@ export function createSession({
     const m = state.models[key];
     if (!m || !pending[key].size) return {};
     const req = submitToRequest(state, { event: "_", ...(key !== "MAIN" ? { slot: key } : {}) }, { pending: [...pending[key].keys()] });
-    pending[key].clear();
     return req.request.MODEL || {};
   }
 
@@ -469,12 +485,11 @@ export function createSession({
     if (r.kind === "box") {
       const box = messages.find((m) => m.kind === "box");
       messages = messages.filter((m) => m.kind !== "box");
-      if (box && box.onClose) await roundtrip(eventRequest(state, String(box.onClose), [r.action], buildDelta("MAIN")));
+      if (box && box.onClose) await roundtrip(eventRequest(state, String(box.onClose), [r.action], buildDelta("MAIN")), snapshot("MAIN"));
       return;
     }
-    // what is sent is no longer pending; what is typed meanwhile is
-    pending[key].clear();
-    await roundtrip(r.request);
+    // what is sent stays pending until its response is adopted
+    await roundtrip(r.request, snapshot(key));
   }
 
   function enqueue(job) {
