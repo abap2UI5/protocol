@@ -24,7 +24,7 @@ const opt = (k, d) => {
 };
 
 async function start() {
-  if (name === "node-runtime") return (await import("../conformance/hosts/node-runtime/serve.mjs")).startNodeRuntime({ build: true });
+  if (name === "node-runtime") return (await import("../conformance/hosts/node-runtime/serve.mjs")).startNodeRuntime({ build: true, allowedHosts: "*" });
   if (name === "cap2ui5") return (await import("../conformance/hosts/cap2ui5/serve.mjs")).startCap2ui5();
   throw new Error("usage: node scripts/run-conformance.mjs node-runtime|cap2ui5 [--profile core|ui5] [--json <file>] [--expected]");
 }

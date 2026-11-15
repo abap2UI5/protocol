@@ -1,6 +1,6 @@
 {
-  "source": "app/webapp/core/Server.js, Session.js, Lib.js of abap2UI5 1.146.0 (abap2UI5), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
-  "backend": "@abap2ui5/node-runtime 1.146.0",
+  "source": "app/webapp/core/Server.js, Session.js, Lib.js of abap2UI5 1.148.0 (abap2UI5-1.148.0), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
+  "backend": "@abap2ui5/node-runtime 1.148.0",
   "exchanges": [
     {
       "label": "BIND: page load",
@@ -42,7 +42,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:39821",
+              "ORIGIN": "http://127.0.0.1:36231",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
             }
@@ -59,7 +59,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "85929D3ED268469EB42C8AD4A9FAC145",
+            "ID": "2CB944019A1F4C28839A2EDB1DA0B9A1",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -128,9 +128,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "85929D3ED268469EB42C8AD4A9FAC145",
+              "ID": "2CB944019A1F4C28839A2EDB1DA0B9A1",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 25
+              "MS_CLIENT_PREV": 23
             }
           }
         }
@@ -145,7 +145,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "DAC75ACC19BE4BE6BE7987886C52BD2F",
+            "ID": "E2721746751C46BCA60D93B4263F5F69",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -189,9 +189,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "DAC75ACC19BE4BE6BE7987886C52BD2F",
+              "ID": "E2721746751C46BCA60D93B4263F5F69",
               "EVENT": "ADD_ROW",
-              "MS_CLIENT_PREV": 29
+              "MS_CLIENT_PREV": 18
             }
           }
         }
@@ -206,7 +206,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "AD23998FCA604F0F921F4D06B69E2845",
+            "ID": "6D772E95ED214D5DA4EF43841D154AF7",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -284,7 +284,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:39821",
+              "ORIGIN": "http://127.0.0.1:36231",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -301,7 +301,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "CB4CC6C066FD4E03B69E3CB3D5DC0710",
+            "ID": "5B3F577B55B64024BC7D8618244F8A1E",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -333,9 +333,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "CB4CC6C066FD4E03B69E3CB3D5DC0710",
+              "ID": "5B3F577B55B64024BC7D8618244F8A1E",
               "EVENT": "ECHO",
-              "MS_CLIENT_PREV": 13,
+              "MS_CLIENT_PREV": 15,
               "T_EVENT_ARG": [
                 "alpha",
                 2,
@@ -358,7 +358,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "3A9883A3640A4401B253B8E7F09C2770",
+            "ID": "D083E1E4FADC4D28B61A41AE0E903026",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -380,7 +380,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "3A9883A3640A4401B253B8E7F09C2770",
+              "ID": "D083E1E4FADC4D28B61A41AE0E903026",
               "EVENT": "NOOP",
               "MS_CLIENT_PREV": 16
             }
@@ -397,7 +397,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "0AAA7C31F1CE40B2B5E6FE4C749D4CE0",
+            "ID": "2C24E592597247B6A4B20F866C9B811F",
             "PROTOCOL": 2
           }
         }
@@ -414,7 +414,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/z2ui5-xapp-state=3A9883A3640A4401B253B8E7F09C2770",
+              "HASH": "#/z2ui5-xapp-state=D083E1E4FADC4D28B61A41AE0E903026",
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -444,8 +444,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 14,
-              "ORIGIN": "http://127.0.0.1:39821",
+              "MS_CLIENT_PREV": 13,
+              "ORIGIN": "http://127.0.0.1:36231",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -462,7 +462,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "444E41FE50214B65AC0B57C0005E707F",
+            "ID": "B17BC0A87BFC4FA68270DE9CFDD59848",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -530,7 +530,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:39821",
+              "ORIGIN": "http://127.0.0.1:36231",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -547,7 +547,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "E8750F5CD81A415A85D38B17EF392B23",
+            "ID": "A5D2336450A34DE7A17BC7C87B071274",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -584,9 +584,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "E8750F5CD81A415A85D38B17EF392B23",
+              "ID": "A5D2336450A34DE7A17BC7C87B071274",
               "EVENT": "COUNT",
-              "MS_CLIENT_PREV": 15
+              "MS_CLIENT_PREV": 21
             }
           }
         }
@@ -601,7 +601,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "B0C394C55D97433A9719883D9B0EA3E7",
+            "ID": "B4F8B02BDD4C481F84BB3212C46E48B4",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -621,9 +621,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "B0C394C55D97433A9719883D9B0EA3E7",
+              "ID": "B4F8B02BDD4C481F84BB3212C46E48B4",
               "EVENT": "CALL",
-              "MS_CLIENT_PREV": 11
+              "MS_CLIENT_PREV": 12
             }
           }
         }
@@ -638,7 +638,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV_TGT",
-            "ID": "8FD1D24AA0D149A6891B5E86F0DD1A3F",
+            "ID": "D9E8473A1B394C75AEEDFF5641B40763",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -654,7 +654,7 @@
                   {
                     "checkNavAppCall": true,
                     "navAppCallPrevApp": "Z2UI5_CL_CONF_ROUTE",
-                    "navAppCallPrevId": "620AC095CA1A438DA708C05D72473393",
+                    "navAppCallPrevId": "B72C7DB1DD654B9BB39C1C8A0A17E0BB",
                     "setNavRouting": "KEEP"
                   }
                 ]
@@ -679,7 +679,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/B0C394C55D97433A9719883D9B0EA3E7",
+              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/B4F8B02BDD4C481F84BB3212C46E48B4",
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -709,8 +709,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 21,
-              "ORIGIN": "http://127.0.0.1:39821",
+              "MS_CLIENT_PREV": 24,
+              "ORIGIN": "http://127.0.0.1:36231",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -727,7 +727,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "FD2235CAC1C24E1A8263EE6E11AC40B8",
+            "ID": "E40F0029C4D74C46AE35D557FB26BE21",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -793,7 +793,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:39821",
+              "ORIGIN": "http://127.0.0.1:36231",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
             }
@@ -810,7 +810,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "2C73E12FB384481192949A354C9324F8",
+            "ID": "13F28DACC5BB447CB74E363308278FCD",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -837,9 +837,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "2C73E12FB384481192949A354C9324F8",
+              "ID": "13F28DACC5BB447CB74E363308278FCD",
               "EVENT": "POPUP_OPEN",
-              "MS_CLIENT_PREV": 11
+              "MS_CLIENT_PREV": 21
             }
           }
         }
@@ -854,7 +854,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "9408EEA8DA504C388B51C56A8224944E",
+            "ID": "92237AF6215142D9B9D40695B2D11AB1",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -884,9 +884,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "9408EEA8DA504C388B51C56A8224944E",
+              "ID": "92237AF6215142D9B9D40695B2D11AB1",
               "EVENT": "POPOVER_OPEN",
-              "MS_CLIENT_PREV": 16
+              "MS_CLIENT_PREV": 15
             }
           }
         }
@@ -901,7 +901,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "DC2F54E778E44F4DBF2C2703C60330C0",
+            "ID": "96DC6D9163AD4026BB049879D2467DB1",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [

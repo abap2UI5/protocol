@@ -2,8 +2,10 @@
 # traffic (shipped validator and ajv), docs links and anchors, the portable
 # profile, the conformance apps' abapGit format, the CLI, and the backend
 # suite against BOTH reference backends:
-#   node-runtime  @abap2ui5/node-runtime + the ABAP apps, transpiled in the job
-#                 (open-abap-core fetched with git, cached by its commit)
+#   node-runtime  @abap2ui5/node-runtime + the ABAP apps, transpiled with the
+#                 framework in the job by the package's abap2ui5-transpile
+#                 (open-abap-core and express-icf-shim fetched with git,
+#                 cached by their commits)
 #   cap2ui5       a CAP project + @cap2ui5/cds-plugin + the JS apps
 # plus abaplint over the ABAP apps, and the frontend suite against the three
 # in-process frontends: the agent client, the Adaptive Cards renderer
@@ -11,7 +13,7 @@
 # renderer (renderers/terminal/, golden screens, and end to end against the
 # node-runtime host). Each backend run takes seconds; the install dominates.
 # The frontend job runs the frontend suite against the UI5 SPA of abap2UI5
-# (the commit the spec is derived from, app/webapp only) in Chromium - the
+# (the release commit the spec is derived from, app/webapp only) in Chromium - the
 # test job skips that test, it has no browser and no checkout - and records
 # the reports of the UI5 SPA, the agent client and the Adaptive Cards and
 # terminal renderers.
@@ -49,13 +51,17 @@ jobs:
             package-lock.json
             conformance/hosts/cap2ui5/package-lock.json
       - run: npm ci
-      - name: open-abap-core commit of the runtime
+      - name: open-abap-core and express-icf-shim commits of the runtime
         id: core-sha
-        run: echo "sha=$(node -p "require('@abap2ui5/node-runtime/package.json').abap2ui5.openAbapCore")" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(node -p "const a = require('@abap2ui5/node-runtime/package.json').abap2ui5; a.openAbapCore + '-' + a.expressIcfShim")" >> "$GITHUB_OUTPUT"
+      # after npm ci, which empties node_modules: where abap2ui5-transpile
+      # keeps the two checkouts
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: .cache/open-abap-core
-          key: open-abap-core-${{ steps.core-sha.outputs.sha }}
+          path: |
+            node_modules/.cache/abap2ui5-node-runtime/open-abap-core
+            node_modules/.cache/abap2ui5-node-runtime/express-icf-shim
+          key: abap2ui5-transpile-libs-${{ steps.core-sha.outputs.sha }}
       - name: cap2UI5 host
         run: npm ci --prefix conformance/hosts/cap2ui5 --no-audit --no-fund
       - name: abaplint (ABAP conformance apps)
@@ -88,7 +94,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: abap2UI5/abap2UI5
-          ref: 1bbb9d47e9dce37015f2aa15f405689465f5b909   # main; carries the box-details fix (72c86cc)
+          ref: 610d9ae098b1fc17c2eda2b27b922659b1ed2eb3   # Release 1.148.0 - the commit @abap2ui5/node-runtime 1.148.0 was built from
           path: deps/abap2UI5
           sparse-checkout: app/webapp
           persist-credentials: false
