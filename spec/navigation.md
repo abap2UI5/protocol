@@ -14,7 +14,8 @@ this order ([H] `request_json_to_abap`, `main_begin`; [ACT]
    `CONFIG.ComponentData.startupParameters.app_start`).
 3. **`?app_start=<CLASS>`** in `SEARCH`, together with an app-state draft
    from `#/z2ui5-xapp-state=<DRAFT>` in the hash when there is one
-   ([the app-state hash](#the-app-state-hash)).
+   ([the app-state hash](#the-app-state-hash)) - or that app-state draft
+   alone, when nothing above names a class ([H] `main_begin`).
 4. **Nothing named** - the backend's own start app (abap2UI5:
    `Z2UI5_CL_UI5_APP_START`, a page to type a class name into). A backend
    SHOULD answer such a request with a valid response that displays some
@@ -131,6 +132,17 @@ restores that draft ([H] `request_app_start_draft`).
   `factory_first_start`). *Checked by:* `route.app-state`.
 - A route restore (`#/app/...`) is not an app-state opt-in and MUST NOT turn
   the app-state hash on.
+- The app-state hash names the app as well: a session that reached its app
+  by navigation has no `?app_start=` in its URL, and its bookmark is the
+  hash alone. A backend SHOULD restore the draft of such a request like
+  one that names the class ([H] `main_begin`: an app-state draft makes the
+  request a first start). When that draft is gone no class is left to
+  start fresh, so the request ends where one that names nothing ends - on
+  the backend's start app - and SHOULD tell the user with a message ([ACT]
+  `factory_first_start`). *Checked by:* `route.app-state-names-no-app`.
+- **Implementation note.** Up to abap2UI5 1.146.0 a request with the
+  app-state hash and no class opened the start app and dropped the saved
+  state without a word.
 
 ## The router action
 
