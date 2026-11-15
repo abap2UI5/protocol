@@ -21,7 +21,7 @@ integer - **2** today ([TY] `c_protocol`, stamped by [H]
 - Requests carry no protocol number; the backend reads what it knows and
   ignores the rest ([request.md](request.md)).
 
-The number is not the product version (`z2ui5_if_app=>version`, 1.146.0)
+The number is not the product version (`z2ui5_if_app=>version`, 1.148.0)
 and does not move with a release. It moves when a response can no longer be
 read by a frontend written for the previous number - the `S_ACTION`
 envelope replacing `S_FRONT.PARAMS` was such a change (protocol 2), and so
@@ -52,7 +52,7 @@ right.
 
 ## This specification's own version
 
-The specification has a revision of its own (0.3, see
+The specification has a revision of its own (0.4, see
 [README.md](README.md)), and the package `@abap2ui5/protocol` a semantic
 version. A revision that only clarifies text or adds checks keeps the
 protocol number; the conformance suite of a revision checks protocol 2 as

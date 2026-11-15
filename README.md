@@ -52,23 +52,24 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 
 ## Status
 
-- **Protocol 2**, specification revision 0.3, derived from abap2UI5 1.146.0
-  (commit `b812079`); the maintainer decided the ten open questions
+- **Protocol 2**, specification revision 0.4, derived from abap2UI5 1.148.0
+  (its release commit `610d9ae`); the maintainer decided ten open
+  questions in revision 0.3, an eleventh is open
   ([spec/open-questions.md](spec/open-questions.md)).
-- **Backend suite: 76 checks** (62 MUST, 14 SHOULD; 69 core, 7 UI5 profile).
-  Both reference backends pass every check but `error.no-reflection`, new in
-  revision 0.3 (the request URL reflected into the 500 body; fixed in
-  abap2UI5 core, pinned until the runtime release carries it) -
-  `node-runtime` 75/76, `cap2ui5` 74/76 with one SHOULD warning
-  ([conformance/RESULTS.md](conformance/RESULTS.md)).
-- **Schemas** validate all 336 recorded requests, 320 responses and 18 agent
+- **Backend suite: 77 checks** (62 MUST, 15 SHOULD; 70 core, 7 UI5 profile).
+  Both reference backends pass every MUST - `node-runtime`
+  (`@abap2ui5/node-runtime` 1.148.0) 77/77, `cap2ui5`
+  (`@cap2ui5/cds-plugin` 0.5.0) 76/77 with one SHOULD warning
+  ([conformance/RESULTS.md](conformance/RESULTS.md)). No failure is pinned:
+  `error.no-reflection` passes since both hosts run a release with the fix.
+- **Schemas** validate all 344 recorded requests, 328 responses and 18 agent
   snapshots, checked by the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
 - **Frontend suite: 81 checks** (66 MUST, 15 SHOULD; 66 core, 8 portable,
   4 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
-  SPA passes every MUST but one - message box details stay empty on OpenUI5
-  >= 1.120 (fix under way); the agent client (mcp-server `a4d9f07`), the
+  SPA of abap2UI5 1.148.0 passes every check that applies (77, 4 skipped);
+  the agent client (mcp-server `a4d9f07`), the
   Adaptive Cards renderer and the terminal renderer pass every check that
   applies to them (61, 66 and 72 - the terminal's include the router
   checks); the Web Components frontend 68 of 68, with one intermittent
@@ -93,7 +94,7 @@ npm ci
 npx abap2ui5-conformance backend --url http://localhost:3000/ --profile ui5
 
 # against the reference backends
-npm run conformance:node-runtime        # transpiles the ABAP apps, serves, runs
+npm run conformance:node-runtime        # transpiles the framework with the ABAP apps, serves, runs
 npm ci --prefix conformance/hosts/cap2ui5
 npm run conformance:cap2ui5
 ```

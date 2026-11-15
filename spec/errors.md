@@ -29,8 +29,10 @@ plain-text body** - never with a 2xx and never with a response object
   body. What it repeats from the request for diagnosis - the URL, the class
   name of an app start, an event name - is first reduced to characters that
   cannot be read as markup or close a quoted value (the reference strips the
-  class name to `A-Z a-z 0-9 _ /`, [ACT] `app_start_safe`; the same strip
-  applies to the URL, [H] `request_context_info`). The `text/plain` and
+  class name to `A-Z a-z 0-9 _ /`, [ACT] `app_start_safe`, and the URL to
+  letters, digits and `/ ? & = . _ - ~ : % +`, [H] `context_info_url_safe` -
+  an allow-list, so a percent-encoded URL arrives unchanged). The
+  `text/plain` and
   `nosniff` rules above are the second line of defence, not the first: a
   body that is logged, mailed or pasted into a ticket leaves its headers
   behind. *Checked by:* `error.no-reflection`. (Decided in revision 0.3,
@@ -40,7 +42,7 @@ The reference body - unless the user exit hides details
 ([EXIT] `check_hide_error_details`, then it is `Internal Server Error`):
 
 ```
-abap2UI5 1.146.0 - unhandled exception in a POST request
+abap2UI5 1.148.0 - unhandled exception in a POST request
 
 --- error ---
 Request failed in app Z2UI5_CL_CONF_ERROR, event FAIL, draft 7298..., url /?app_start=Z2UI5_CL_CONF_ERROR
@@ -58,13 +60,13 @@ and attributes of every cause ([HTTP] `_error_body`).
 
 **Implementation notes.**
 
-- abap2UI5 1.146.0 - the release both reference hosts run - still reflects
-  the request URL into the first frame verbatim (the class name in it is
-  stripped, the URL is not, [H] `request_context_info`) and fails
-  `error.no-reflection`; the fix strips the URL like the class name
+- abap2UI5 up to 1.146.0 reflected the request URL into the first frame
+  verbatim (the class name in it was stripped, the URL was not) and failed
+  `error.no-reflection`. 1.147.0 strips it ([H] `context_info_url_safe`);
+  both reference hosts run a release with the fix and pass the check
   ([../conformance/RESULTS.md](../conformance/RESULTS.md)). The frontend
-  rule below (the body is shown as text, never as markup) keeps that body
-  harmless on screen.
+  rule below (the body is shown as text, never as markup) keeps the body
+  of an older backend harmless on screen.
 - cap2UI5 answers an exception that a **JavaScript** app throws with
   `roundtrip failed (<correlation id>)` and logs the cause on the server
   ([CAP] `cds-plugin.js` `roundtrip`): such an exception is not an ABAP

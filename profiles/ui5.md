@@ -26,6 +26,11 @@ abbreviations: [../spec/README.md](../spec/README.md#sources).
 - `GET <endpoint>?z2ui5-bundle` answers the same frontend as one JavaScript
   file for hosts that embed the component (`@abap2ui5/embed-control`,
   [HTTP] `_http_get_bundle`).
+- `GET <endpoint>?z2ui5-bundle=devtools` answers the frontend's developer
+  tools as a JavaScript file of their own, with an `ETag` of its own - the
+  page no longer carries them and loads them when they are first opened
+  ([HTTP] `_http_get_devtools`; from abap2UI5 1.147.0 on). An app never
+  needs it.
 
 ## Views
 
@@ -74,11 +79,15 @@ arguments when the event fires, and the controller methods `eB`, `eBP` and
   breaks escaped, [EV] `get_t_arg`), or raw when they start with `$`
   or `{` (a binding or expression: `${ID}`, `${$source>/text}`,
   `${$parameters>/value}`, `$event`) - unless the wire asked for literal
-  arguments (`s_ctrl-check_arg_literal`). An empty argument between filled
+  arguments (`s_ctrl-check_arg_literal`), or the braces of the argument do
+  not balance: that is text, and is quoted ([EV] `check_arg_raw`). An
+  empty argument between filled
   ones keeps its place as `''`. *Checked by:* `ui5.event-wire`,
   `ui5.leave-wire`, `ui5.frontend-wire`.
-- A control-valued argument (a UI5 control or an array of them) is
-  marshalled to plain data before it is sent ([LIB] `normalizeEventArgs`).
+- An argument that is no plain data - a UI5 control or an array of them,
+  a binding context, the event itself (`$event`) - is marshalled to plain
+  data before it is sent ([LIB] `normalizeEventArgs`,
+  [../spec/request.md](../spec/request.md#event-arguments)).
 - A frontend implementing this profile MUST implement exactly these wire
   forms: they are written by every deployed backend. *Frontend checks:*
   `ui5.wire-ebp`, `ui5.wire-source-argument`, `ui5.wire-queue-last`,

@@ -182,7 +182,10 @@ Rules for the frontend:
   ([V1] `_processAfterRendering`); a frontend without a URL (native, agent)
   MAY ignore the action.
 - An embedded frontend (a component inside a host app) MUST leave the hash
-  to its host and send no `HASH` ([RT] `sync`, [SRV] `roundtrip`).
+  to its host and send no `HASH` ([RT] `sync`, [SRV] `roundtrip`) - unless
+  the host handed the page's URL back to it (the UI5 component's
+  `ownsPage` setting, kept as `state.ownsHash`): then the hash is the
+  frontend's own again, and the rules above apply to it.
 - With `setHashEvent` registered, a hash change raises that event as an
   ordinary event request; the new hash travels in `S_FRONT.HASH` ([RT]
   `dispatchAppHashChange`).

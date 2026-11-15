@@ -1,15 +1,16 @@
 # Results
 
-Backend suite, profile `ui5` (76 checks: 69 core, 7 UI5-profile; 62 MUST,
-14 SHOULD), run 2026-10-03 with `npm run conformance:<backend>`. The traffic
-of these runs is recorded in [`../traffic/`](../traffic/). Revision 0.3 added
-`error.no-reflection` (MUST, [open question 3](../spec/open-questions.md#3-the-request-url-reflected-into-the-error-body));
-both reference backends fail it - see [below](#the-request-url-reflected-into-the-error-body).
+Backend suite, profile `ui5` (77 checks: 70 core, 7 UI5-profile; 62 MUST,
+15 SHOULD), run 2026-11-15 with `npm run conformance:<backend>`. The traffic
+of these runs is recorded in [`../traffic/`](../traffic/). Revision 0.4
+moved both reference hosts to current releases and added
+`route.app-state-names-no-app` (SHOULD); no failure is pinned any more -
+see [below](#the-request-url-reflected-into-the-error-body).
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| `node-runtime` | `@abap2ui5/node-runtime` 1.146.0 (abap2UI5 1.146.0, transpiled) | the ABAP apps, transpiled with `@abaplint/transpiler-cli` 2.13.93 | 75 | 1 | 0 | 0 | one MUST failed: `error.no-reflection` (fix in abap2UI5 core, pinned) |
-| `cap2ui5` | `@cap2ui5/cds-plugin` 0.4.0 on `@abap2ui5/node-runtime` 1.146.0, `@sap/cds` 10 | the JavaScript apps | 74 | 1 | 1 | 0 | one MUST failed: `error.no-reflection` (inherited from the runtime, pinned) |
+| `node-runtime` | `@abap2ui5/node-runtime` 1.148.0 (abap2UI5 1.148.0, transpiled) | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.5) | 77 | 0 | 0 | 0 | conformant (ui5) |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.5.0 on `@abap2ui5/node-runtime` 1.147.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 76 | 0 | 1 | 0 | conformant (ui5), one SHOULD warning: `error.details` (below) |
 
 Per area (both backends identical except `errors`):
 
@@ -22,38 +23,100 @@ Per area (both backends identical except `errors`):
 | message | 4 | 4 pass | 4 pass |
 | slots | 7 | 7 pass | 7 pass |
 | action | 3 | 3 pass | 3 pass |
-| nav / route | 14 | 14 pass | 14 pass |
+| nav / route | 15 | 15 pass | 15 pass |
 | session | 5 | 5 pass | 5 pass |
-| error | 5 | 4 pass, 1 fail (`error.no-reflection`) | 3 pass, 1 fail (`error.no-reflection`), 1 warn (`error.details`) |
+| error | 5 | 5 pass | 4 pass, 1 warn (`error.details`) |
 | ui5 | 7 | 7 pass | 7 pass |
 
 The ABAP system itself (abap2UI5 on NetWeaver / ABAP Cloud) has not been run
 yet - it needs a system with the apps pulled in by abapGit; the transpiled
 runtime is the same framework source.
 
+The two hosts do not run the same framework release: cap2UI5 0.5.0 pins
+`@abap2ui5/node-runtime` 1.147.0, the node-runtime host runs 1.148.0. The
+backend sources of the two releases differ in where helper methods live,
+not in what they answer (abap2UI5 `d771aba`..`610d9ae`), and the recorded
+traffic of the two is identical ([below](#differences-between-the-two-backends)).
+
+## The move from 1.146.0 to 1.148.0
+
+Until 2026-11-15 both hosts ran abap2UI5 1.146.0 (`@abap2ui5/node-runtime`
+1.146.0; `@cap2ui5/cds-plugin` 0.4.0 on it): 75 and 74 of 76 passed, with
+`error.no-reflection` failing on both and pinned. What changed with the
+move, as measured:
+
+- **`error.no-reflection` passes on both** - the one result that changed.
+  The pin in [`../test/lib/expected.mjs`](../test/lib/expected.mjs) is
+  removed ([next section](#the-request-url-reflected-into-the-error-body)).
+- **Every other check answers as before.** Compared check by check with the
+  recording of 1.146.0 (draft ids, ports and the page's `ETag` normalized),
+  the suite traffic differs only in the version line of the error bodies,
+  the URL in them (stripped now), and the size of the page (377,059 ->
+  342,499 characters: the developer tools left the page for a bundle of
+  their own, `GET ?z2ui5-bundle=devtools`,
+  [../profiles/ui5.md](../profiles/ui5.md#the-page)).
+- **The UI5 frontend's requests are the same** for the recorded scenarios
+  (`traffic/*/ui5-frontend.json`, the frontend of abap2UI5 1.148.0 run in
+  Node): apart from the measured `MS_CLIENT_PREV` no request and no
+  response differs from the recording of 1.146.0. The agent client's
+  traffic and snapshots are identical too.
+- **The node-runtime host is built differently.** From 1.148.0 on the
+  package's recipe for a host's own classes is one transpile of the
+  framework and the classes (`abap2ui5-transpile`) into a runtime of the
+  host's own, imported through its `host.mjs`; loading
+  `apps/index.mjs` next to the package's `output/` is deprecated.
+  `conformance/hosts/node-runtime/` follows the new recipe, with the
+  transpiler the package names (2.14.5).
+- **The node-runtime host answers the suite with its Host/Origin guard
+  off.** From 1.147.0 on `serve()` refuses a request with a foreign
+  `Origin` itself - 403, `text/plain`, no `nosniff`, a body of its own
+  (`srv/hostguard.mjs`) - before the framework's CSRF gate sees it.
+  `transport.csrf-origin` passes either way (it asks for the 403), but
+  with the guard on it no longer tests the framework. The suite runs and
+  the recorder start the host with `allowedHosts: "*"`, on a loopback
+  port that lives for the run, so that the gate of
+  [../spec/transport.md](../spec/transport.md#csrf-and-origin) is what
+  answers and what `traffic/` records, as on cap2UI5 (which mounts the
+  unguarded handler). `npm run serve:node-runtime` keeps the guard.
+- **New check `route.app-state-names-no-app`** (SHOULD): an app-state hash
+  restores its draft when the request names no class, and a draft that is
+  gone ends on the start app with a toast - behaviour of abap2UI5 from
+  1.147.0 on ([../spec/navigation.md](../spec/navigation.md#the-app-state-hash));
+  both hosts pass. It was not run against 1.146.0; from the source
+  ([H] `main_begin` of `2a55c9f`) that release answers such a request with
+  the start app and would warn.
+
+What moved on the wire between the two releases without changing a result
+is listed in [../CHANGELOG.md](../CHANGELOG.md) and written into the spec.
+
 ## The request URL reflected into the error body
 
 `error.no-reflection` (MUST since revision 0.3) starts an unknown app with
 `<script>`, `<img>` and quotes in the request URL and requires the 500 body
-not to contain them verbatim. Both reference backends fail it, identically:
+not to contain them verbatim. Up to abap2UI5 1.146.0 both reference
+backends failed it, identically:
 
 ```
 Request failed, no event (initial rendering), app_start Z2UI5_CL_CONF_DOES_NOT_EXIST,
 url /?app_start=Z2UI5_CL_CONF_DOES_NOT_EXIST&conformance=<script>alert("conformance-probe")</script><img src='conf...
 ```
 
-The class name is stripped to name characters ([ACT] `app_start_safe`),
-the URL is not (abap2UI5 1.146.0, [H] `request_context_info`). *The
-backend is wrong* (the maintainer's decision on
-[open question 3](../spec/open-questions.md#3-the-request-url-reflected-into-the-error-body)):
-the fix strips the URL like the class name and is made in abap2UI5 core
-(`ed8115b` "Strip the request URL to safe characters in the 500 body", on
-its working branch on 2026-10-03); cap2UI5 hosts the same framework and
-gets it with the runtime. Until both
-reference hosts run a release with the fix, the failure is pinned in
-[`../test/lib/expected.mjs`](../test/lib/expected.mjs) (the tests fail
-when it starts to pass, so the pin is removed with the bump) and the
-recorded traffic carries it (`counts.fail` 1 on both).
+The class name was stripped to name characters ([ACT] `app_start_safe`),
+the URL was not ([H] `request_context_info`). *The backend was wrong* (the
+maintainer's decision on
+[open question 3](../spec/open-questions.md#3-the-request-url-reflected-into-the-error-body));
+abap2UI5 fixed it in `72c86cc`, released with 1.147.0: the URL is stripped
+to letters, digits and `/ ? & = . _ - ~ : % +` ([H]
+`context_info_url_safe`). Both hosts now answer
+
+```
+Request failed, no event (initial rendering), app_start Z2UI5_CL_CONF_DOES_NOT_EXIST,
+url /?app_start=Z2UI5_CL_CONF_DOES_NOT_EXIST&conformance=scriptalertconformance-probe/scriptimgsrc=conformance-probe
+```
+
+and pass. The pin in [`../test/lib/expected.mjs`](../test/lib/expected.mjs)
+is removed; the recorded traffic carries the pass (`counts.fail` 0 on
+both).
 
 ## Differences between the two backends
 
@@ -106,7 +169,11 @@ records - as a rule, or as an implementation note:
   as an implementation note in revision 0.1 (safe only as `text/plain` +
   `nosniff` + a frontend that renders text); since revision 0.3 a backend
   MUST NOT reflect unvalidated request data (`error.no-reflection`, above;
-  [../spec/errors.md](../spec/errors.md#the-error-response)).
+  [../spec/errors.md](../spec/errors.md#the-error-response)), and since
+  abap2UI5 1.147.0 the reference does not.
+- **An app-state hash names the app** - normative since revision 0.4
+  (SHOULD, `route.app-state-names-no-app`), the behaviour of the reference
+  from 1.147.0 on.
 - **`DEFAULT` routing mode on every hop to an app without a mode** -
   normative ([../spec/navigation.md](../spec/navigation.md#the-router-action)).
 - **Event argument conversion** (`true` -> `X`, `null`/`false` -> empty,
@@ -115,8 +182,10 @@ records - as a rule, or as an implementation note:
 ## Frontend suite
 
 Frontend suite, 81 checks (66 MUST, 15 SHOULD; 66 core, 8 portable, 4 UI5,
-3 semantic), run 2026-10-03 (the terminal renderer and the Adaptive Cards
-renderer again 2026-10-04) with
+3 semantic), run 2026-11-15 against the traffic of the 1.148.0 recording -
+the UI5 SPA, the agent client, the Adaptive Cards and the terminal
+renderer; the Web Components row is the run of 2026-10-03 and was not
+repeated - with
 `abap2ui5-conformance frontend --adapter <name>` (each frontend at its
 widest profile). The scripted backend answers from
 [`../traffic/node-runtime/`](../traffic/node-runtime/) plus synthetic edge
@@ -126,11 +195,11 @@ perform.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 main `1bbb9d4` `app/webapp` (which CI pins), OpenUI5 1.153.0 (npm), Chromium 141 | ui5 | 77 | 0 | 0 | 4 | conformant (ui5) - `portable.box-details` fixed in abap2UI5 `72c86cc` |
+| UI5 SPA (`ui5`) | abap2UI5 1.148.0 `app/webapp` (release commit `610d9ae`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 77 | 0 | 0 | 4 | conformant (ui5) |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `a4d9f07` (main, PR #44; vendored) | semantic | 61 | 0 | 0 | 20 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 66 | 0 | 0 | 15 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 72 | 0 | 0 | 9 | every check it can be driven through holds, the router checks included |
-| Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
+| Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
 The UI5 SPA run is stable (two consecutive runs, identical results) and
@@ -139,8 +208,22 @@ the Adaptive Cards and the terminal result check by check. Until 2026-10-10
 CI pinned abap2UI5 `5d7e91f` (`app/webapp` as at `b812079`, 1.146.0), where
 the UI5 SPA failed `portable.box-details` (finding 1 below; 76 pass, 1 fail,
 4 skip, with OpenUI5 1.144.0 and 1.153.0 alike). abap2UI5 fixed it on main in
-`72c86cc` (open question 7, decided: expanded); CI pins a main that carries
-the fix, and the pin is gone - every MUST holds, 77 pass, 4 skip.
+`72c86cc` (open question 7, decided: expanded); CI pinned a main that
+carried the fix (`1bbb9d4`), and the pin is gone - every MUST holds, 77
+pass, 4 skip.
+
+Since 2026-11-15 CI pins the release commit of abap2UI5 1.148.0
+(`610d9ae`), the frontend `@abap2ui5/node-runtime` 1.148.0 ships: the same
+77 pass, 0 fail, 0 warn, 4 skip, check by check, in two consecutive runs.
+Nothing the suite checks moved in the frontend between `1bbb9d4` and the
+release. `request.config-cadence` was made exact on the way: it counted a
+static block in an event request as repeated even when no earlier request
+had carried it, and from 1.147.0 on the UI5 frontend sends `S_UI5` alone
+with the first request that finds it loaded
+([../spec/request.md](../spec/request.md#config-the-session-block)) -
+*the check was imprecise*; it now flags only a block the backend already
+has. In the suite's page `S_UI5` is loaded before the first request, so
+the SPA's result did not depend on it.
 
 ### Findings - the UI5 SPA
 
@@ -209,8 +292,12 @@ and the CSRF token handshake (`transport.csrf-token`) and edits made during
 a roundtrip kept (`model.pending-survive-push`). Skipped: the portable and
 UI5 profiles (not claimed), the URL, DOM and focus checks (no browser), a
 nested-table cell (the snapshot does not describe nested tables), a
-programmatic model edit. `traffic/*/agent-client.json` is still the
-recording of `ea4e9fa`; `semantic.recorded-snapshots` passes against it.
+programmatic model edit. `traffic/*/agent-client.json` was recorded again
+on 2026-11-15 with the
+vendored client (the commit `adapters/vendor/mcp-server/source.json`
+names) against both hosts; its exchanges and snapshots are identical to
+the recording of `ea4e9fa` but for the draft ids, and
+`semantic.recorded-snapshots` passes against it.
 
 ### Findings - the Adaptive Cards renderer
 

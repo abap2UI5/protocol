@@ -218,7 +218,15 @@ export default [
         return out;
       };
       t.ok(sent[0], "the frontend sends CONFIG with events but not with the app start");
-      for (const i of [1, 2]) t.deepEqual(statics(sent[i]), [], `static blocks repeated by event request #${i + 1}`);
+      // repeated = a static block the backend has from an earlier request of
+      // this page load; one that goes out late for the first time (the UI5
+      // frontend's S_UI5, loaded asynchronously, [SES] `config`) is no repeat
+      const has = new Set(statics(sent[0]));
+      for (const i of [1, 2]) {
+        const now = statics(sent[i]);
+        t.deepEqual(now.filter((k) => has.has(k)), [], `static blocks repeated by event request #${i + 1}`);
+        for (const k of now) has.add(k);
+      }
     },
   },
 ];

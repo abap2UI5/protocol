@@ -2,6 +2,68 @@
 
 ## Unreleased
 
+- **Specification revision 0.4 - re-derived from abap2UI5 1.148.0**
+  (release commit `610d9ae`; revisions 0.1 to 0.3 were derived from
+  `b812079`, 1.146.0). Protocol 2 stays: `c_protocol` is 2 in 1.148.0, and
+  nothing below removes or retypes a key. What moved on the wire, all of
+  it released with 1.147.0 (1.148.0 changed the Node packaging and moved
+  helper methods, not the wire) and each confirmed in the release's source
+  or in the recorded traffic:
+  - *Error body.* The request URL in the first frame is stripped to an
+    allow-list ([H] `context_info_url_safe`); `error.no-reflection` passes
+    on both reference hosts and is unpinned (`test/lib/expected.mjs` pins
+    nothing).
+  - *App start.* An app-state hash restores its draft when the request
+    names no class; when that draft is gone the start app answers, with a
+    toast (`spec/navigation.md`; new backend check
+    `route.app-state-names-no-app`, SHOULD - the suite has 77 checks).
+  - *Session block.* The UI5 frontend sends `S_UI5` alone with the first
+    request that finds it loaded instead of repeating the whole static
+    block until then; the backend merges an `S_UI5` that comes without the
+    device profile. Numbers of the block the backend cannot hold are read
+    as absent instead of failing the request (`spec/request.md`). The
+    frontend check `request.config-cadence` flags only a block the backend
+    already has.
+  - *Event arguments.* A binding context travels as `{ PATH, OBJECT }`,
+    the UI5 event itself as `{ ID, SOURCE, PARAMETERS }`; a request that
+    cannot be serialized is not sent (`spec/request.md`). A raw wire
+    argument whose braces do not balance is quoted (`profiles/ui5.md`).
+  - *Follow-up actions.* The UI5 frontend resolves a `${/PATH}` argument of
+    a queued action against the model. Recorded, not required - new
+    [open question 11](spec/open-questions.md#11-bound-arguments-of-queued-follow-up-actions).
+  - *Embedded frontends.* A host can hand the URL back to the component
+    (`ownsPage`); it then sends `HASH` and follows the router rules.
+  - *Transport, UI5 profile.* `GET ?z2ui5-bundle=devtools` answers the
+    developer tools, which left the page; `serve()` of
+    `@abap2ui5/node-runtime` puts a Host/Origin guard of its own in front
+    of the framework (implementation note in `spec/transport.md`).
+  - *Response.* Control characters in strings are escaped in the finished
+    JSON text (implementation note in `spec/response.md`).
+  - *Not in 1.148.0*, and so not in this revision: windowed tables
+    (`_bind_tab( window )`, `/__WINDOW/<path>/TOTAL`), the frontend actions
+    `set_app_full_width` and `cross_app_nav_get_links`, and the removal of
+    the invisible custom controls are unreleased entries of abap2UI5's
+    changelog. Schemas and the portable profile are unchanged: every
+    message of the new recordings validates, the action vocabulary
+    (`cs_event`) is the one of 1.146.0.
+- **Reference hosts moved.** `@abap2ui5/node-runtime` 1.146.0 -> 1.148.0,
+  `@cap2ui5/cds-plugin` 0.4.0 -> 0.5.0 (which pins the runtime 1.147.0),
+  traffic recorded again from both. `conformance/hosts/node-runtime`
+  follows the package's new recipe for a host's own classes: one transpile
+  of the framework and the conformance apps by `abap2ui5-transpile` with
+  `@abaplint/transpiler-cli` 2.14.5, served through the output's
+  `host.mjs` (the `apps/index.mjs` way is deprecated in 1.148.0); the two
+  git libraries are cached under `node_modules/.cache/`. The suite and the
+  recorder start it with the host guard off, so the framework's CSRF gate
+  answers `transport.csrf-origin`. Results: `node-runtime` 77 pass,
+  `cap2ui5` 76 pass and the known SHOULD warning (RESULTS.md).
+- **CI's frontend job pins abap2UI5 `610d9ae`** (Release 1.148.0) instead
+  of main `1bbb9d4`; the UI5 SPA's result is unchanged, 77 pass, 4 skip.
+- **Renamed references.** [HF] is
+  `src/z2ui5_cl_frontend_sim.clas.abap` (was `..._simulator`);
+  `profiles/ui5.md` no longer cites [EV] `escape_js_string` and [HTTP]
+  `_check_etag_match`, which 1.148.0 moved into
+  `z2ui5_cl_ui5_util_context`.
 - **The UI5 SPA is conformant (ui5 profile).** CI's frontend job pins
   abap2UI5 main `1bbb9d4`, which carries the fix of `portable.box-details`
   (abap2UI5 `72c86cc`); `test/frontend.test.mjs` no longer accepts that
