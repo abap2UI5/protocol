@@ -1,6 +1,6 @@
 /*
  * Adapter stub: the headless ABAP frontend simulator
- * (abap2UI5/headless-frontend, z2ui5_cl_frontend_simulator).
+ * (abap2UI5/headless-frontend, z2ui5_cl_frontend_sim).
  *
  * Not drivable by this suite yet - documented future work
  * (conformance/frontend/README.md, "Adapters"). The simulator is an

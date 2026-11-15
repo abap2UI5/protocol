@@ -77,7 +77,7 @@ the repository named.
 | **[NR]** | `@abap2ui5/node-runtime` `srv/host.mjs`, `srv/compress.mjs` |
 | **[CAP]** | cap2UI5 `plugin/cds-plugin.js`, `plugin/lib/define-app.js` |
 | **[AC]** | abap2UI5/mcp-server `lib/appclient.mjs`, `lib/snapshot.mjs` |
-| **[HF]** | abap2UI5/headless-frontend `src/z2ui5_cl_frontend_simulator.clas.abap` |
+| **[HF]** | abap2UI5/headless-frontend `src/z2ui5_cl_frontend_sim.clas.abap` |
 
 Recorded traffic of both backends and three frontends is in
 [../traffic/](../traffic/); every message in it validates against the

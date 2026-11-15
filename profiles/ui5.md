@@ -20,7 +20,7 @@ abbreviations: [../spec/README.md](../spec/README.md#sources).
 - It carries no user data, so it SHOULD be cacheable with revalidation:
   `Cache-Control: private, no-cache` and an `ETag`; a matching
   `If-None-Match` is answered **304** without a body ([HTTP] `_http_get`,
-  `_get_etag`, `_check_etag_match`). A compressed page carries the tag with a
+  `_get_etag`). A compressed page carries the tag with a
   `-gzip` suffix, which the backend reads back ([NR] `compress`).
   *Checked by:* `ui5.page-revalidation`.
 - `GET <endpoint>?z2ui5-bundle` answers the same frontend as one JavaScript
@@ -71,7 +71,7 @@ arguments when the event fires, and the controller methods `eB`, `eBP` and
 | `.eF('ACTION', arg...)` | `client->_event_client( )`, a wired `follow_up_action( )` | a frontend action on the event, no roundtrip ([../spec/actions.md](../spec/actions.md#wired-frontend-actions)) |
 
 - Arguments are single-quoted string literals (backslash, quote and line
-  breaks escaped, [EV] `escape_js_string`), or raw when they start with `$`
+  breaks escaped, [EV] `get_t_arg`), or raw when they start with `$`
   or `{` (a binding or expression: `${ID}`, `${$source>/text}`,
   `${$parameters>/value}`, `$event`) - unless the wire asked for literal
   arguments (`s_ctrl-check_arg_literal`). An empty argument between filled
