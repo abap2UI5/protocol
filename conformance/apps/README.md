@@ -129,3 +129,20 @@ Follow-up actions.
 | `SEVERAL` | `["SET_TITLE", "conformance title"]`, `["MESSAGE_TOAST", "show", "between"]`, `["SET_FOCUS", "inp"]` - in this order |
 | `TIMER` | `["START_TIMER", "TICK", "500"]` |
 | `TICK` | `TICKS` + 1 |
+
+## Z2UI5_CL_CONF_WINDOW
+
+A windowed table ([../../spec/windowed-tables.md](../../spec/windowed-tables.md)).
+The backend answers the window requests (`___ZZZ_WIN`) itself; `MAINS`
+shows that they do not reach the app.
+
+| | |
+|---|---|
+| Model (initial) | `T_ROWS` - twelve rows `{ ID, NAME, QTY, DONE }`, bound with `window_bind_tab( )` and a window of 4: `ID` 1 to 12, `NAME` "item 01" to "item 12", `QTY` = `ID` * 5 mod 13 (5 10 2 7 12 4 9 1 6 11 3 8), `DONE` false - so the model carries the rows 1 to 4 and `__WINDOW` = { `T_ROWS`: { `TOTAL` 12, `COUNT` 4, `SIZE` 4 } }; `SUMMARY` ""; `MAINS` (integer) |
+| every roundtrip that runs the app | `MAINS` + 1 first - 1 after the start; so every event the app sees pushes the model |
+| View | Texts `{/SUMMARY}`, `{/MAINS}`; the buttons below; a growing `Table` with the id `rows` (`growingThreshold` 4) over `{/T_ROWS}` with `{ID}`, `{NAME}`, `{QTY}` and a CheckBox `{DONE}` per row. The app's sort and filter are passed to `window_bind_tab( )` as `t_sort` / `t_filter` |
+| `CHECK` | `SUMMARY` = the `ID` of the rows that are `DONE`, in the order of the table, joined with `,` |
+| `SORT` | the app's sort: argument 1 the column, argument 2 not empty for descending; no argument clears it. Binds the table again without a view - pushes the model with the first window of the new order (wired: `SORT` with `'QTY'`, `'X'`) |
+| `FILTER` | the app's filter: `NAME` `Contains` argument 1; no argument clears it. As `SORT` (wired: `FILTER` with `'1'`) |
+| `RERENDER` | displays MAIN again, the sort and the filter passed unchanged |
+| Buttons `Sort list`, `Filter list` | wired frontend actions, no roundtrip of their own: `BINDING_CALL` `rows` `items` `sort` `QTY` `X`, and `rows` `items` `filter` `NAME` `Contains` `1` - the list binding of the UI5 frontend turns each into a window request |

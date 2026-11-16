@@ -9,13 +9,13 @@
  * cap2ui5:      a CAP project with @cap2ui5/cds-plugin and the JS apps
  *               (conformance/hosts/cap2ui5 - npm ci --prefix conformance/hosts/cap2ui5 first)
  * Exit code: 0 when no MUST check failed. With --expected the reference
- * backends' pinned failures (test/lib/expected.mjs) are accepted: 0 when
+ * backend's pinned failures (test/lib/expected.mjs, per backend) are accepted: 0 when
  * exactly those checks failed - another failure, or a pinned check that
  * passes now (unpin it), is exit 1.
  */
 import fs from "node:fs";
 import { runBackendSuite, formatResult, formatSummary } from "../conformance/backend/index.mjs";
-import { BACKEND_EXPECTED_FAILURE_IDS } from "../test/lib/expected.mjs";
+import { expectedFailureIds } from "../test/lib/expected.mjs";
 
 const [name, ...rest] = process.argv.slice(2);
 const opt = (k, d) => {
@@ -45,7 +45,7 @@ const json = opt("--json");
 if (json) fs.writeFileSync(json, `${JSON.stringify({ backend: name, ...report }, null, 2)}\n`);
 if (!rest.includes("--expected")) process.exit(report.ok ? 0 : 1);
 const failed = report.results.filter((r) => r.status === "fail").map((r) => r.id).sort();
-const expected = [...BACKEND_EXPECTED_FAILURE_IDS].sort();
+const expected = [...expectedFailureIds(name)].sort();
 const same = failed.length === expected.length && failed.every((id, i) => id === expected[i]);
 process.stdout.write(same
   ? `[${name}] the failures are exactly the pinned ones (test/lib/expected.mjs): ${expected.join(", ") || "none"}\n`
