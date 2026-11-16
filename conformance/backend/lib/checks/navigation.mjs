@@ -178,6 +178,23 @@ export default [
     },
   },
   {
+    id: "route.app-state-names-no-app",
+    title: "#/z2ui5-xapp-state=<DRAFT> restores the draft when the request names no app; a draft that is gone ends on the start app, with a toast",
+    level: "SHOULD",
+    profile: "core",
+    spec: `${N}#the-app-state-hash`,
+    async run(t) {
+      const echoed = await t.event(await t.start("ECHO"), "ECHO", { args: ["kept"] });
+      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/z2ui5-xapp-state=${echoed.json.S_FRONT.ID}` }), "app-state restore without ?app_start=");
+      t.equal(r.json.S_FRONT.APP, t.apps.ECHO, "S_FRONT.APP of the restored draft");
+      t.equal(r.json.MODEL && r.json.MODEL.LAST_ARGS, "kept", "MODEL.LAST_ARGS of the restored draft");
+      t.equal((routerOptions(r) || {}).setAppStateActive, true, "ROUTER options.setAppStateActive");
+      const gone = t.roundtrip(await t.client.start("", { search: "", hash: `#/z2ui5-xapp-state=${FAKE_DRAFT}` }), "app-state hash of a missing draft, no app named");
+      t.ok(displayOf(gone, "MAIN"), "a MAIN display of the start app");
+      t.ok(customActions(gone).find((a) => a[0] === "MESSAGE_TOAST"), "a MESSAGE_TOAST tells the user the state is gone");
+    },
+  },
+  {
     id: "nav.system-startup",
     title: "An app start that names no app is answered with a start app",
     level: "SHOULD",

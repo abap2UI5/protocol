@@ -43,7 +43,7 @@ const responseBody = (text, headers) => (/html/i.test(headers["content-type"] ||
 async function startBackend(name) {
   if (name === "node-runtime") {
     const { startNodeRuntime } = await import("../conformance/hosts/node-runtime/serve.mjs");
-    const s = await startNodeRuntime({ build: true });
+    const s = await startNodeRuntime({ build: true, allowedHosts: "*" });
     const req = createRequire(path.join(ROOT, "package.json"));
     return { ...s, version: `@abap2ui5/node-runtime ${req("@abap2ui5/node-runtime/package.json").version}` };
   }

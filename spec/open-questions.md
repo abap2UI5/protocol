@@ -8,7 +8,8 @@ alternatives, and what it touches.
 **Revision 0.3: the maintainer decided all ten.** Each entry now opens with
 the decision and its rationale; the alternatives that were on the table
 stay below it for the record. A new provisional decision is added here as
-"Current decision" until it is decided the same way.
+"Current decision" until it is decided the same way - question 11
+(revision 0.4) is one.
 
 The first five came out of the backend suite (revision 0.1,
 [../conformance/RESULTS.md](../conformance/RESULTS.md)); the others out of
@@ -26,6 +27,7 @@ the frontend suite (revision 0.2).
 | 8 | one roundtrip at a time for programs | (a) the client queues |
 | 9 | `sap-contextid` for frontends without a browser | (a) MUST keep it |
 | 10 | navigation actions in the portable action list | `portable-v1.json` separates `actions.api` from `actions.wire` |
+| 11 | bound arguments (`${/PATH}`) of queued follow-up actions | open - current decision: recorded as what the UI5 frontend does, no rule |
 
 ## 1. The NEST slots in portable renderers
 
@@ -107,12 +109,12 @@ and tools that do not read headers. Escaping (b) would show `&lt;` to the
 reader of a plain-text body; stripping to safe characters keeps a real typo
 readable.
 
-*Status.* abap2UI5 1.146.0 - the release both reference hosts run -
-reflects the URL verbatim ([H] `request_context_info`) and fails the check,
-and so does cap2UI5, which hosts the same framework. The fix (strip the URL
-like the class name) is made in abap2UI5 core and reaches cap2UI5 with the
-runtime; until a release carries it the failure is pinned in
-`test/lib/expected.mjs` and recorded in
+*Status.* Fixed. abap2UI5 up to 1.146.0 reflected the URL verbatim and
+failed the check, and so did cap2UI5, which hosts the same framework. From
+1.147.0 on the URL is stripped to an allow-list ([H]
+`context_info_url_safe`); the reference hosts (`@abap2ui5/node-runtime`
+1.148.0, `@cap2ui5/cds-plugin` 0.5.0 on 1.147.0) pass, the pin in
+`test/lib/expected.mjs` is gone. The history is in
 [../conformance/RESULTS.md](../conformance/RESULTS.md).
 
 **Alternatives considered.**
@@ -215,8 +217,8 @@ fills the details text only when its "View Details" link is pressed - 1.120
 does, 1.71 set it at creation) the UI5 frontend shows **no** details at
 all: `expandBoxDetails` makes the still-empty `FormattedText` visible and
 hides the link that would have filled it. Fixed on abap2UI5's main in
-`72c86cc` (`app/webapp/core/actions/ControlCall.js`, after 1.146.0), which
-CI's frontend job runs; filed in
+`72c86cc` (`app/webapp/core/actions/ControlCall.js`, released with
+1.147.0), which CI's frontend job runs; filed in
 [../conformance/RESULTS.md](../conformance/RESULTS.md#frontend-suite).
 
 **Alternatives considered.**
@@ -304,3 +306,33 @@ in v1.1.
 **Touches.** `profiles/portable-v1.json` (`actions`),
 `schema/portable-profile.schema.json`, `scripts/render-portable.mjs`,
 `scripts/gen-portable-profile.mjs`, `profiles/portable.md` section 6.
+
+## 11. Bound arguments of queued follow-up actions
+
+**Current decision (revision 0.4): recorded, not a rule.** From abap2UI5
+1.147.0 on the UI5 frontend resolves an argument of a queued follow-up
+action that is spelled `${/PATH}` against the model before it runs the
+action ([FA] `resolveBoundArgs`, [LIB] `bindingPathOf`;
+[actions.md](actions.md#follow-up-actions)), so that
+`follow_up_action( )` means the same from a handler as wired into a view,
+where UI5 evaluates the binding. Before, every action received the text
+`${/PATH}`. The specification describes it and requires nothing: no
+frontend check, and the other frontends (the agent client, the two
+renderers of this repository) pass such an argument on as text.
+
+*Why it is open.* It changes what an action's arguments mean on the wire -
+a text that used to be data is now a reference into `MODEL` - and an app
+written against the UI5 frontend's behaviour shows `${/TITLE}` as a title
+in a frontend that does not resolve it.
+
+**Alternatives.**
+- (a) Core rule: every frontend MUST resolve `${/PATH}` arguments of
+  `T_CUSTOM` actions against the model of the slot the response filled -
+  with a frontend check, and the portable renderers follow.
+- (b) UI5 profile only: portable apps must not pass bound arguments (a
+  linter rule), other frontends keep the text.
+- (c) The backend resolves the value before it queues the action, and the
+  wire carries data only - a change in abap2UI5 core.
+
+**Touches.** `spec/actions.md`, `profiles/portable.md` section 6,
+`conformance/frontend/lib/checks/`, `renderers/common/`.

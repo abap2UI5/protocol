@@ -24,7 +24,9 @@ Implementations mount it where they like: an ICF node on an ABAP system
 only other frontends MAY answer a GET with anything, and a non-UI5 frontend
 MUST NOT need it. The reference also answers `GET <endpoint>?z2ui5-bundle`
 with the frontend as one JavaScript file for embedding hosts
-([HTTP] `_http_get_bundle`) - UI5 profile as well.
+([HTTP] `_http_get_bundle`), and `GET <endpoint>?z2ui5-bundle=devtools`
+with the frontend's developer tools ([HTTP] `_http_get_devtools`) - UI5
+profile as well.
 
 ## The roundtrip POST
 
@@ -127,6 +129,15 @@ The backend runs a CSRF gate over every state-changing request - `POST` and
 - A backend SHOULD run this gate (the reference runs it unless the user
   exit switches it off, [EXIT] `check_csrf_active`).
   *Checked by:* `transport.csrf-origin`.
+- **Implementation note.** A host may refuse the request before the
+  backend sees it: `serve()` of `@abap2ui5/node-runtime` (from 1.147.0 on)
+  answers only requests addressed to a loopback name or one it was told
+  to serve, and coming from a page there - **403**, `text/plain`, with a
+  body of its own ([NR] `hostguard.mjs`). `createApp()` and
+  `createHandler()`, which cap2UI5 mounts, are not guarded. The reference
+  host of this repository switches the guard off for the suite, so that
+  the gate above is what answers
+  ([../conformance/RESULTS.md](../conformance/RESULTS.md)).
 - **Token layers.** A layer in front of the backend - an SAP approuter route
   with `csrfProtection`, a Gateway - may refuse a POST with **403** and
   `X-CSRF-Token: Required`. A frontend SHOULD then fetch a token with

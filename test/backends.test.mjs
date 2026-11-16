@@ -2,7 +2,8 @@
 // implementations speak it today: every MUST holds but the pinned expected
 // failures of test/lib/expected.mjs (each with the place of its fix).
 //   node-runtime: @abap2ui5/node-runtime + the ABAP conformance apps (transpiled
-//                 on the fly; needs git access to fetch open-abap-core once)
+//                 with the framework on the fly; needs git access to fetch
+//                 open-abap-core and express-icf-shim once)
 //   cap2ui5:      a CAP project + @cap2ui5/cds-plugin + the JS conformance apps
 //                 (skipped unless `npm ci --prefix conformance/hosts/cap2ui5` ran)
 // PROTOCOL_SKIP_BACKENDS=1 skips both. The node-runtime host also serves the
@@ -35,7 +36,7 @@ async function suite(start, profile, after) {
 test("node-runtime passes every MUST but the pinned ones and every SHOULD of the ui5 profile", { skip: skipAll, timeout: 600_000 }, async (t) => {
   const { startNodeRuntime } = await import("../conformance/hosts/node-runtime/serve.mjs");
   // the same host then serves the terminal renderer's end-to-end run
-  const report = await suite(() => startNodeRuntime({ build: true }), "ui5", (backend) => t.test("the terminal renderer drives the conformance apps on it", () => terminalEndToEnd(backend.url)));
+  const report = await suite(() => startNodeRuntime({ build: true, allowedHosts: "*" }), "ui5", (backend) => t.test("the terminal renderer drives the conformance apps on it", () => terminalEndToEnd(backend.url)));
   assert.deepEqual(report.results.filter((r) => r.status === "warn").map((r) => r.id), []);
 });
 

@@ -37,7 +37,7 @@ missing one initial).
 | `ID` | string | every request that continues a draft: the `S_FRONT.ID` of the last response adopted ([V1] `eB`) | the draft to restore ([sessions.md](sessions.md)) |
 | `EVENT` | string | every event request: the first element of the wire's event array ([SRV] `roundtrip`) | what `check_on_event( )` / `get_event( )` answer |
 | `T_EVENT_ARG` | array | when the wire carries arguments | [event arguments](#event-arguments) |
-| `HASH` | string | every request when the hash is not empty, except in an embedded component ([SRV] `roundtrip`) | routes and the app-state hash ([navigation.md](navigation.md)) |
+| `HASH` | string | every request when the hash is not empty, except in an embedded component whose host keeps the URL ([SRV] `roundtrip`, `state.ownsHash`) | routes and the app-state hash ([navigation.md](navigation.md)) |
 | `ORIGIN`, `PATHNAME`, `SEARCH` | string | every app-start-shaped request, and the first request of a page load ([SES] `location`) | `?app_start=`, the launchpad flag, URLs the backend composes; stored with the draft ([H] `session_merge`) |
 | `MS_CLIENT_PREV` | integer >= 0 | from the second roundtrip on: the previous roundtrip's duration as the browser measured it ([SRV] `readHttp`) | the roundtrip monitor only; an unreadable value is dropped, never the request ([H] `request_parse_body`) |
 | `CONFIG` | object | [the session block](#config-the-session-block) | device, UI5 version, focus, scroll, launchpad data |
@@ -106,9 +106,13 @@ nothing). *Checked by:* `event.roundtrip`, `event.unknown-event`.
 ## Event arguments
 
 `T_EVENT_ARG` holds the arguments of the wire after the event array, as raw
-JSON values - the frontend serializes the request once ([V1] `eB`); a
-control-valued argument is first marshalled to plain data ([LIB]
-`normalizeEventArgs`).
+JSON values - the frontend serializes the request once ([V1] `eB`); an
+argument that is no plain data is first marshalled to plain data ([LIB]
+`normalizeEventArgs`): a control becomes its id and properties, a binding
+context `{ "PATH": <model path>, "OBJECT": <the data there> }`, the UI5
+event itself (`$event`) `{ "ID", "SOURCE", "PARAMETERS" }`, and a reference
+back to one of its own ancestors `null`. A request the frontend cannot
+serialize is not sent ([SRV] `readHttp`).
 
 The backend hands every argument to the app as a **string**
 ([H] `request_parse_event_args`):
@@ -216,7 +220,7 @@ What the browser says about itself. The backend stores it with the draft
 
 | Block | Content | Cadence (UI5 frontend) |
 |---|---|---|
-| `S_UI5` | `VERSION`, `BUILDTIMESTAMP`, `GAV`, `THEME` of the UI5 runtime | until the block has gone out complete once per page load; on every app-start-shaped request |
+| `S_UI5` | `VERSION`, `BUILDTIMESTAMP`, `GAV`, `THEME` of the UI5 runtime | on every app-start-shaped request once it is loaded; when the page load's first request went out before it was loaded, alone with the first later request that finds it there ([SES] `config`, the `ui5Sent` latch) |
 | `S_DEVICE` | `SYSTEM` (phone/tablet/desktop/combi), `BROWSER` and `OS` `{NAME, VERSION}`, `SUPPORT` `{TOUCH, POINTER, RETINA}` - static; `ORIENTATION`, `RESIZE {WIDTH, HEIGHT}` - live | static fields with the session block; the two live fields whenever they changed since the last confirmed send |
 | `S_FOCUS` | `ID` of the focused control, `SELECTION_START`, `SELECTION_END` | every request with a focused control ([SF]) |
 | `S_SCROLL` | per slot (`MAIN` ... `POPOVER`) the scrolled control: `ID`, `X`, `Y` | every request with a scroll position ([SF]) |
@@ -227,11 +231,27 @@ What the browser says about itself. The backend stores it with the draft
   send none.
 - A backend MUST treat an absent block, and an absent live field, as
   "unchanged": a block carried by the request replaces the stored one, a
-  live field overwrites only that field ([H] `session_merge`).
+  live field overwrites only that field ([H] `session_merge`). The device
+  profile is the unit: a request that carries `S_DEVICE.SYSTEM` replaces
+  the stored `S_DEVICE` and `S_UI5` together, a request that carries
+  `S_UI5` without it replaces `S_UI5` alone and leaves the stored device
+  profile as it is ([H] `session_merge`).
+- The numbers of the block only inform the app - the window size, the
+  caret positions, the scroll offsets. One the backend cannot hold (not a
+  number, outside its integer range) is read as absent and never fails the
+  request, like `MS_CLIENT_PREV` ([H] `request_get_int`).
+- **Implementation note.** Up to abap2UI5 1.146.0 the UI5 frontend repeated
+  the whole static block with every request until `S_UI5` had gone out,
+  and a request carrying `S_UI5` without the device profile replaced the
+  stored profile by an empty one. The reference maps `S_DEVICE.OS.NAME`
+  onto the lower-case names its client API documents (`iOS` -> `ios`,
+  `Android` -> `android`; [H] `device_os_name`) - what an app reads, not
+  what travels.
 - The latches of the UI5 frontend advance only once the carrying request
   won (its response was adopted) - a dropped request re-sends ([SES]
   `confirmSent`).
 - A frontend that sends the session block SHOULD send it whole with
   app-start-shaped requests and leave the static parts (`S_UI5`, the static
   `S_DEVICE` fields, `ComponentData`) out of event requests once the backend
-  has them ([SES] `config`). *Frontend check:* `request.config-cadence`.
+  has them ([SES] `config`) - a part that goes out late for the first time
+  is no repeat. *Frontend check:* `request.config-cadence`.

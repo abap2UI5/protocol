@@ -1,6 +1,6 @@
 {
   "source": "lib/appclient.mjs of @abap2ui5/mcp-server 1.0.0 (mcp-server)",
-  "backend": "@cap2ui5/cds-plugin 0.4.0 on @abap2ui5/node-runtime 1.146.0",
+  "backend": "@cap2ui5/cds-plugin 0.5.0 on @abap2ui5/node-runtime 1.147.0",
   "exchanges": [
     {
       "label": "BIND: app_start",
@@ -13,7 +13,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:5404/rest/root/z2ui5",
+              "ORIGIN": "http://127.0.0.1:5480/rest/root/z2ui5",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
             }
@@ -25,13 +25,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"43d-PQVuwIm3W+EASFuY/s42Hf4+2ig\"",
+          "etag": "W/\"43d-2MDzDdZd+sXjpUlc671Kkp/8SpQ\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "8A356A29AD12409C909633FC643F1FF7",
+            "ID": "80D879A6C85B4904BEED43410904CE4F",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -85,7 +85,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "8A356A29AD12409C909633FC643F1FF7",
+              "ID": "80D879A6C85B4904BEED43410904CE4F",
               "EVENT": "CHECK"
             },
             "MODEL": {
@@ -106,13 +106,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"162-7gMEjp8IVptzWwhS6KT5jwgr29A\"",
+          "etag": "W/\"162-OXK7aEry/lRbeZVg5VBae9MdXZM\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "CF359C06B5FF42A69DBBFDB99622AB5F",
+            "ID": "55C4FDC61F2F4C09AF57AFA859896525",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -156,7 +156,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:5404/rest/root/z2ui5",
+              "ORIGIN": "http://127.0.0.1:5480/rest/root/z2ui5",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_MSG"
             }
@@ -168,13 +168,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"1ee-2dn9Q8hoabpU8E3pYFFmaoJD9GY\"",
+          "etag": "W/\"1ee-z2ciAsz0GzF1cFpd/dmr+oNRrlU\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_MSG",
-            "ID": "882BE23F7C414567A715C9D259E15C28",
+            "ID": "DA621D746D814B94833723E26D311D2A",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -204,7 +204,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "882BE23F7C414567A715C9D259E15C28",
+              "ID": "DA621D746D814B94833723E26D311D2A",
               "EVENT": "BOX_CONFIRM"
             }
           }
@@ -215,13 +215,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"d9-vVNfjNd28H1VyMPqFx7QNfuxZ2g\"",
+          "etag": "W/\"d9-tOaqa8uit08eFmDGTg9zjvOrqqc\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_MSG",
-            "ID": "3E8F2D94E8544658929A7E383BFDE724",
+            "ID": "101E4897284E4E9C991DEC94DC44D4F9",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_CUSTOM": [
@@ -254,7 +254,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:5404/rest/root/z2ui5",
+              "ORIGIN": "http://127.0.0.1:5480/rest/root/z2ui5",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
             }
@@ -266,13 +266,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"23c-Dar6gyumaoWHxPaDBREVLCrazww\"",
+          "etag": "W/\"23c-35nCxiHQA+aF/H0KK4415YK++h4\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "5E2AF22D081649B09A0D462F79AA1BE3",
+            "ID": "B5DB91B2E6EB477583514B730BC241B7",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -299,7 +299,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "5E2AF22D081649B09A0D462F79AA1BE3",
+              "ID": "B5DB91B2E6EB477583514B730BC241B7",
               "EVENT": "POPUP_OPEN"
             }
           }
@@ -310,13 +310,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"21c-DSTf3UDB+zhHox/oQ4PtFUztyHQ\"",
+          "etag": "W/\"21c-LZDG3imzoQOb/9CPW2nS20FuzXI\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "863BF55A4E614E01942F39795633C13E",
+            "ID": "86666363FE2C4CFAAF7D3A819D6C36F0",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -346,7 +346,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:5404/rest/root/z2ui5",
+              "ORIGIN": "http://127.0.0.1:5480/rest/root/z2ui5",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_NAV"
             }
@@ -358,13 +358,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"1af-7o7sozWYKaW8WE+Nn3SNSwV0eVo\"",
+          "etag": "W/\"1af-ljsb++6Jq7BopcBPohsftLmyq3U\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV",
-            "ID": "21E60B10CFE24B378126039578546DF4",
+            "ID": "C6242A0E7F1142D19FB4B3E0E22C9744",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -395,7 +395,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "21E60B10CFE24B378126039578546DF4",
+              "ID": "C6242A0E7F1142D19FB4B3E0E22C9744",
               "EVENT": "CALL"
             }
           }
@@ -406,13 +406,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"225-xI5FGtRG/gAP6uLDGCH/URXAyik\"",
+          "etag": "W/\"225-jQvcrlRY3uas1oa90b6uYmW/vUw\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV_TGT",
-            "ID": "40349A5A036B466EADB195337A1A234D",
+            "ID": "3D75BFDEDA294BAD82C2A1C184030011",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -450,7 +450,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "40349A5A036B466EADB195337A1A234D",
+              "ID": "3D75BFDEDA294BAD82C2A1C184030011",
               "EVENT": "DONE"
             }
           }
@@ -461,13 +461,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"22b-3ilEcTM1iOZEMGAWKEK5+VhuqK0\"",
+          "etag": "W/\"22b-1hZjrXrwUhCBs0NMlSz49kkCf0U\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV",
-            "ID": "7F03F08902324A2EB48C246DEB6D05E4",
+            "ID": "0B6ACC875D11466092929B38EF788502",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -477,7 +477,7 @@
                   "MAIN",
                   "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav caller\"><Text id=\"result\" text=\"{/RESULT}\"/><Text id=\"returns\" text=\"{/RETURNS}\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>",
                   {
-                    "appInstance": "0809C60F9B2C4248B9A23EB704070E29",
+                    "appInstance": "795D67E2B2D641DF9F3A857972C8A283",
                     "navBack": true
                   }
                 ],
@@ -504,7 +504,7 @@
       "label": "BIND: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "8A356A29AD12409C909633FC643F1FF7",
+        "session": "80D879A6C85B4904BEED43410904CE4F",
         "app": "Z2UI5_CL_CONF_BIND",
         "title": "conformance - bind",
         "layer": "main",
@@ -651,7 +651,7 @@
       "label": "BIND: act - fill NAME and a cell, fire CHECK",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "CF359C06B5FF42A69DBBFDB99622AB5F",
+        "session": "55C4FDC61F2F4C09AF57AFA859896525",
         "app": "Z2UI5_CL_CONF_BIND",
         "title": "conformance - bind",
         "layer": "main",
@@ -800,7 +800,7 @@
       "label": "MSG: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "882BE23F7C414567A715C9D259E15C28",
+        "session": "DA621D746D814B94833723E26D311D2A",
         "app": "Z2UI5_CL_CONF_MSG",
         "title": "conformance - messages",
         "layer": "main",
@@ -850,7 +850,7 @@
       "label": "MSG: act - BOX_CONFIRM",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "3E8F2D94E8544658929A7E383BFDE724",
+        "session": "101E4897284E4E9C991DEC94DC44D4F9",
         "app": "Z2UI5_CL_CONF_MSG",
         "title": "conformance - messages",
         "layer": "main",
@@ -919,7 +919,7 @@
       "label": "SLOTS: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "5E2AF22D081649B09A0D462F79AA1BE3",
+        "session": "B5DB91B2E6EB477583514B730BC241B7",
         "app": "Z2UI5_CL_CONF_SLOTS",
         "title": "conformance - slots",
         "layer": "main",
@@ -980,7 +980,7 @@
       "label": "SLOTS: act - POPUP_OPEN",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "863BF55A4E614E01942F39795633C13E",
+        "session": "86666363FE2C4CFAAF7D3A819D6C36F0",
         "app": "Z2UI5_CL_CONF_SLOTS",
         "title": "conformance popup",
         "layer": "popup",
@@ -1032,7 +1032,7 @@
       "label": "NAV: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "21E60B10CFE24B378126039578546DF4",
+        "session": "C6242A0E7F1142D19FB4B3E0E22C9744",
         "app": "Z2UI5_CL_CONF_NAV",
         "title": "conformance - nav caller",
         "layer": "main",
@@ -1062,7 +1062,7 @@
       "label": "NAV: act - CALL",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "40349A5A036B466EADB195337A1A234D",
+        "session": "3D75BFDEDA294BAD82C2A1C184030011",
         "app": "Z2UI5_CL_CONF_NAV_TGT",
         "title": "conformance - nav target",
         "layer": "main",
@@ -1103,7 +1103,7 @@
       "label": "NAV: act - DONE",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "7F03F08902324A2EB48C246DEB6D05E4",
+        "session": "0B6ACC875D11466092929B38EF788502",
         "app": "Z2UI5_CL_CONF_NAV",
         "title": "conformance - nav caller",
         "layer": "main",

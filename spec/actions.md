@@ -23,6 +23,16 @@ it as its last element ([FE] `build_global_call`).
   `action.unknown-skipped`, `action.unknown-reported`,
   `portable.excluded-action`.
 
+An argument spelled as an expression binding on an absolute model path -
+`${/PATH}` - reaches the frontend as that text: nothing on the backend
+resolves it ([EV] `get_event_client_ajson`). The UI5 frontend (from
+abap2UI5 1.147.0 on) replaces every such argument after the action name by
+the value at that path in the model of the view the action runs for, as
+UI5 does when the same call is wired into a view; a path with nothing
+bound stays the text it was and is logged ([FA] `resolveBoundArgs`, [LIB]
+`bindingPathOf`). Whether every frontend has to do the same is
+[open question 11](open-questions.md#11-bound-arguments-of-queued-follow-up-actions).
+
 The vocabulary is the `cs_event` constants of the client API ([IC]) plus the
 whitelisted global targets of `CONTROL_GLOBAL` ([CC] `GLOBAL_TARGETS`). It
 is listed below with the profile that defines what each does; a portable

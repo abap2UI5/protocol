@@ -1,11 +1,14 @@
 # The abap2UI5 protocol - specification
 
-**Protocol 2, specification revision 0.3 (2026-10-03).** Derived from the
-implementations, not designed ahead of them: abap2UI5 commit `b812079`
-(framework version 1.146.0) for the backend and the UI5 frontend,
-`@abap2ui5/node-runtime` 1.146.0, `@cap2ui5/cds-plugin` 0.4.0
-(cap2UI5 `cad7f1f`), abap2UI5/mcp-server `ea4e9fa` and
-abap2UI5/headless-frontend `c1c24ba`.
+**Protocol 2, specification revision 0.4 (2026-11-15).** Derived from the
+implementations, not designed ahead of them: abap2UI5 commit `610d9ae`
+(the release commit of framework version 1.148.0) for the backend and the
+UI5 frontend, `@abap2ui5/node-runtime` 1.148.0, `@cap2ui5/cds-plugin` 0.5.0
+(which hosts `@abap2ui5/node-runtime` 1.147.0), abap2UI5/mcp-server
+`ea4e9fa` and abap2UI5/headless-frontend `c1c24ba` (its simulator class is
+`z2ui5_cl_frontend_sim` since `8f37e54`). Revisions 0.1 to 0.3
+were derived from abap2UI5 `b812079` (1.146.0); what moved on the wire
+since is listed in [../CHANGELOG.md](../CHANGELOG.md).
 
 | Document | Content |
 |---|---|
@@ -66,7 +69,7 @@ the repository named.
 | **[EXIT]** | abap2UI5 `src/02/z2ui5_if_ui5_exit.intf.abap`, `src/01/04/z2ui5_cl_ui5_user_exit.clas.abap` |
 | **[SRV]** | abap2UI5 `app/webapp/core/Server.js` - request building, HTTP, response adoption |
 | **[SES]** | abap2UI5 `app/webapp/core/Session.js` - the session block and location cadence |
-| **[LIB]** | abap2UI5 `app/webapp/core/Lib.js` - `buildDeltaFromPaths`, `normalizeEventArgs`, `isValidContextId` |
+| **[LIB]** | abap2UI5 `app/webapp/core/Lib.js` - `buildDeltaFromPaths`, `normalizeEventArgs`, `bindingPathOf`, `isValidContextId` |
 | **[V1]** | abap2UI5 `app/webapp/controller/View1.controller.js` - `eB`, `eBP`, `eF`, the processing phases |
 | **[FA]** | abap2UI5 `app/webapp/core/FrontendAction.js` - action dispatch |
 | **[CC]** | abap2UI5 `app/webapp/core/actions/ControlCall.js` - `CONTROL_GLOBAL`, `GLOBAL_TARGETS` |
@@ -74,10 +77,10 @@ the repository named.
 | **[RT]** | abap2UI5 `app/webapp/core/Router.js` - hash routes and the `ROUTER` action |
 | **[EVW]** | abap2UI5 `app/webapp/core/ErrorView.js` - the error overlay |
 | **[SF]** | abap2UI5 `app/webapp/core/ScrollFocus.js` - focus and scroll positions |
-| **[NR]** | `@abap2ui5/node-runtime` `srv/host.mjs`, `srv/compress.mjs` |
+| **[NR]** | `@abap2ui5/node-runtime` `srv/host.mjs`, `srv/hostcore.mjs`, `srv/compress.mjs`, `srv/hostguard.mjs` |
 | **[CAP]** | cap2UI5 `plugin/cds-plugin.js`, `plugin/lib/define-app.js` |
 | **[AC]** | abap2UI5/mcp-server `lib/appclient.mjs`, `lib/snapshot.mjs` |
-| **[HF]** | abap2UI5/headless-frontend `src/z2ui5_cl_frontend_simulator.clas.abap` |
+| **[HF]** | abap2UI5/headless-frontend `src/z2ui5_cl_frontend_sim.clas.abap` |
 
 Recorded traffic of both backends and three frontends is in
 [../traffic/](../traffic/); every message in it validates against the

@@ -131,6 +131,7 @@ fails when it is out of date).
 | `route.expired-draft` | MUST | core | A route to a draft that does not exist starts the class fresh, with a toast | [navigation.md#routes](../../spec/navigation.md#routes) |
 | `route.launchpad-shell-hash` | MUST | core | Inside a launchpad hash (#<shell>&/app/<CLASS>) only the app part is a route | [navigation.md#launchpad-hashes](../../spec/navigation.md#launchpad-hashes) |
 | `route.app-state` | MUST | core | #/z2ui5-xapp-state=<DRAFT> restores the draft and keeps the app-state hash on | [navigation.md#the-app-state-hash](../../spec/navigation.md#the-app-state-hash) |
+| `route.app-state-names-no-app` | SHOULD | core | #/z2ui5-xapp-state=<DRAFT> restores the draft when the request names no app; a draft that is gone ends on the start app, with a toast | [navigation.md#the-app-state-hash](../../spec/navigation.md#the-app-state-hash) |
 | `nav.system-startup` | SHOULD | core | An app start that names no app is answered with a start app | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
 | `session.new-id` | MUST | core | Every response names a draft id other than the one the request continued | [sessions.md#draft-ids](../../spec/sessions.md#draft-ids) |
 | `session.continuation` | MUST | core | State carries over from roundtrip to roundtrip through the draft id | [sessions.md#draft-ids](../../spec/sessions.md#draft-ids) |

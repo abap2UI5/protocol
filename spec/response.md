@@ -23,6 +23,13 @@ Schema: [../schema/response.schema.json](../schema/response.schema.json).
 The backend writes it in [H] `response_abap_to_json`; the UI5 frontend reads
 it in [SRV] `readHttp` and [V1] `_processAfterRendering`.
 
+**Implementation note.** The body is JSON text, so a control character
+(U+0000 to U+001F) inside a string travels escaped. The reference's
+serializer left some of them raw - a bound value holding U+0001 made the
+browser's `JSON.parse` refuse the whole response; from abap2UI5 1.147.0 on
+the handler escapes them as `\u00XX` in the finished text ([H]
+`response_abap_to_json`).
+
 ## S_FRONT
 
 | Key | Type | Meaning |
