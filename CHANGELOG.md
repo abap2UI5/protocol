@@ -2,6 +2,98 @@
 
 ## Unreleased
 
+- **Specification revision 0.5 - re-derived from abap2UI5 1.149.0**
+  (release commit `6f55b04`; revision 0.4 was derived from `610d9ae`,
+  1.148.0). Unlike the release before, this one changes the wire.
+  Protocol 2 stays: `c_protocol` is 2 in 1.149.0, the frontend's
+  `PROTOCOL` too, and what is new is additive - a reserved model key, a
+  reserved event the backend answers itself, three follow-up actions
+  (`spec/versioning.md`). For the 77 checks of revision 0.4 the recorded
+  traffic of 1.149.0 is identical to that of 1.148.0 (draft ids, the
+  version line of the error bodies and the page's `ETag` normalized). What
+  moved, each confirmed in the release's source and in recorded traffic
+  unless it says otherwise:
+  - *Windowed tables* - new [spec/windowed-tables.md](spec/windowed-tables.md).
+    A table bound with `window_bind_tab( )` arrives as its first window,
+    the window state under `/__WINDOW/<path>` (`TOTAL`, `COUNT`, `SIZE`).
+    The reserved event `___ZZZ_WIN` asks for more rows (`[path, count]`), a
+    sort (`[path, count, sortJSON]`) or a filter (`[path, count, "",
+    filterJSON]`); the backend answers it without calling `main( )`. A part
+    that is missing, empty or `null` is kept, `[]` clears it; the order is
+    the backend's and travels with the draft; there is one sort, the last
+    one set; the app's filter and the list's are ANDed; the rows of a
+    `__delta` are positions in the order the backend sent, and a whole
+    table value is refused. Core rules with thirteen backend checks
+    (`window.*`) and two frontend checks (`window.rows-shown`,
+    `window.edit-as-delta`); what the UI5 list binding sends is the UI5
+    profile's (`profiles/ui5.md#windowed-tables`, frontend checks
+    `ui5.window-growth`, `ui5.window-sort-filter`). Not in portable v1.
+    Two provisional decisions:
+    [open questions 12 and 13](spec/open-questions.md#12-windowed-tables-as-a-part-of-the-core-protocol).
+  - *Schemas.* `response.schema.json` describes `MODEL.__WINDOW`,
+    `request.schema.json` the arguments of `___ZZZ_WIN`; both stay open for
+    everything else.
+  - *Follow-up actions.* `SET_APP_FULL_WIDTH`, `CROSS_APP_NAV_GET_LINKS`
+    (its answer is a backend event whose first argument is the text of a
+    JSON array) and the experimental `OFFLINE_QUEUE`, which changes when
+    requests are sent and nothing in them (`spec/actions.md`). All three
+    are UI5-profile actions and excluded from the portable profile
+    (`profiles/portable-v1.json`, `frontendActions.excluded`). Their shapes
+    were read from the source and seen once in a scratch transpile
+    (`["SET_APP_FULL_WIDTH","X"]`, `["SET_APP_FULL_WIDTH"]`,
+    `["OFFLINE_QUEUE", <text>, <event>...]`,
+    `["CROSS_APP_NAV_GET_LINKS", <target>, <params>, <event>]`); no
+    conformance app queues them, so they are not in `traffic/`.
+  - *Bound action arguments.* A `${/PATH}` argument of a queued action is
+    resolved against the model of the slot the answering app filled, no
+    longer MAIN's ([SL] `responseModel`; open question 11 unchanged).
+  - *Model delta.* The rule for a value the backend cannot write names a
+    whole scalar as well as a cell (new backend check
+    `model.unconvertible-scalar-skipped`, SHOULD) - behaviour of the
+    reference before 1.149.0 too, which only documents it now.
+  - *Launchpad.* The UI5 frontend names the logon client on the endpoint
+    (`sap-client=<3 digits>`) when the endpoint is on the page's origin and
+    names none - a query parameter, implementation note in
+    `spec/transport.md` (source only: no launchpad in the suite).
+  - *App-state hash.* A draft that exists but cannot be restored ends in
+    an error response instead of the "expired" toast (implementation note
+    in `spec/navigation.md`, source only).
+  - *UI5 profile.* The eight invisible custom controls (`z2ui5.cc.Timer`,
+    `Focus`, `Scrolling`, `Title`, `LPTitle`, `Favicon`, `History`, `Info`)
+    are gone; a view that names one fails to load. No schema, enum or
+    profile list of this repository named them - `z2ui5.cc` is excluded
+    from the portable profile as a namespace. The UI5 frontend no longer
+    refuses to send while `navigator.onLine` is false.
+  - *Not on the wire.* The draft frame that keeps a windowed table next to
+    the app's serialization and reuses its serialized rows ([TY]
+    `ty_s_kept`) is internal: no message differs, and
+    `window.order-with-the-draft` reads the same draft back twice.
+  - *Citations.* The message box's type mapping is [MSG] `box_resolve`
+    (`z2ui5_cl_ui5_srv_message`; it left [FE]). New source abbreviations
+    [WIN], [BND], [MSG], [WM], [LP], [OFF].
+- **Conformance app WINDOW** (`Z2UI5_CL_CONF_WINDOW`, ABAP and cap2UI5
+  twin): twelve rows, four at a time, an app sort and filter, a counter of
+  `main( )` calls, two wired `BINDING_CALL` buttons.
+- **node-runtime host on 1.149.0.** `@abap2ui5/node-runtime` 1.148.0 ->
+  1.149.0, `@abaplint/transpiler-cli` 2.14.5 -> 2.14.33 (the transpiler the
+  package names); `build.mjs` and `serve.mjs` are unchanged - the recipe of
+  1.148.0 holds. Traffic recorded again from both hosts with the UI5
+  frontend of the release commit, whose `core/WindowModel.js` the recorder
+  now runs as well. Results: `node-runtime` 91 of 91.
+- **The cap2UI5 host stays on `@cap2ui5/cds-plugin` 0.5.0** (runtime
+  1.147.0, no windowed tables; no newer plugin is released): 77 pass, the
+  eleven MUST checks of the windowed tables fail and two SHOULD checks
+  warn on the app's start, plus the known `error.details` warning. Pinned
+  per backend in `test/lib/expected.mjs` (the pins used to be one list for
+  both hosts); `test/traffic.test.mjs` compares the two recordings for
+  every other check. Not conformant at revision 0.5 until a plugin on a
+  runtime from 1.149.0 on is released (RESULTS.md).
+- **CI's frontend job pins abap2UI5 `6f55b04`** (Release 1.149.0); the UI5
+  SPA passes 81 of the 85 frontend checks, 4 skipped.
+- **The vendored agent client is `82b75d8`** - README and RESULTS named
+  `a4d9f07`, the commit before the re-vendoring of #5; settled from
+  `adapters/vendor/mcp-server/source.json` and `vendor-agent-client.mjs
+  --check`. The agent traffic is recorded from a checkout of that commit.
 - **Specification revision 0.4 - re-derived from abap2UI5 1.148.0**
   (release commit `610d9ae`; revisions 0.1 to 0.3 were derived from
   `b812079`, 1.146.0). Protocol 2 stays: `c_protocol` is 2 in 1.148.0, and

@@ -43,6 +43,15 @@ abbreviations: [../spec/README.md](../spec/README.md#sources).
   builder maps UI5 XML one to one. Custom controls of the framework live in
   `z2ui5.cc` (abap2UI5 `app/webapp/cc/`), custom-control addons under the
   reserved resource roots `z2ui5_cci` and `z2ui5_ccc`.
+- **Implementation note.** The set of `z2ui5.cc` controls belongs to the
+  frontend release, not to the protocol. abap2UI5 1.149.0 removed the eight
+  invisible ones - `z2ui5.cc.Timer`, `Focus`, `Scrolling`, `Title`,
+  `LPTitle`, `Favicon`, `History` and `Info` - whose work the follow-up
+  actions `START_TIMER`, `SET_FOCUS`, `SCROLL_TO` / `SCROLL_INTO_VIEW`,
+  `SET_TITLE`, `SET_TITLE_LAUNCHPAD`, `SET_FAVICON`, the router options
+  and the session block do; a view that still names one fails to load
+  there, like any view with a control the frontend cannot load
+  ([../spec/errors.md](../spec/errors.md#what-a-frontend-does-with-it)).
 - The page runs with complex binding syntax: a value containing `{` is a
   binding unless escaped (`\{`); text from data is escaped by the builder's
   `t` parameter ([IC], `z2ui5_cl_ui5_view_builder=>escape_literal`).
@@ -102,6 +111,48 @@ ones: `CONTROL_BY_ID` (a whitelisted method on a control resolved by id,
 ([CC] `GLOBAL_TARGETS`: `MESSAGE_TOAST`, `MESSAGE_BOX`, `VIEW_SLOTS`, `ROUTER`,
 `BUSY_INDICATOR`, `ICON_POOL`, `THEMING`, `POPUP`, `INVISIBLE_MESSAGE`,
 `FORMATTING`), `BINDING_CALL`, `BIND_ELEMENT`, `SET_ODATA_MODEL`, the variant
-and launchpad actions. The whitelist is the safety boundary: an action
+and launchpad actions (`CROSS_APP_NAV_TO_EXT`, `CROSS_APP_NAV_TO_PREV_APP`,
+`CROSS_APP_NAV_GET_LINKS`, `SET_TITLE_LAUNCHPAD`, `SET_APP_FULL_WIDTH`,
+[LP]) and the experimental `OFFLINE_QUEUE` ([OFF]). The whitelist is the safety boundary: an action
 name, target or method outside it is not called ([FA] `execute`,
 `Object.create(null)` dispatch).
+
+## Windowed tables
+
+A list bound to a path that has a window state in the model
+([../spec/windowed-tables.md](../spec/windowed-tables.md#the-window-state))
+gets a list binding of the frontend's own instead of UI5's client-side one
+([WM] `WindowModel.bindList`, `WindowListBinding`). The view says nothing
+about it - the aggregation is bound as ever (`items="{/T_ROWS}"`,
+`rows="{/T_ROWS}"`), and a path without a window state keeps the plain JSON
+binding.
+
+- **Length.** The binding answers its length with `TOTAL`, as final: a
+  growing `sap.m.Table` or `List` shows `[ 4 / 12 ]`, a
+  `sap.ui.table.Table` a scrollbar over all rows ([WM] `getLength`,
+  `isLengthFinal`).
+- **More rows.** When a control asks the binding for contexts past the
+  rows it holds, it sends a window request for whole windows - `count` =
+  the rows needed, rounded up to a multiple of `SIZE`, at most `TOTAL` -
+  once per need, without the busy indicator, and kept (queue-last) when a
+  roundtrip is in flight ([WM] `getContexts`, `_z2ui5Ensure`; [SL]
+  `createViewModel`: `eB(['___ZZZ_WIN', false, false, false, true,
+  <noBusy>], path, count)`).
+- **Sort and filter.** `sort( )` and `filter( )` on the binding - the
+  column menu of `sap.ui.table.Table` (`sortProperty`, `filterProperty`),
+  the follow-up action `BINDING_CALL` - do not sort or filter in the
+  browser: each sends a window request for one window that names its own
+  part and nothing else, `[path, SIZE, sort]` or `[path, SIZE, "",
+  filter]` ([WM] `sort`, `filter`, `_z2ui5Restart`, `_z2ui5Send`). The
+  filter sent is the binding's `Control` and `Application` filters
+  together ([WM] `filterGroups`): filters on one path ORed, the paths
+  ANDed, a multi-filter taken apart when it is an AND of conditions or of
+  ORs of them; a `Date` value travels as `yyyy-MM-dd`; a filter of another
+  shape, or one with a test function, is not sent and logged.
+- **Not applied.** Sorters and filters written into the binding info of
+  the view are ignored for a windowed list - the rows arrive in the
+  backend's order ([WM] `WindowListBinding`, the constructor).
+- A frontend implementing this profile MUST do the first three: views
+  with growing lists and sortable columns over windowed tables are written
+  by every backend from abap2UI5 1.149.0 on. *Frontend checks:*
+  `ui5.window-growth`, `ui5.window-sort-filter`.

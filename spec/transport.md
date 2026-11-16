@@ -12,6 +12,15 @@ Implementations mount it where they like: an ICF node on an ABAP system
 
 - A frontend MUST send every roundtrip to the endpoint and MUST NOT derive
   other URLs from it.
+- **Implementation note.** On an ABAP system the UI5 frontend adds the
+  logon client to the endpoint's query - `sap-client=<three digits>`, from
+  the page's own URL or from the launchpad's logon system - when the
+  endpoint is on the page's origin and names none, so that every roundtrip
+  of a launchpad app, whose endpoint is the manifest's data source, runs in
+  the client the page was served for and not in the one a cookie shared by
+  all tabs of the host says ([LIB] `withSapClient`, from abap2UI5 1.149.0
+  on). It is a query parameter of the endpoint, which a backend already
+  has to accept (below); nothing in the body changes.
 - A backend MUST answer a roundtrip POST on the endpoint regardless of the
   query string the endpoint URL carries (`?app_start=...` stays in the page
   URL and travels inside the body, [request.md](request.md#app-start-shaped-requests)).

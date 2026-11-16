@@ -55,6 +55,7 @@ The **core protocol** is mandatory for every frontend and every backend:
 | Request body | [request.md](request.md) |
 | Response body, action queues, view slots, model | [response.md](response.md) |
 | Follow-up actions | [actions.md](actions.md) |
+| Windowed tables | [windowed-tables.md](windowed-tables.md) |
 | Sessions and drafts | [sessions.md](sessions.md) |
 | Navigation | [navigation.md](navigation.md) |
 | Errors | [errors.md](errors.md) |
@@ -90,6 +91,8 @@ the portable profile is a property of the app, not of the backend.
 | follow-up action | an entry of `T_CUSTOM`: something the app asked the frontend to do after rendering |
 | model | the JSON object a view binds to; it holds the app's **bound** attributes, upper case |
 | model delta | the part of the model the user changed, sent with the next event |
+| windowed table | a bound table the backend sends a window of rows at a time; its state is at `/__WINDOW/<path>` of the model |
+| window request | the event request with the reserved event `___ZZZ_WIN` a frontend asks for more rows, a sort or a filter of a windowed table with - answered without running the app |
 | app start | a request without draft id: the backend creates (or restores) an app |
 | app stack | the chain of apps `nav_app_call` builds and `nav_app_leave` unwinds |
 

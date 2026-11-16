@@ -42,11 +42,11 @@ The reference body - unless the user exit hides details
 ([EXIT] `check_hide_error_details`, then it is `Internal Server Error`):
 
 ```
-abap2UI5 1.148.0 - unhandled exception in a POST request
+abap2UI5 1.149.0 - unhandled exception in a POST request
 
 --- error ---
-Request failed in app Z2UI5_CL_CONF_ERROR, event FAIL, draft 7298..., url /?app_start=Z2UI5_CL_CONF_ERROR
-CONFORMANCE_FAILURE
+Request failed in app Z2UI5_CL_CONF_ERROR, event FAIL, draft 0DD9..., url /?app_start=Z2UI5_CL_CONF_ERROR
+Conversion no number
 
 --- exception chain ---
 [1] Z2UI5_CX_UI5_UTIL_ERROR

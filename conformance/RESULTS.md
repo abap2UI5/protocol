@@ -1,25 +1,30 @@
 # Results
 
-Backend suite, profile `ui5` (77 checks: 70 core, 7 UI5-profile; 62 MUST,
-15 SHOULD), run 2026-11-15 with `npm run conformance:<backend>`. The traffic
-of these runs is recorded in [`../traffic/`](../traffic/). Revision 0.4
-moved both reference hosts to current releases and added
-`route.app-state-names-no-app` (SHOULD); no failure is pinned any more -
-see [below](#the-request-url-reflected-into-the-error-body).
+Backend suite, profile `ui5` (91 checks: 84 core, 7 UI5-profile; 73 MUST,
+18 SHOULD), run 2026-11-16 with `npm run conformance:<backend>`. The traffic
+of these runs is recorded in [`../traffic/`](../traffic/). Revision 0.5
+moved the node-runtime host to abap2UI5 1.149.0 and added the thirteen
+checks of the windowed tables (`window.*`) and
+`model.unconvertible-scalar-skipped` (SHOULD). The cap2UI5 host stays on
+the newest plugin release, whose runtime has no windowed tables: its
+failures are pinned per backend in
+[`../test/lib/expected.mjs`](../test/lib/expected.mjs) -
+see [below](#windowed-tables).
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| `node-runtime` | `@abap2ui5/node-runtime` 1.148.0 (abap2UI5 1.148.0, transpiled) | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.5) | 77 | 0 | 0 | 0 | conformant (ui5) |
-| `cap2ui5` | `@cap2ui5/cds-plugin` 0.5.0 on `@abap2ui5/node-runtime` 1.147.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 76 | 0 | 1 | 0 | conformant (ui5), one SHOULD warning: `error.details` (below) |
+| `node-runtime` | `@abap2ui5/node-runtime` 1.149.0 (abap2UI5 1.149.0, transpiled) | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.33) | 91 | 0 | 0 | 0 | conformant (ui5) |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.5.0 on `@abap2ui5/node-runtime` 1.147.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 77 | 11 | 3 | 0 | **not conformant at revision 0.5**: the eleven MUST checks of the windowed tables fail and two of their SHOULD checks warn, all on the start of the app ([below](#windowed-tables)); the third warning is `error.details`. Every check of revision 0.4 answers as before |
 
-Per area (both backends identical except `errors`):
+Per area (both backends identical except `window` and `error`):
 
 | Area | Checks | node-runtime | cap2ui5 |
 |---|---:|---|---|
 | transport | 8 | 8 pass | 8 pass |
 | response | 8 | 8 pass | 8 pass |
 | event | 5 | 5 pass | 5 pass |
-| model | 10 | 10 pass | 10 pass |
+| model | 11 | 11 pass | 11 pass |
+| window | 13 | 13 pass | 11 fail, 2 warn |
 | message | 4 | 4 pass | 4 pass |
 | slots | 7 | 7 pass | 7 pass |
 | action | 3 | 3 pass | 3 pass |
@@ -33,10 +38,97 @@ yet - it needs a system with the apps pulled in by abapGit; the transpiled
 runtime is the same framework source.
 
 The two hosts do not run the same framework release: cap2UI5 0.5.0 pins
-`@abap2ui5/node-runtime` 1.147.0, the node-runtime host runs 1.148.0. The
-backend sources of the two releases differ in where helper methods live,
-not in what they answer (abap2UI5 `d771aba`..`610d9ae`), and the recorded
-traffic of the two is identical ([below](#differences-between-the-two-backends)).
+`@abap2ui5/node-runtime` 1.147.0, the node-runtime host runs 1.149.0. For
+everything both releases have, the recorded traffic of the two is identical
+([below](#differences-between-the-two-backends)); what 1.149.0 added to the
+wire - the windowed tables - only the node-runtime host has.
+
+## The move from 1.148.0 to 1.149.0
+
+Until 2026-11-16 the node-runtime host ran abap2UI5 1.148.0: 77 of 77
+passed. What changed with the move, as measured:
+
+- **Every check of revision 0.4 answers as before.** Compared check by
+  check with the recording of 1.148.0 (draft ids, the version line of the
+  error bodies and the page's `ETag` normalized), the suite traffic of the
+  77 checks is identical on both hosts. The page grew from 342,499 to
+  357,162 characters.
+- **The UI5 frontend's requests are the same** for the scenarios recorded
+  before (`traffic/*/ui5-frontend.json`, the frontend of abap2UI5 1.149.0
+  run in Node): apart from the measured `MS_CLIENT_PREV` no request and no
+  response differs from the recording of 1.148.0. The agent client's
+  traffic and snapshots are identical too.
+- **Fourteen new checks.** The thirteen of
+  [../spec/windowed-tables.md](../spec/windowed-tables.md), driven through
+  the new conformance app WINDOW, and
+  `model.unconvertible-scalar-skipped` (SHOULD): a scalar that does not
+  convert into its attribute is skipped, the roundtrip does not fail.
+  node-runtime passes all fourteen; the cap2UI5 host passes the scalar
+  check (the reference skipped such a value before 1.149.0 as well - the
+  release only documents it, [IC] `ty_s_model_skip`) and none of the
+  window checks.
+- **New recorded scenario: the list binding of the UI5 frontend.**
+  `scripts/lib/ui5-frontend.mjs` now also loads `core/WindowModel.js` of
+  the checkout - on stand-ins for the two UI5 classes it extends - and
+  `traffic/node-runtime/ui5-frontend.json` records what its binding sends
+  when it is asked for rows past its window and told to sort and to
+  filter: `["/T_ROWS","8"]`, `["/T_ROWS","4","[{\"PATH\":\"QTY\",\"DESCENDING\":true}]"]`,
+  `["/T_ROWS","4","","[[[\"QTY\",\"GT\",6,null]]]"]`, then
+  `["/T_ROWS","6"]` inside that order. The same requests leave a real
+  browser in the frontend suite (`ui5.window-growth`,
+  `ui5.window-sort-filter`).
+- **The pins are per backend now.** `test/lib/expected.mjs` names the
+  expected failures and warnings of each reference host;
+  `scripts/run-conformance.mjs <backend> --expected` and the tests read the
+  backend's own list, and `test/traffic.test.mjs` compares the two
+  recordings for every check neither host is pinned apart on.
+
+What moved on the wire between the two releases is listed in
+[../CHANGELOG.md](../CHANGELOG.md) and written into the spec.
+
+## Windowed tables
+
+**The cap2UI5 host cannot run them.** `@cap2ui5/cds-plugin` 0.5.0 - the
+newest release - hosts `@abap2ui5/node-runtime` 1.147.0, which has no
+`window_bind_tab( )`; the plugin's client has no such method, the twin app
+[`apps/cap2ui5/window.js`](apps/cap2ui5/window.js) throws in its first
+`main( )`, and the start of `Z2UI5_CL_CONF_WINDOW` is answered `500`,
+`roundtrip failed (<correlation id>)`. Every `window.*` check ends on that
+first request:
+
+| | Checks |
+|---|---|
+| fail (MUST) | `window.first-window`, `window.more-rows`, `window.sort`, `window.filter`, `window.growth-keeps-order`, `window.parts-kept-and-cleared`, `window.filters-anded`, `window.sort-last-set`, `window.order-with-the-draft`, `window.delta-positions`, `window.whole-table-refused` |
+| warn (SHOULD) | `window.count-bounds`, `window.unknown-path-ignored` |
+
+*The backend is behind, the checks stay.* The host is kept on 0.5.0 - no
+newer plugin is released - and the thirteen results are pinned for
+`cap2ui5` in [`../test/lib/expected.mjs`](../test/lib/expected.mjs): the
+tests fail when one of them starts to pass (unpin it, record again) as
+well as when another check fails. The fix is a plugin release on a runtime
+from 1.149.0 on. cap2UI5 main has the two client methods since `0f8d821`
+(its #111), and the twin app was run once against that main with
+`@abap2ui5/node-runtime` 1.149.0 in a scratch copy of the host
+(2026-11-16, not part of this repository's runs): 90 of 91 passed, the
+thirteen window checks among them, one warning (`error.details`). Whether
+windowed tables are a part every backend has to offer is
+[open question 12](../spec/open-questions.md#12-windowed-tables-as-a-part-of-the-core-protocol).
+
+**What the frontends do with a windowed table** (the model of
+`window.first-window`: four of twelve rows, `/__WINDOW/T_ROWS`):
+
+| Frontend | Rows shown | More rows, sort, filter | A cell edit |
+|---|---|---|---|
+| UI5 SPA (abap2UI5 1.149.0), in Chromium | the window; the growing trigger reads `[ 4 / 12 ]` | window requests: `ui5.window-growth`, `ui5.window-sort-filter` pass | `__delta` of the position (`window.edit-as-delta`) |
+| agent client (mcp-server `82b75d8`) | the four rows as the whole table: `rowCount` 4, `truncated` false - nothing in snapshot v1 names `TOTAL` | none; the two `BINDING_CALL` buttons are listed under `unsupported` ("runs in the browser only") | `__delta` of the position |
+| Adaptive Cards renderer | the four rows as the whole table | none; a `BINDING_CALL` wire is outside the portable profile | `__delta` of the position |
+| terminal renderer | the four rows as the whole table - also end to end against the node-runtime host, where the app's `SORT` then shows the first four of the new order and a box ticked before lands in its row | none | `__delta` of the position |
+| Web Components (frontend-webcomponent main `5c52b4d`) | **not run** - read from its source only: no `__WINDOW` and no `___ZZZ_WIN` anywhere in `src/`; `growing` pages locally over the bound array (`src/render/renderer.js`), so it would show the window as the table | none | through its vendored agent client: a `__delta` |
+
+All four frontends that were run pass `window.rows-shown` and
+`window.edit-as-delta`. None but the UI5 SPA tells the user that rows are
+missing - no finding against a rule of this revision, and
+[open question 13](../spec/open-questions.md#13-windowed-tables-in-frontends-that-are-not-the-ui5-frontend).
 
 ## The move from 1.146.0 to 1.148.0
 
@@ -122,7 +214,9 @@ both).
 
 `test/traffic.test.mjs` compares the two recordings check by check - status,
 media type and JSON body, draft ids normalized - and finds them
-**identical** apart from the following. Both are the same framework
+**identical** apart from the following, and apart from the thirteen checks
+of the [windowed tables](#windowed-tables), which the cap2UI5 host does not
+get into (`BACKEND_TRAFFIC_APART` in `test/lib/expected.mjs`). Both are the same framework
 (cap2UI5 hosts `@abap2ui5/node-runtime` rather than porting it), so this
 was the expected outcome; what differs is what the host adds around it.
 
@@ -181,11 +275,11 @@ records - as a rule, or as an implementation note:
 
 ## Frontend suite
 
-Frontend suite, 81 checks (66 MUST, 15 SHOULD; 66 core, 8 portable, 4 UI5,
-3 semantic), run 2026-11-15 against the traffic of the 1.148.0 recording -
+Frontend suite, 85 checks (70 MUST, 15 SHOULD; 68 core, 8 portable, 6 UI5,
+3 semantic), run 2026-11-16 against the traffic of the 1.149.0 recording -
 the UI5 SPA, the agent client, the Adaptive Cards and the terminal
-renderer; the Web Components row is the run of 2026-10-03 and was not
-repeated - with
+renderer; the Web Components row is the run of 2026-10-03 (81 checks) and
+was not repeated - with
 `abap2ui5-conformance frontend --adapter <name>` (each frontend at its
 widest profile). The scripted backend answers from
 [`../traffic/node-runtime/`](../traffic/node-runtime/) plus synthetic edge
@@ -195,10 +289,10 @@ perform.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 1.148.0 `app/webapp` (release commit `610d9ae`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 77 | 0 | 0 | 4 | conformant (ui5) |
-| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `a4d9f07` (main, PR #44; vendored) | semantic | 61 | 0 | 0 | 20 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
-| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 66 | 0 | 0 | 15 | every check it can be driven through holds |
-| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 72 | 0 | 0 | 9 | every check it can be driven through holds, the router checks included |
+| UI5 SPA (`ui5`) | abap2UI5 1.149.0 `app/webapp` (release commit `6f55b04`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 81 | 0 | 0 | 4 | conformant (ui5) |
+| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `82b75d8` (vendored - `adapters/vendor/mcp-server/source.json`) | semantic | 63 | 0 | 0 | 22 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
+| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 68 | 0 | 0 | 17 | every check it can be driven through holds |
+| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 74 | 0 | 0 | 11 | every check it can be driven through holds, the router checks included |
 | Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
@@ -224,6 +318,15 @@ with the first request that finds it loaded
 *the check was imprecise*; it now flags only a block the backend already
 has. In the suite's page `S_UI5` is loaded before the first request, so
 the SPA's result did not depend on it.
+
+Since 2026-11-16 CI pins the release commit of abap2UI5 1.149.0
+(`6f55b04`), the frontend `@abap2ui5/node-runtime` 1.149.0 ships: the 77
+checks of before pass as before, and the four new ones pass -
+`window.rows-shown`, `window.edit-as-delta`, `ui5.window-growth` and
+`ui5.window-sort-filter` ([above](#windowed-tables)): 81 pass, 0 fail, 0
+warn, 4 skip, in two consecutive runs. The last two drive a real growing
+`sap.m.Table` over the recorded answers of the conformance app WINDOW: a
+click on its "More" trigger and two `BINDING_CALL` buttons.
 
 ### Findings - the UI5 SPA
 
@@ -273,9 +376,13 @@ error body shown verbatim as text.
 
 ### Findings - the agent client
 
-Re-vendored at abap2UI5/mcp-server `a4d9f07` (main, PR #44): **every check
-that applies passes** - 61 pass, 0 fail, 0 warn, 20 skip, two runs
-identical. The five MUST deviations and three warnings measured at
+Re-vendored at abap2UI5/mcp-server `a4d9f07` (main, PR #44), and again at
+`82b75d8` (its #48 and #49; the commit `adapters/vendor/mcp-server/source.json`
+names - this page and the README named `a4d9f07` until revision 0.5, which
+the vendored copy had left with this repository's #5): **every check that
+applies passes** - 63 pass, 0 fail, 0 warn, 22 skip, two runs identical
+(61 and 20 before the four checks of the windowed tables, two of which
+are the UI5 profile's). The five MUST deviations and three warnings measured at
 `ea4e9fa` (revision 0.2) are fixed in the client, as filed:
 
 1. PROTOCOL check - a `PROTOCOL: 3` response is refused naming both numbers
@@ -293,9 +400,8 @@ a roundtrip kept (`model.pending-survive-push`). Skipped: the portable and
 UI5 profiles (not claimed), the URL, DOM and focus checks (no browser), a
 nested-table cell (the snapshot does not describe nested tables), a
 programmatic model edit. `traffic/*/agent-client.json` was recorded again
-on 2026-11-15 with the
-vendored client (the commit `adapters/vendor/mcp-server/source.json`
-names) against both hosts; its exchanges and snapshots are identical to
+on 2026-11-16 with a checkout of the vendored commit (`82b75d8`) against
+both hosts; its exchanges and snapshots are identical to
 the recording of `ea4e9fa` but for the draft ids, and
 `semantic.recorded-snapshots` passes against it.
 
