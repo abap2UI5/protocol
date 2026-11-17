@@ -1,5 +1,6 @@
 /*
- * The page the UI5 adapter boots the official UI5 SPA (abap2UI5 app/webapp)
+ * The page the UI5 adapter boots the official UI5 SPA (abap2UI5 bundle/webapp,
+ * app/webapp up to 1.149.0)
  * with - the UI5 profile's page (profiles/ui5.md#the-page) as the backend
  * serves it (z2ui5_cl_ui5_http_handler=>_http_get), with two differences:
  *
@@ -9,8 +10,14 @@
  *   - UI5 itself comes from the @openui5/* npm packages of this repository
  *     (/resources/), so the run needs no CDN.
  *
- * The component settings are the backend page's: checkLocal: true - the
- * frontend posts to the URL of the page, the run's endpoint.
+ * The component settings are what the frontend is started with on a real
+ * page, and the frontend posts to the URL of the page, the run's endpoint:
+ *   - mode "embed" (bundle/webapp): what the embed control hands it through
+ *     the bundle's create( ) on abap2UI5's own page - the endpoint, the
+ *     page's path, and ownsPage: the page is the app's (core/Embed.js).
+ *     The control itself is not on this page: it would load the frontend
+ *     as the built bundle, and the suite tests the source.
+ *   - mode "local" (app/webapp): checkLocal: true, the old backend page's.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -95,11 +102,17 @@ window.conformanceInit = function () {
         return orig.apply(this, arguments);
       };
     });
+    if (window.__confMode === "embed") {
+      document.querySelector("[data-sap-ui-component]").setAttribute("data-settings", JSON.stringify({
+        id: "z2ui5",
+        componentData: { endpoint: window.location.origin + window.location.pathname, ownsPage: true },
+      }));
+    }
     sap.ui.require(["sap/ui/core/ComponentSupport"], function (ComponentSupport) { ComponentSupport.run(); });
   });
 };`;
 
-export function bootPage({ theme = "sap_horizon" } = {}) {
+export function bootPage({ theme = "sap_horizon", mode = "local" } = {}) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -107,7 +120,8 @@ export function bootPage({ theme = "sap_horizon" } = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>abap2UI5</title>
 <style>html, body, body > div, #container, #container-uiarea { height: 100%; }</style>
-<script>${ONINIT}</script>
+<script>window.__confMode = ${JSON.stringify(mode)};
+${ONINIT}</script>
 <script id="sap-ui-bootstrap" src="/resources/sap-ui-core.js"
   data-sap-ui-resourceroots='{ "z2ui5": "/z2ui5/" }'
   data-sap-ui-oninit="conformanceInit"

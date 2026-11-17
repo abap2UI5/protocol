@@ -1,6 +1,6 @@
 /*
  * The UI5 frontend's own request code, run in Node against a live backend:
- * app/webapp/core/Server.js, core/Session.js and core/Lib.js of an abap2UI5
+ * bundle/webapp/core/Server.js (app/webapp up to 1.149.0), core/Session.js and core/Lib.js of an abap2UI5
  * checkout, loaded by stubbing sap.ui.define (the way abap2UI5's own
  * node/tests/loadModule.js loads them), with the real fetch. Nothing is
  * rendered - the MAIN controller is a stub that keeps the response record -
@@ -15,8 +15,10 @@ import path from "node:path";
 import vm from "node:vm";
 
 export function locateWebapp(home) {
-  const dir = path.join(home, "app", "webapp");
-  return fs.existsSync(path.join(dir, "core", "Server.js")) ? dir : null;
+  for (const dir of [path.join(home, "bundle", "webapp"), path.join(home, "app", "webapp")]) {
+    if (fs.existsSync(path.join(dir, "core", "Server.js"))) return dir;
+  }
+  return null;
 }
 
 function loader(webapp, sandbox) {

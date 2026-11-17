@@ -1,5 +1,6 @@
 /*
- * Adapter: the official UI5 SPA - abap2UI5 app/webapp - in Chromium, driven
+ * Adapter: the official UI5 SPA - abap2UI5 bundle/webapp (app/webapp up to
+ * 1.149.0) - in Chromium, driven
  * by Playwright through its real controls (typing into an Input, clicking a
  * Button). The page is the UI5 profile's boot page (ui5-page.mjs) served by
  * the mock at the run's endpoint, so the frontend posts its roundtrips to
@@ -20,14 +21,31 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../../..");
 const PROBE = fs.readFileSync(path.join(HERE, "ui5-probe.js"), "utf8");
 
+// The frontend's folder in an abap2UI5 checkout: bundle/webapp since it is
+// the source of the bundle the embed control loads (after 1.149.0),
+// app/webapp before.
+export const WEBAPP_DIRS = ["bundle/webapp", "app/webapp"];
+
 export function locateWebapp(explicit) {
+  const homes = [
+    process.env.ABAP2UI5_HOME,
+    path.resolve(ROOT, "../abap2UI5"),
+    path.resolve(ROOT, "deps/abap2UI5"),
+  ].filter(Boolean);
   const candidates = [
     explicit,
-    process.env.ABAP2UI5_HOME && path.join(process.env.ABAP2UI5_HOME, "app/webapp"),
-    path.resolve(ROOT, "../abap2UI5/app/webapp"),
-    path.resolve(ROOT, "deps/abap2UI5/app/webapp"),
+    ...homes.flatMap((home) => WEBAPP_DIRS.map((dir) => path.join(home, dir))),
   ].filter(Boolean);
   return candidates.find((d) => fs.existsSync(path.join(d, "core/Server.js"))) || null;
+}
+
+// How the frontend is told where its backend is. A frontend from app/webapp
+// reads checkLocal (the backend page said so). One from bundle/webapp is
+// always created by the embed control, which hands it the endpoint and -
+// for a page that is the app's, as this one is - ownsPage; the bundle's
+// core/Embed.js is what reads that (and no checkLocal any more).
+export function startMode(webapp) {
+  return fs.existsSync(path.join(webapp, "core/Embed.js")) ? "embed" : "local";
 }
 
 export async function launchChromium() {
@@ -86,12 +104,12 @@ export function createUi5Adapter({ webapp: explicit, slowMo = 0 } = {}) {
 
   const adapter = {
     name: "ui5",
-    description: "the UI5 SPA (abap2UI5 app/webapp) in Chromium",
+    description: "the UI5 SPA (abap2UI5 bundle/webapp) in Chromium",
     profiles: ["core", "portable", "ui5"],
     capabilities: new Set(["dom", "url", "timers", "focus", "concurrent", "modelEdit", "boxClose", "nest", "title", "wires"]),
 
     async open({ mock }) {
-      if (!webapp) throw new Unsupported("no abap2UI5 checkout with app/webapp (set ABAP2UI5_HOME)");
+      if (!webapp) throw new Unsupported(`no abap2UI5 checkout with ${WEBAPP_DIRS.join(" or ")} (set ABAP2UI5_HOME)`);
       const roots = openui5Roots();
       if (!roots.length) throw new Unsupported("the @openui5 npm packages are not installed (npm ci)");
       mock.addStatic({
@@ -114,12 +132,12 @@ export function createUi5Adapter({ webapp: explicit, slowMo = 0 } = {}) {
           return "";
         }
       })();
-      adapter.version = `abap2UI5 ${pkg}${sha ? ` (${sha})` : ""} app/webapp, OpenUI5 ${versionInfo(roots).version} (npm), Chromium ${browser.version()}`;
+      adapter.version = `abap2UI5 ${pkg}${sha ? ` (${sha})` : ""} ${path.relative(path.resolve(webapp, "../.."), webapp)}, OpenUI5 ${versionInfo(roots).version} (npm), Chromium ${browser.version()}`;
     },
 
     async start(r, { app, search, hash = "" } = {}) {
       run = r;
-      run.page = () => bootPage();
+      run.page = () => bootPage({ mode: startMode(webapp) });
       pageErrors = [];
       page = await context.newPage();
       if (slowMo) page.setDefaultTimeout(30_000);
