@@ -29,7 +29,7 @@ the frontend suite (revision 0.2).
 | 10 | navigation actions in the portable action list | `portable-v1.json` separates `actions.api` from `actions.wire` |
 | 11 | bound arguments (`${/PATH}`) of queued follow-up actions | open - current decision: recorded as what the UI5 frontend does, no rule |
 | 12 | windowed tables as a part of the core protocol | open - current decision: core, and every conforming backend offers them |
-| 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the window and MAY ask for more; not in portable v1, snapshot v1 unchanged |
+| 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the window and MAY ask for more; not in portable v1; snapshot v1 carries `total` and `window` (alternative (c), additive - the agent client implements it) |
 
 ## 1. The NEST slots in portable renderers
 
@@ -380,20 +380,34 @@ is optional.** A frontend MUST adopt a model with `/__WINDOW` and MUST
 send edits as positions ([windowed-tables.md](windowed-tables.md#frontends),
 frontend checks `window.rows-shown`, `window.edit-as-delta`); it MAY send
 window requests. `window_bind_tab( )` is **not** part of the portable
-profile v1, and the semantic snapshot v1 is unchanged: a windowed table's
-`rowCount` is the number of rows the model carries, and nothing in the
-snapshot says that more exist.
+profile v1. For the semantic profile the decision took alternative (c) as
+an additive change of snapshot v1, after its implementation
+([versioning.md](versioning.md#compatible-changes-within-protocol-2)
+allows it, `snapshotVersion` stays 1): a windowed table carries `total`
+and `window: { size, more? }`, `truncated` is true while rows are missing,
+`app_act` takes `window` and a `BINDING_CALL` on such a table is the
+action `@BINDING_CALL`
+([../profiles/semantic.md](../profiles/semantic.md#windowed-tables)). The
+keys are optional and sending a window request stays a MAY - (c) is what
+the snapshot offers, not a duty of every semantic frontend.
 
 *What the frontends do today* (measured,
 [../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)):
-the Adaptive Cards and the terminal renderer of this repository and the
-agent client show the rows of the window as the whole table and send no
-window request; all three send a cell edit as a `__delta` of the position.
+the Adaptive Cards and the terminal renderer of this repository show the
+rows of the window as the whole table and send no window request. The
+agent client (abap2UI5/mcp-server `8efb3d7` on) implements (c): its
+snapshot names `total` and how to load the next window, and it sends the
+window requests the UI5 list binding sends - more rows, a sort, a filter
+(`traffic/*/agent-client.json`, recorded against both reference
+backends). All three send a cell edit as a `__delta` of the position.
 
 *Why it is open.* An app that binds 10,000 rows with a window of 100 is a
-table of 100 rows in those frontends, without a word - the user of a
-terminal, or an agent, cannot know that 9,900 rows are missing, and
-`rowCount` of the snapshot understates the table.
+table of 100 rows in the portable renderers, without a word - the user of a
+terminal cannot know that 9,900 rows are missing. The semantic snapshot no
+longer hides it, but only as optional keys: whether a frontend that is not
+the UI5 frontend MUST show that rows are missing, or MUST offer the next
+window ((b) for the portable renderers, (c) made a duty for semantic
+ones), is the maintainer's to decide.
 
 **Alternatives.**
 - (a) As decided.
@@ -404,7 +418,10 @@ terminal, or an agent, cannot know that 9,900 rows are missing, and
 - (c) Snapshot v2 (or an additive key in v1, which
   [versioning.md](versioning.md#compatible-changes-within-protocol-2)
   allows): a table carries `total` and an action that asks for more rows,
-  so an agent can page.
+  so an agent can page. *Taken for the semantic profile as additive keys
+  of v1 (revision 0.5, after the agent client of abap2UI5/mcp-server
+  `8efb3d7`); the window request is `app_act { window }`, not an action
+  in `actions`.*
 - (d) The backend sends a table whole to a frontend that does not declare
   windows - a capability in `CONFIG`; a change in abap2UI5 core, and the
   size is what the app wanted to avoid.

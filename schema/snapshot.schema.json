@@ -83,13 +83,23 @@
             "properties": { "name": { "type": "string" }, "label": { "type": "string" } }
           }
         },
-        "rowCount": { "type": "integer", "minimum": 0 },
+        "rowCount": { "type": "integer", "minimum": 0, "description": "the rows the model holds - for a windowed table the rows of the window, which row and a cell path address" },
+        "total": { "type": "integer", "minimum": 0, "description": "extension, windowed tables only: /__WINDOW/<path>/TOTAL, the rows the backend's filter lets through, at least rowCount" },
         "rows": { "type": "array", "maxItems": 200, "items": { "type": "object" } },
         "truncated": { "type": "boolean" },
         "selectionMode": { "enum": ["None", "Single", "Multi"] },
         "editableCells": { "type": "array", "items": { "type": "string" } },
         "layer": { "$ref": "#/$defs/layer" },
-        "selectionField": { "type": "string" }
+        "selectionField": { "type": "string" },
+        "window": {
+          "type": "object",
+          "description": "extension, windowed tables only: size the rows of one window (SIZE); more, only while rowCount < total, a sentence naming the app_act that loads the next window",
+          "required": ["size"],
+          "properties": {
+            "size": { "type": "integer", "minimum": 1 },
+            "more": { "type": "string" }
+          }
+        }
       }
     },
     "message": {

@@ -26,6 +26,10 @@ export default [
       t.mock.reply(recorded("model.scalar", 1));
       await t.press({ text: "Check", event: "CHECK" });
       shots.push((await t.state()).snapshot);
+      // a windowed table (total, window)
+      t.mock.reply(recorded("window.first-window", 0));
+      await t.start("Z2UI5_CL_CONF_WINDOW");
+      shots.push((await t.state()).snapshot);
       shots.forEach((s, i) => {
         const v = validate("snapshot", s);
         t.ok(v.valid, `snapshot #${i + 1}: ${formatErrors(v.errors)}`);
@@ -52,6 +56,11 @@ export default [
         ["start", "Z2UI5_CL_CONF_NAV"],
         ["act", { event: "CALL" }],
         ["act", { event: "DONE" }],
+        // the windowed table: its start and the first @BINDING_CALL (the
+        // "Sort list" button); the window requests the recording goes on
+        // with (app_act { window }) are no adapter interaction
+        ["start", "Z2UI5_CL_CONF_WINDOW"],
+        ["act", { event: "@BINDING_CALL" }],
       ];
       steps.forEach((_, i) => t.mock.reply({ status: rec.exchanges[i].response.status, body: rec.exchanges[i].response.body }));
       for (let i = 0; i < steps.length; i += 1) {

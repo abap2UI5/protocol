@@ -2,6 +2,48 @@
 
 ## Unreleased
 
+- **Agent client re-vendored at abap2UI5/mcp-server `8efb3d7`** (its #71,
+  windowed tables; `82b75d8` before; `npm run vendor:agent`, `--check`
+  passes). Between the two commits the three vendored modules also
+  describe a table bound to a dereferenced data reference (`{/MR_X/*}`,
+  #63), refuse a response whose action list is no list and take a
+  per-call abort `signal` (#50) - no snapshot key changes with those.
+  The snapshot changes with #71, additively (`snapshotVersion` stays 1):
+  - `profiles/semantic.md`: a windowed table's `rowCount` is the rows held,
+    the new `total` is `/__WINDOW/<path>/TOTAL`, `truncated` is true while
+    rows are missing and `window: { size, more? }` names the call that
+    loads the next window; `app_act` takes `window: { table, count?,
+    sort?, filter? }` and sends `___ZZZ_WIN` as the UI5 list binding does;
+    a `BINDING_CALL` sort or filter wire on a windowed table is the action
+    `@BINDING_CALL` (it was listed under `unsupported`). New section
+    *Windowed tables*; the sentence that nothing in snapshot v1 names
+    `TOTAL` is gone.
+  - `schema/snapshot.schema.json`: optional `tables[].total` (integer >= 0)
+    and `tables[].window` (`size` integer >= 1, `more` string); five
+    invalid samples in `test/schema.test.mjs`.
+  - [Open question 13](spec/open-questions.md#13-windowed-tables-in-frontends-that-are-not-the-ui5-frontend)
+    stays open: the current decision records that the semantic profile took
+    alternative (c) as additive keys of v1, after the agent client; the
+    keys are optional and window requests stay a MAY. Whether the other
+    frontends must show or fetch the missing rows is the maintainer's.
+  - `conformance/RESULTS.md`: the agent client passes 63 of 85, 22
+    skipped, as before - `window.rows-shown` and `window.edit-as-delta`
+    pass; its row in *Windowed tables* now shows `total` and the window
+    requests.
+  - Agent traffic recorded again from both hosts with a `git archive` of
+    `8efb3d7`: the nine exchanges and snapshots of before are unchanged but
+    for the draft ids; the recorder now also drives the app WINDOW - its
+    start, the `@BINDING_CALL` of "Sort list", the next window and a
+    filter (`["/T_ROWS","4","[{\"PATH\":\"QTY\",\"DESCENDING\":true}]"]`,
+    `["/T_ROWS","8"]`, `["/T_ROWS","4","","[[[\"NAME\",\"Contains\",\"1\",null]]]"]`,
+    what the UI5 list binding sends), the same on both hosts. The schemas
+    now validate 482 requests, 466 responses and 26 snapshots.
+    `semantic.snapshot-schema` also validates the snapshot of a windowed
+    table, and `semantic.recorded-snapshots` replays the WINDOW start and
+    the `@BINDING_CALL` (the window requests are no adapter interaction).
+    `suite.json` and `ui5-frontend.json` recorded in the same run differed
+    only in draft ids, ports, ETags, timestamps and the checkout's name and
+    were left as they were.
 - **Specification revision 0.5 - re-derived from abap2UI5 1.149.0**
   (release commit `6f55b04`; revision 0.4 was derived from `610d9ae`,
   1.148.0). Unlike the release before, this one changes the wire.
