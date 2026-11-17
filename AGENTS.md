@@ -54,8 +54,8 @@ down, and the spec records what the implementations do.
   and `renderers/terminal/README.md` (the mapping tables, from each
   renderer's `mapping.mjs`) - run `npm run generate`.
 - **Known failures of a reference are pinned, not hidden.** A backend check
-  the reference backends fail goes into `test/lib/expected.mjs` with the
-  place of its fix; the tests fail when it starts to pass (unpin it, record
+  a reference backend fails goes into `test/lib/expected.mjs` - per
+  backend, failures and warnings - with the place of its fix; the tests fail when it starts to pass (unpin it, record
   again) as well as when another check fails.
 - **`profiles/semantic.md` is the normative snapshot v1** (moved from
   abap2UI5/mcp-server `docs/agent-snapshot.md`). Changes to the snapshot

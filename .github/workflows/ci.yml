@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: abap2UI5/abap2UI5
-          ref: 610d9ae098b1fc17c2eda2b27b922659b1ed2eb3   # Release 1.148.0 - the commit @abap2ui5/node-runtime 1.148.0 was built from
+          ref: 6f55b0479069b07d9775c13fb7f7dce66a3c469e   # Release 1.149.0 - the commit @abap2ui5/node-runtime 1.149.0 was built from
           path: deps/abap2UI5
           sparse-checkout: app/webapp
           persist-credentials: false

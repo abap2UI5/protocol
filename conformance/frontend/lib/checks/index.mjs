@@ -2,6 +2,7 @@
 import request from "./request.mjs";
 import transport from "./transport.mjs";
 import model from "./model.mjs";
+import window from "./window.mjs";
 import response from "./response.mjs";
 import actions from "./actions.mjs";
 import navigation from "./navigation.mjs";
@@ -11,6 +12,6 @@ import ui5 from "./ui5.mjs";
 import semantic from "./semantic.mjs";
 
 export const ALL_FRONTEND_CHECKS = Object.freeze([
-  ...request, ...transport, ...model, ...response, ...actions, ...navigation, ...errors,
+  ...request, ...transport, ...model, ...window, ...response, ...actions, ...navigation, ...errors,
   ...portable, ...ui5, ...semantic,
 ]);

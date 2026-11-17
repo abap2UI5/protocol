@@ -3,6 +3,7 @@ import transport from "./transport.mjs";
 import response from "./response.mjs";
 import events from "./events.mjs";
 import model from "./model.mjs";
+import window from "./window.mjs";
 import messages from "./messages.mjs";
 import slots from "./slots.mjs";
 import actions from "./actions.mjs";
@@ -12,6 +13,6 @@ import errors from "./errors.mjs";
 import ui5 from "./ui5.mjs";
 
 export const ALL_CHECKS = Object.freeze([
-  ...transport, ...response, ...events, ...model, ...messages, ...slots, ...actions,
+  ...transport, ...response, ...events, ...model, ...window, ...messages, ...slots, ...actions,
   ...navigation, ...sessions, ...errors, ...ui5,
 ]);

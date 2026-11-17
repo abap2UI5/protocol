@@ -1,11 +1,12 @@
 // The recorded traffic (traffic/<backend>/) of the two reference backends:
 // every message validates (schema.test.mjs), every suite check passed when it
-// was recorded but the pinned expected failures (test/lib/expected.mjs), and the two backends answered the same - see
+// was recorded but the pinned expected failures (test/lib/expected.mjs, per
+// backend), and the two backends answered the same wherever neither is pinned - see
 // conformance/RESULTS.md for what differs and why.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load, comparable, normalizeIds } from "./lib/traffic.mjs";
-import { BACKEND_EXPECTED_FAILURE_IDS } from "./lib/expected.mjs";
+import { expectedFailureIds, expectedWarningIds, BACKEND_TRAFFIC_APART } from "./lib/expected.mjs";
 
 const node = load("node-runtime", "suite.json");
 const cap = load("cap2ui5", "suite.json");
@@ -16,24 +17,42 @@ test("the suite traffic of both backends is recorded", () => {
 });
 
 test("no MUST check failed while the traffic was recorded but the pinned ones", () => {
-  for (const s of [node, cap]) {
-    assert.deepEqual(s.checks.filter((c) => c.status === "fail").map((c) => c.id), BACKEND_EXPECTED_FAILURE_IDS, `${s.backend}: ${JSON.stringify(s.counts)}`);
-    assert.equal(s.counts.fail, BACKEND_EXPECTED_FAILURE_IDS.length, `${s.backend}: ${JSON.stringify(s.counts)}`);
+  for (const [name, s] of [["node-runtime", node], ["cap2ui5", cap]]) {
+    assert.deepEqual(s.checks.filter((c) => c.status === "fail").map((c) => c.id), expectedFailureIds(name), `${s.backend}: ${JSON.stringify(s.counts)}`);
+    assert.equal(s.counts.fail, expectedFailureIds(name).length, `${s.backend}: ${JSON.stringify(s.counts)}`);
+    assert.deepEqual(s.checks.filter((c) => c.status === "warn").map((c) => c.id), expectedWarningIds(name), `${s.backend}: ${JSON.stringify(s.counts)}`);
   }
 });
 
-test("both backends ran the same checks with the same requests", () => {
+// The checks one backend never gets into (test/lib/expected.mjs): their
+// traffic differs by what the pin says, and is compared again once it is gone.
+const pinnedApart = new Set(BACKEND_TRAFFIC_APART);
+const shared = () => node.checks.filter((c) => !pinnedApart.has(c.id));
+
+test("both backends ran the same checks, and the same requests in every check but the ones one of them is pinned on", () => {
   assert.deepEqual(cap.checks.map((c) => c.id), node.checks.map((c) => c.id));
-  for (const c of node.checks) {
+  for (const c of shared()) {
     const o = cap.checks.find((x) => x.id === c.id);
     assert.deepEqual(normalizeIds(o.exchanges.map((x) => x.label)), normalizeIds(c.exchanges.map((x) => x.label)), c.id);
   }
 });
 
-test("both backends answer every check identically (status, media type, JSON body; draft ids normalized)", () => {
-  for (const c of node.checks) {
+test("both backends answer every check identically (status, media type, JSON body; draft ids normalized) but the ones one of them is pinned on", () => {
+  for (const c of shared()) {
     const o = cap.checks.find((x) => x.id === c.id);
     assert.deepEqual(comparable(o), comparable(c), `${c.id} differs between node-runtime and cap2ui5`);
+  }
+});
+
+test("the windowed tables: both backends pass every check of them, and nothing keeps their traffic out of the comparison above", () => {
+  const windowed = node.checks.filter((c) => c.id.startsWith("window."));
+  assert.equal(windowed.length, 13);
+  assert.deepEqual([...pinnedApart], []);
+  for (const c of windowed) {
+    const o = cap.checks.find((x) => x.id === c.id);
+    assert.equal(c.status, "pass", `node-runtime ${c.id}`);
+    assert.equal(o.status, "pass", `cap2ui5 ${c.id}`);
+    assert.equal(o.exchanges.length, c.exchanges.length, c.id);
   }
 });
 

@@ -9,7 +9,7 @@ alternatives, and what it touches.
 the decision and its rationale; the alternatives that were on the table
 stay below it for the record. A new provisional decision is added here as
 "Current decision" until it is decided the same way - question 11
-(revision 0.4) is one.
+(revision 0.4) and questions 12 and 13 (revision 0.5) are.
 
 The first five came out of the backend suite (revision 0.1,
 [../conformance/RESULTS.md](../conformance/RESULTS.md)); the others out of
@@ -28,6 +28,8 @@ the frontend suite (revision 0.2).
 | 9 | `sap-contextid` for frontends without a browser | (a) MUST keep it |
 | 10 | navigation actions in the portable action list | `portable-v1.json` separates `actions.api` from `actions.wire` |
 | 11 | bound arguments (`${/PATH}`) of queued follow-up actions | open - current decision: recorded as what the UI5 frontend does, no rule |
+| 12 | windowed tables as a part of the core protocol | open - current decision: core, and every conforming backend offers them |
+| 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the window and MAY ask for more; not in portable v1, snapshot v1 unchanged |
 
 ## 1. The NEST slots in portable renderers
 
@@ -336,3 +338,77 @@ in a frontend that does not resolve it.
 
 **Touches.** `spec/actions.md`, `profiles/portable.md` section 6,
 `conformance/frontend/lib/checks/`, `renderers/common/`.
+
+## 12. Windowed tables as a part of the core protocol
+
+**Current decision (revision 0.5): core, for every backend.** The window
+state, the window request and the rules of the order
+([windowed-tables.md](windowed-tables.md)) are core rules with core checks
+(`window.*`), and the conformance app WINDOW is one of the apps a
+conforming backend serves ([core.md](core.md#conformance)). The reason: an
+app is written once against the client API, and
+`window_bind_tab( )` has to mean the same rows, the same order and the same
+`TOTAL` on every backend that runs it.
+
+*Why it is open.* It makes a backend that was conformant at revision 0.4
+non-conformant at 0.5 without a change of its own. Both reference
+backends offer windowed tables and pass every `window.*` check
+([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)) -
+but both host the same framework: `@cap2ui5/cds-plugin` 0.5.0, on a
+runtime without them, failed all thirteen until 0.6.0 moved to the
+runtime 1.149.0. A backend that is no port of the framework has to
+implement a sort and a filter with the semantics of
+[windowed-tables.md](windowed-tables.md#sorters-and-filters), and none
+has yet.
+
+**Alternatives.**
+- (a) As decided: core.
+- (b) A backend **capability**: a backend may not offer windowed tables;
+  the suite reports `core` and `core + windowed tables`, and a frontend
+  learns from the model alone whether a table is windowed (it already
+  does). The checks stay as they are, behind the capability.
+- (c) A profile of its own next to the view profiles - heavier than (b)
+  for the same effect.
+
+**Touches.** `spec/core.md` (conformance), `spec/windowed-tables.md`,
+`conformance/backend/lib/runner.mjs` (profiles), `test/lib/expected.mjs`.
+
+## 13. Windowed tables in frontends that are not the UI5 frontend
+
+**Current decision (revision 0.5): they show the window; asking for more
+is optional.** A frontend MUST adopt a model with `/__WINDOW` and MUST
+send edits as positions ([windowed-tables.md](windowed-tables.md#frontends),
+frontend checks `window.rows-shown`, `window.edit-as-delta`); it MAY send
+window requests. `window_bind_tab( )` is **not** part of the portable
+profile v1, and the semantic snapshot v1 is unchanged: a windowed table's
+`rowCount` is the number of rows the model carries, and nothing in the
+snapshot says that more exist.
+
+*What the frontends do today* (measured,
+[../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)):
+the Adaptive Cards and the terminal renderer of this repository and the
+agent client show the rows of the window as the whole table and send no
+window request; all three send a cell edit as a `__delta` of the position.
+
+*Why it is open.* An app that binds 10,000 rows with a window of 100 is a
+table of 100 rows in those frontends, without a word - the user of a
+terminal, or an agent, cannot know that 9,900 rows are missing, and
+`rowCount` of the snapshot understates the table.
+
+**Alternatives.**
+- (a) As decided.
+- (b) Portable v1.1: a portable renderer MUST show that `TOTAL` exceeds
+  `COUNT` and MUST offer a way to ask for the next window (`[path,
+  count]`); sorting and filtering stay outside. A frontend check drives
+  it. The two renderers of this repository follow.
+- (c) Snapshot v2 (or an additive key in v1, which
+  [versioning.md](versioning.md#compatible-changes-within-protocol-2)
+  allows): a table carries `total` and an action that asks for more rows,
+  so an agent can page.
+- (d) The backend sends a table whole to a frontend that does not declare
+  windows - a capability in `CONFIG`; a change in abap2UI5 core, and the
+  size is what the app wanted to avoid.
+
+**Touches.** `profiles/portable.md`, `profiles/portable-v1.json`,
+`profiles/semantic.md`, `schema/snapshot.schema.json`,
+`renderers/common/`, `conformance/frontend/lib/checks/window.mjs`.

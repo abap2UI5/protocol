@@ -14,18 +14,19 @@ import path from "node:path";
 import { test } from "node:test";
 import { runBackendSuite } from "../conformance/backend/index.mjs";
 import { ROOT } from "./lib/traffic.mjs";
-import { BACKEND_EXPECTED_FAILURE_IDS } from "./lib/expected.mjs";
+import { expectedFailureIds, expectedWarningIds } from "./lib/expected.mjs";
 
 const skipAll = process.env.PROTOCOL_SKIP_BACKENDS ? "PROTOCOL_SKIP_BACKENDS is set" : false;
 const capInstalled = fs.existsSync(path.join(ROOT, "conformance/hosts/cap2ui5/node_modules/@cap2ui5/cds-plugin"));
 
-async function suite(start, profile, after) {
+async function suite(name, start, profile, after) {
   const backend = await start();
   try {
     const report = await runBackendSuite({ url: backend.url, profile });
     const failed = report.results.filter((r) => r.status === "fail");
-    assert.deepEqual(failed.map((r) => r.id), BACKEND_EXPECTED_FAILURE_IDS,
+    assert.deepEqual(failed.map((r) => r.id), expectedFailureIds(name),
       `MUST checks failed against ${backend.url} other than the pinned ones:\n${failed.map((r) => `${r.id}: ${r.message}`).join("\n")}`);
+    assert.deepEqual(report.results.filter((r) => r.status === "warn").map((r) => r.id), expectedWarningIds(name), `the warnings of ${name}`);
     if (after) await after(backend);
     return report;
   } finally {
@@ -36,8 +37,8 @@ async function suite(start, profile, after) {
 test("node-runtime passes every MUST but the pinned ones and every SHOULD of the ui5 profile", { skip: skipAll, timeout: 600_000 }, async (t) => {
   const { startNodeRuntime } = await import("../conformance/hosts/node-runtime/serve.mjs");
   // the same host then serves the terminal renderer's end-to-end run
-  const report = await suite(() => startNodeRuntime({ build: true, allowedHosts: "*" }), "ui5", (backend) => t.test("the terminal renderer drives the conformance apps on it", () => terminalEndToEnd(backend.url)));
-  assert.deepEqual(report.results.filter((r) => r.status === "warn").map((r) => r.id), []);
+  await suite("node-runtime", () => startNodeRuntime({ build: true, allowedHosts: "*" }), "ui5", (backend) => t.test("the terminal renderer drives the conformance apps on it", () => terminalEndToEnd(backend.url)));
+  assert.deepEqual(expectedFailureIds("node-runtime").concat(expectedWarningIds("node-runtime")), []);
 });
 
 /*
@@ -107,8 +108,8 @@ async function terminalEndToEnd(url) {
   assert.equal(out, fs.readFileSync(path.join(ROOT, "renderers/terminal/golden/bind.txt"), "utf8"));
 }
 
-test("cap2ui5 passes every MUST but the pinned ones of the ui5 profile; its one warning is error.details", { skip: skipAll || (!capInstalled && "cap2UI5 host not installed - npm ci --prefix conformance/hosts/cap2ui5"), timeout: 600_000 }, async () => {
+test("cap2ui5 passes every MUST of the ui5 profile but the pinned ones; its one warning is error.details", { skip: skipAll || (!capInstalled && "cap2UI5 host not installed - npm ci --prefix conformance/hosts/cap2ui5"), timeout: 600_000 }, async () => {
   const { startCap2ui5 } = await import("../conformance/hosts/cap2ui5/serve.mjs");
-  const report = await suite(() => startCap2ui5(), "ui5");
-  assert.deepEqual(report.results.filter((r) => r.status === "warn").map((r) => r.id), ["error.details"]);
+  await suite("cap2ui5", () => startCap2ui5(), "ui5");
+  assert.deepEqual(expectedWarningIds("cap2ui5"), ["error.details"]);
 });

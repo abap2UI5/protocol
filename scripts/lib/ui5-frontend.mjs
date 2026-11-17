@@ -92,7 +92,38 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
       },
       reset() {},
     },
+    // from abap2UI5 1.149.0 on; no scenario here queues an event offline
+    "z2ui5/core/Offline": { reset() {}, canQueue: () => false },
+    "z2ui5/core/Router": { dispatchPendingAppHash() {} },
   });
+
+  // core/WindowModel.js (from abap2UI5 1.149.0 on): the list binding of a
+  // windowed table, on stand-ins for the two UI5 classes it extends - a
+  // JSONListBinding that holds the rows at its path and nothing else. What
+  // the binding sends when it is asked for rows past the ones it holds, or
+  // told to sort or to filter, is the shipped code's.
+  const hasWindowModel = fs.existsSync(path.join(webapp, "core", "WindowModel.js"));
+  const extend = (Base) => (_name, proto) => {
+    const Class = Object.prototype.hasOwnProperty.call(proto, "constructor") ? proto.constructor : function Sub(...a) { Base.apply(this, a); };
+    Class.prototype = Object.assign(Object.create(Base.prototype), proto, { constructor: Class });
+    return Class;
+  };
+  function JSONListBinding(oModel, sPath) {
+    this.oModel = oModel;
+    this.sPath = sPath;
+    this.aIndices = (oModel.getProperty(sPath) || []).map((_row, i) => i);
+  }
+  Object.assign(JSONListBinding.prototype, { getContexts() { return []; }, getLength() { return this.aIndices.length; }, update() {}, sort() { return this; }, filter() { return this; }, applyFilter() {}, applySort() {} });
+  JSONListBinding.extend = extend(JSONListBinding);
+  function JSONModel() {}
+  JSONModel.prototype.bindList = function bindList(oModel, sPath) { return new JSONListBinding(this, sPath); };
+  JSONModel.extend = extend(JSONModel);
+  const WindowModel = hasWindowModel ? load("core/WindowModel.js", {
+    "sap/ui/model/json/JSONModel": JSONModel,
+    "sap/ui/model/json/JSONListBinding": JSONListBinding,
+    "z2ui5/core/Lib": Lib,
+    "z2ui5/core/Env": { ownClass: (Class) => Class },
+  }) : null;
 
   const ctx = {
     component: null,
@@ -133,11 +164,31 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
       }
       if (paths.size) body.MODEL = Lib.buildDeltaFromPaths(paths, data);
       body.ID = ctx.state.oResponse.ID;
-      body.ARGUMENTS = Lib.normalizeEventArgs([[event], ...args]);
+      body.ARGUMENTS = Lib.normalizeEventArgs([Array.isArray(event) ? event : [event], ...args]);
       ctx.state.isBusy = true;
       const done = next();
       Server.roundtrip(ctx, body);
       return done;
+    },
+    /** The list binding of the windowed table at `listPath` over the model of the last
+     *  response (core/WindowModel.js), or null when this frontend has no windowed tables.
+     *  Each window request it makes is sent the way actions/Slots.js sends it - the MAIN
+     *  controller's eB([EVENT, false, false, false, true, noBusy], ...args) - and collected
+     *  in `sent` as { args, response }; `idle()` resolves once every one was answered. */
+    windowBinding(listPath) {
+      if (!WindowModel) return null;
+      const model = new WindowModel();
+      const node = (p) => p.split("/").filter(Boolean).reduce((o, k) => (o == null ? undefined : o[k]), ctx.state.oResponse.OVIEWMODEL || {});
+      model.getProperty = node;
+      const sent = [];
+      let chain = Promise.resolve();
+      model._z2ui5WindowSend = (args, noBusy) => {
+        const entry = { args: JSON.parse(JSON.stringify(args)) };
+        sent.push(entry);
+        chain = chain.then(async () => { entry.response = await this.fire([WindowModel.EVENT, false, false, false, true, Boolean(noBusy)], args); });
+      };
+      const binding = model.bindList(listPath);
+      return { binding, sent, idle: () => chain, event: WindowModel.EVENT };
     },
     /** A Back/Forward or bookmark restore: window.location.hash changes, then the empty-body roundtrip. */
     async restore(hash) {

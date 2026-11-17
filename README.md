@@ -52,28 +52,30 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 
 ## Status
 
-- **Protocol 2**, specification revision 0.4, derived from abap2UI5 1.148.0
-  (its release commit `610d9ae`); the maintainer decided ten open
-  questions in revision 0.3, an eleventh is open
+- **Protocol 2**, specification revision 0.5, derived from abap2UI5 1.149.0
+  (its release commit `6f55b04`) - the release that brought windowed
+  tables ([spec/windowed-tables.md](spec/windowed-tables.md)); the
+  maintainer decided ten open questions in revision 0.3, three are open
   ([spec/open-questions.md](spec/open-questions.md)).
-- **Backend suite: 77 checks** (62 MUST, 15 SHOULD; 70 core, 7 UI5 profile).
+- **Backend suite: 91 checks** (73 MUST, 18 SHOULD; 84 core, 7 UI5 profile).
   Both reference backends pass every MUST - `node-runtime`
-  (`@abap2ui5/node-runtime` 1.148.0) 77/77, `cap2ui5`
-  (`@cap2ui5/cds-plugin` 0.5.0) 76/77 with one SHOULD warning
-  ([conformance/RESULTS.md](conformance/RESULTS.md)). No failure is pinned:
-  `error.no-reflection` passes since both hosts run a release with the fix.
-- **Schemas** validate all 344 recorded requests, 328 responses and 18 agent
+  (`@abap2ui5/node-runtime` 1.149.0) 91/91, `cap2ui5`
+  (`@cap2ui5/cds-plugin` 0.6.0, on the same runtime) 90/91 with one SHOULD
+  warning ([conformance/RESULTS.md](conformance/RESULTS.md)). No failure
+  is pinned.
+- **Schemas** validate all 474 recorded requests, 458 responses and 18 agent
   snapshots, checked by the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
-- **Frontend suite: 81 checks** (66 MUST, 15 SHOULD; 66 core, 8 portable,
-  4 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
-  SPA of abap2UI5 1.148.0 passes every check that applies (77, 4 skipped);
-  the agent client (mcp-server `a4d9f07`), the
+- **Frontend suite: 85 checks** (70 MUST, 15 SHOULD; 68 core, 8 portable,
+  6 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
+  SPA of abap2UI5 1.149.0 passes every check that applies (81, 4 skipped);
+  the agent client (mcp-server `82b75d8`), the
   Adaptive Cards renderer and the terminal renderer pass every check that
-  applies to them (61, 66 and 72 - the terminal's include the router
-  checks); the Web Components frontend 68 of 68, with one intermittent
-  failure ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
+  applies to them (63, 68 and 74 - the terminal's include the router
+  checks); the Web Components frontend passed 68 of 68 of the 81 checks of
+  2026-10-03, with one intermittent failure, and was not run again
+  ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
 - **Adaptive Cards renderer** (prototype, [renderers/adaptive-cards/](renderers/adaptive-cards/README.md)):
   all 65 portable controls mapped onto Adaptive Cards 1.5, the way back from
   an `Action.Submit` to the next request, golden cards of recorded traffic.

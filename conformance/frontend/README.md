@@ -163,6 +163,10 @@ check requires.
 | `model.push-own-app` | MUST | core | - | A pushed MODEL reaches only the slots of the app that answered | [response.md#model](../../spec/response.md#model) |
 | `model.pending-survive-push` | SHOULD | core | concurrent | Edits made while a roundtrip is in flight survive its model push and travel next | [response.md#model](../../spec/response.md#model) |
 | `model.unchanged-push-no-delta` | MUST | core | - | Values the backend pushed are no edits: the next event sends no delta for them | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
+| `window.rows-shown` | MUST | core | - | A model with a windowed table is adopted: the rows of the window are on the screen, /__WINDOW fails nothing | [windowed-tables.md#frontends](../../spec/windowed-tables.md#frontends) |
+| `window.edit-as-delta` | MUST | core | - | A cell edited in a windowed table travels as a __delta at the position shown - never as the whole table, never with /__WINDOW | [windowed-tables.md#edits](../../spec/windowed-tables.md#edits) |
+| `ui5.window-growth` | MUST | ui5 | dom | A growing list over a windowed table asks for the next window: ___ZZZ_WIN [path, count], and shows the rows of the answer | [ui5.md#windowed-tables](../../profiles/ui5.md#windowed-tables) |
+| `ui5.window-sort-filter` | MUST | ui5 | dom, wires | sort( ) and filter( ) on the list binding of a windowed table go to the backend, each naming its own part; more rows name none | [ui5.md#windowed-tables](../../profiles/ui5.md#windowed-tables) |
 | `response.protocol-mismatch` | MUST | core | - | A response with another PROTOCOL is an error; its view is not shown | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |
 | `response.protocol-mismatch-message` | SHOULD | core | - | The protocol error names both protocol numbers | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |
 | `response.protocol-absent` | SHOULD | core | - | A response without PROTOCOL is let through | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |

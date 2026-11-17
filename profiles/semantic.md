@@ -241,7 +241,7 @@ default-model path:
 | `label` | `headerText`, `title`, the first `Title` in `headerToolbar`/`extension`/`infoToolbar`, else `name` |
 | `control` | the table control |
 | `columns` | `[{ name, label }]`: sap.m.Table and TableSelectDialog — the cells of the `ColumnListItem` template in order, the label from the column header; list items (`StandardListItem`, …, the SelectDialog's) — their bound properties (label = property name); sap.ui.table — each column's `template`, the label from `label` or the column's label control. `name` is the cell's relative binding path (`TITLE`), else `COL<n>` |
-| `rowCount` | length of the bound array |
+| `rowCount` | length of the bound array - for a windowed table ([../spec/windowed-tables.md](../spec/windowed-tables.md)) the rows the model carries, not the table's: snapshot v1 has no key for `/__WINDOW/<path>/TOTAL` ([open question 13](../spec/open-questions.md#13-windowed-tables-in-frontends-that-are-not-the-ui5-frontend)) |
 | `rows` | the first `maxRows` rows (default 20, max 200): per column the cell's main property resolved in the row (`text`, `value`, `selected`, …); plus `selectionField` when there is one |
 | `truncated` | `rowCount > rows.length` |
 | `selectionMode` | `None`/`Single`/`Multi` from `mode` (sap.m) or `selectionMode` (sap.ui.table, default `MultiToggle` → `Multi`); a selection dialog is `Multi` when `multiSelect` is true, else `Single` |

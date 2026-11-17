@@ -27,10 +27,12 @@ An argument spelled as an expression binding on an absolute model path -
 `${/PATH}` - reaches the frontend as that text: nothing on the backend
 resolves it ([EV] `get_event_client_ajson`). The UI5 frontend (from
 abap2UI5 1.147.0 on) replaces every such argument after the action name by
-the value at that path in the model of the view the action runs for, as
-UI5 does when the same call is wired into a view; a path with nothing
-bound stays the text it was and is logged ([FA] `resolveBoundArgs`, [LIB]
-`bindingPathOf`). Whether every frontend has to do the same is
+the value at that path in the model, as UI5 does when the same call is
+wired into a view; a path with nothing bound stays the text it was and is
+logged ([FA] `resolveBoundArgs`, [LIB] `bindingPathOf`). The model is the
+one of the slot the answering app filled - a popup app's arguments are
+read from POPUP, not from the caller's MAIN ([SL] `responseModel`, from
+1.149.0 on; before, the model of the MAIN view). Whether every frontend has to do the same is
 [open question 11](open-questions.md#11-bound-arguments-of-queued-follow-up-actions).
 
 The vocabulary is the `cs_event` constants of the client API ([IC]) plus the
@@ -53,7 +55,11 @@ prefix ([FE] `msg_toast`, `msg_box`):
 - Only what the app set travels; an absent option leaves the control's own
   default ([FE] `msg_toast`, `msg_box`). The backend maps the type
   `information` to `show` with the title `Information`, and an unknown type
-  to `show` ([FE] `box_resolve`).
+  to `show` ([MSG] `box_resolve`; in [FE] up to abap2UI5 1.148.0).
+- **Implementation note.** A message box over data with nothing to show
+  (an empty table, an unbound reference) queues no action - except the
+  type `error`, which from abap2UI5 1.149.0 on shows a standard text
+  instead of no box ([MSG] `box_resolve`, [IC] `message_box_display`).
 - `onClose` of a message box raises that backend event when the box
   closes, with the pressed action as its **first argument**
   ([CC] `showBox`: `eB([event], action)`). *Checked by:*
@@ -88,12 +94,42 @@ prefix ([FE] `msg_toast`, `msg_box`):
 | `CONTROL_GLOBAL` | target, method, args..., options? | UI5 profile for the targets beyond the ones above (`ICON_POOL`, `POPUP`, `FORMATTING`) |
 | `BINDING_CALL`, `BIND_ELEMENT`, `SET_ODATA_MODEL`, `SMART_VARIANT_INIT`, `FILTER_BAR_VARIANT_INIT` | per [IC] | UI5 profile |
 | `CROSS_APP_NAV_TO_EXT`, `CROSS_APP_NAV_TO_PREV_APP`, `SET_TITLE_LAUNCHPAD` | per [IC] | UI5 profile, inside a launchpad |
+| `SET_APP_FULL_WIDTH` | `X` for the launchpad's full width; no argument for its letterbox again | UI5 profile, inside a launchpad; silently nothing outside ([LP] `evSetAppFullWidth`; from abap2UI5 1.149.0) |
+| `CROSS_APP_NAV_GET_LINKS` | target (`{ "semanticObject", "action"? }`), intent parameters, backend event | UI5 profile, inside a launchpad: the event is raised once the launchpad answered, its first argument the **text** of a JSON array of `{ intent, text, subTitle, semanticObject, action, params }`; outside a launchpad nothing is raised ([LP] `evCrossAppNavGetLinks`; from 1.149.0) |
+| `OFFLINE_QUEUE` | toast text (`&1` = how many wait), backend event names...; no event name switches it off | UI5 profile, experimental ([IC]): [below](#the-offline-queue) (from 1.149.0) |
 
 The navigation family (`SET_NAV_ROUTING`, `SET_PUSH_STATE`, `HASH_REPLACE`,
 `HASH_ATTACH_CHANGED`, `SET_APP_STATE_ACTIVE`) does **not** travel as
 follow-up actions: the backend folds it into the one `ROUTER` system action
 ([CL] `follow_up_action`, [navigation.md](navigation.md#the-router-action)).
 `HASH_BACK` is a follow-up action.
+
+## The offline queue
+
+`OFFLINE_QUEUE` names events of the app that the UI5 frontend keeps when
+their roundtrip fails for want of a network, instead of showing the error
+([OFF], [SRV] `_keepOffline`, `replayOffline`; experimental, [IC]
+`cs_event-offline_queue`). It changes nothing in the messages, only when
+they are sent:
+
+- A kept request is the body as it was built - event, arguments, model
+  delta - stored in the browser under the endpoint. When the network is
+  back the frontend sends the kept requests **in order**, each with
+  `S_FRONT.ID` replaced by the `ID` the previous answer named, and adopts
+  and renders only the last answer.
+- The backend sees ordinary event requests that arrive late. Nothing marks
+  a replayed request, and no rule of this specification is relaxed for
+  one: each continues the draft the one before left
+  ([sessions.md](sessions.md#draft-ids)).
+- An event the app did not name fails as before
+  ([errors.md](errors.md#what-a-frontend-does-with-it)).
+
+No other frontend implements it; an unknown action is skipped
+([above](#follow-up-actions)). **Implementation note.** From abap2UI5
+1.149.0 on the UI5 frontend no longer refuses to send an event while the
+browser reports itself offline (`navigator.onLine`): a host reachable
+only through a VPN or an intranet reports offline while the backend
+answers ([V1] `eB`).
 
 ## Wired frontend actions
 

@@ -128,9 +128,35 @@ async function recordUi5Frontend(backend, dir) {
   await step("SLOTS: POPUP_OPEN", () => f.fire("POPUP_OPEN"));
   await step("SLOTS: POPOVER_OPEN", () => f.fire("POPOVER_OPEN"));
 
+  // The windowed table (spec/windowed-tables.md), with the frontend's own
+  // list binding (core/WindowModel.js, from abap2UI5 1.149.0 on) saying what
+  // a request names: more rows, a sort, a filter - and a cell edited in a
+  // sorted window. A backend without windowed tables fails the page load;
+  // the scenario is then left out, as it is for a frontend without them.
+  f = session("?app_start=Z2UI5_CL_CONF_WINDOW");
+  scenarios.push("WINDOW: page load");
+  const first = await f.start();
+  const w = first && f.windowBinding("/T_ROWS");
+  if (w) {
+    const ask = async (label, fn) => step(label, async () => {
+      const before = w.sent.length;
+      fn(w.binding);
+      await w.idle();
+      return w.sent.length === before + 1 && w.sent[before].response;
+    });
+    await ask("WINDOW: the list is asked for rows past its window - getContexts(0, 8)", (b) => b.getContexts(0, 8));
+    await ask("WINDOW: sort( ) on the list binding - QTY descending", (b) => b.sort([{ sPath: "QTY", bDescending: true }]));
+    await ask("WINDOW: filter( ) on the list binding - QTY greater than 6", (b) => b.filter([{ sPath: "QTY", sOperator: "GT", oValue1: 6 }], "Control"));
+    await ask("WINDOW: the list grows inside the sort and the filter - getContexts(0, 8)", (b) => b.getContexts(0, 8));
+    await step("WINDOW: CHECK with the first and the third row shown ticked", () => f.fire("CHECK", [], { "/T_ROWS/0/DONE": true, "/T_ROWS/2/DONE": true }));
+  } else {
+    while (exchanges.length && exchanges[exchanges.length - 1].label === "WINDOW: page load") exchanges.pop();
+    process.stderr.write(`[record] ui5-frontend: the windowed table is left out - ${first ? "this frontend has no core/WindowModel.js" : "the backend does not start Z2UI5_CL_CONF_WINDOW"}\n`);
+  }
+
   const pkg = JSON.parse(fs.readFileSync(path.join(home, "package.json"), "utf8"));
   write(dir, "ui5-frontend.json", {
-    source: `app/webapp/core/Server.js, Session.js, Lib.js of abap2UI5 ${pkg.version} (${path.basename(home)}), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed`,
+    source: `app/webapp/core/Server.js, Session.js, Lib.js${w ? ", WindowModel.js" : ""} of abap2UI5 ${pkg.version} (${path.basename(home)}), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed`,
     backend: backend.version,
     exchanges,
   });

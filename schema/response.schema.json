@@ -9,10 +9,33 @@
     "S_FRONT": { "$ref": "#/$defs/sFront" },
     "MODEL": {
       "description": "The COMPLETE view model of the app that answered. Absent when nothing bound changed - the frontend keeps the model it has (spec/response.md#model).",
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "__WINDOW": {
+          "description": "The window states of the app's windowed tables, mirroring their model paths: /__WINDOW/T_ROWS for the table at /T_ROWS, /__WINDOW/S_DATA/T_ROWS for one in a structure (spec/windowed-tables.md#the-window-state). Absent when the app has none.",
+          "$ref": "#/$defs/windowNode"
+        }
+      }
     }
   },
   "$defs": {
+    "windowNode": {
+      "description": "A window state, or the path segments on the way to one.",
+      "type": "object",
+      "if": { "required": ["TOTAL"], "properties": { "TOTAL": { "type": "integer" } } },
+      "then": { "$ref": "#/$defs/windowState" },
+      "else": { "additionalProperties": { "$ref": "#/$defs/windowNode" } }
+    },
+    "windowState": {
+      "description": "The state of one windowed table: TOTAL - the rows the filter lets through; COUNT - the rows of them this model carries, the first COUNT in the backend's order; SIZE - the rows of one window.",
+      "type": "object",
+      "required": ["TOTAL", "COUNT", "SIZE"],
+      "properties": {
+        "TOTAL": { "type": "integer", "minimum": 0 },
+        "COUNT": { "type": "integer", "minimum": 0 },
+        "SIZE": { "type": "integer", "minimum": 1 }
+      }
+    },
     "sFront": {
       "type": "object",
       "required": ["ID", "APP", "PROTOCOL"],

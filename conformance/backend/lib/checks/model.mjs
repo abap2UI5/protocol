@@ -124,6 +124,18 @@ export default [
     },
   },
   {
+    id: "model.unconvertible-scalar-skipped",
+    title: "A scalar that does not convert into its attribute is skipped - the attribute keeps its value, the rest of the delta is applied, the roundtrip does not fail",
+    level: "SHOULD",
+    profile: "core",
+    spec: D,
+    async run(t) {
+      const r = await check(t, { QTY: "abc", NAME: "kept" });
+      t.equal(r.json.MODEL.SUMMARY, `kept;1;;Berlin;10115;${START_ROWS}`, "SUMMARY");
+      t.equal(r.json.MODEL.QTY, 1, "MODEL.QTY");
+    },
+  },
+  {
     id: "model.table-grows",
     title: "Rows the app adds arrive with the next model push",
     level: "MUST",

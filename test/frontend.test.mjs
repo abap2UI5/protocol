@@ -159,12 +159,14 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 
 // The agent client's result, check by check - a change here is a change of
 // the client (re-vendored) or of a check. Since mcp-server a4d9f07 (PR #44)
-// it follows every frontend rule that applies (conformance/RESULTS.md); the
+// it follows every frontend rule that applies (conformance/RESULTS.md) - the
+// vendored copy is 82b75d8 (adapters/vendor/mcp-server/source.json); the
 // skips are the portable and UI5 profiles it does not claim, a URL, a DOM,
 // focus, programmatic model edits and the nested-table cell its snapshot
 // does not describe.
 const AGENT_SKIPS = [
-  "model.nested-table", "model.whole-beats-delta", "action.after-render", "message.details-sanitized",
+  "model.nested-table", "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter",
+  "action.after-render", "message.details-sanitized",
   "router.keep", "router.hash-sent", "router.back-restores", "router.app-state",
   "portable.default-aggregation", "portable.unknown-property", "portable.unknown-control", "portable.excluded-action",
   "portable.box-details", "portable.timer", "portable.set-title", "portable.view-replaced",
@@ -184,7 +186,7 @@ test("the agent client: the frontend suite's result is the one RESULTS.md record
 // not (a URL, a DOM, focus, a document title, programmatic model edits) and
 // the profiles it does not claim.
 const CARDS_SKIPS = [
-  "model.whole-beats-delta", "action.after-render", "message.details-sanitized",
+  "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "action.after-render", "message.details-sanitized",
   "router.keep", "router.hash-sent", "router.back-restores", "router.app-state", "portable.set-title",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
@@ -205,7 +207,7 @@ test("the Adaptive Cards renderer: every portable-profile check it can be driven
 // what a terminal has not (a DOM, programmatic model edits) and the
 // profiles it does not claim.
 const TERMINAL_SKIPS = [
-  "model.whole-beats-delta", "message.details-sanitized",
+  "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "message.details-sanitized",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
 ];

@@ -142,7 +142,11 @@ restores that draft ([H] `request_app_start_draft`).
   `factory_first_start`). *Checked by:* `route.app-state-names-no-app`.
 - **Implementation note.** Up to abap2UI5 1.146.0 a request with the
   app-state hash and no class opened the start app and dropped the saved
-  state without a word.
+  state without a word. From 1.149.0 on a draft that exists and is the
+  user's but cannot be restored ends in an error response
+  ([errors.md](errors.md)) that names the cause, not in a fresh app with
+  the "expired" message - that is left to a draft that is gone or another
+  user's ([ACT] `factory_first_start`, `APP_STATE_RESTORE_ERROR`).
 
 ## The router action
 

@@ -22,6 +22,7 @@ export const DEFAULT_APPS = Object.freeze({
   ROUTE: "Z2UI5_CL_CONF_ROUTE",
   ERROR: "Z2UI5_CL_CONF_ERROR",
   ACTIONS: "Z2UI5_CL_CONF_ACTIONS",
+  WINDOW: "Z2UI5_CL_CONF_WINDOW",
 });
 
 export const PROFILES = Object.freeze({ core: ["core"], ui5: ["core", "ui5"] });

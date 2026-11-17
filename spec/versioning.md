@@ -21,7 +21,7 @@ integer - **2** today ([TY] `c_protocol`, stamped by [H]
 - Requests carry no protocol number; the backend reads what it knows and
   ignores the rest ([request.md](request.md)).
 
-The number is not the product version (`z2ui5_if_app=>version`, 1.148.0)
+The number is not the product version (`z2ui5_if_app=>version`, 1.149.0)
 and does not move with a release. It moves when a response can no longer be
 read by a frontend written for the previous number - the `S_ACTION`
 envelope replacing `S_FRONT.PARAMS` was such a change (protocol 2), and so
@@ -43,7 +43,12 @@ them:
 - a new follow-up action, or a new global target of `CONTROL_GLOBAL` - a
   frontend that does not know it skips it ([actions.md](actions.md));
 - a new slot option;
-- a new `ROUTER` option.
+- a new `ROUTER` option;
+- a new reserved key of `MODEL` and a new reserved event name the backend
+  answers itself - `__WINDOW` and `___ZZZ_WIN` of
+  [windowed-tables.md](windowed-tables.md), revision 0.5: a frontend that
+  knows neither reads a windowed table as a short one and never sends the
+  event, a backend that knows neither never sends the key.
 
 These DO break the wire and need a new protocol number: renaming or removing
 a key; changing a key's type or meaning; changing the shape of an action
@@ -52,7 +57,7 @@ right.
 
 ## This specification's own version
 
-The specification has a revision of its own (0.4, see
+The specification has a revision of its own (0.5, see
 [README.md](README.md)), and the package `@abap2ui5/protocol` a semantic
 version. A revision that only clarifies text or adds checks keeps the
 protocol number; the conformance suite of a revision checks protocol 2 as

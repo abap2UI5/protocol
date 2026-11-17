@@ -54,6 +54,9 @@ const INVALID = {
     { S_FRONT: { ID: "X", APP: "A", PROTOCOL: 2, S_ACTION: { T_CUSTOM: [["MESSAGE_BOX", "shout", "x"]] } } },
     { S_FRONT: { ID: "X", APP: "A", PROTOCOL: 2, S_ACTION: { T_CUSTOM: [["lower", "x"]] } } },
     { S_FRONT: { ID: "X", APP: "A", PROTOCOL: 2 }, MODEL: [] },
+    { S_FRONT: { ID: "X", APP: "A", PROTOCOL: 2 }, MODEL: { T_ROWS: [], __WINDOW: { T_ROWS: { TOTAL: 3 } } } },
+    { S_FRONT: { ID: "X", APP: "A", PROTOCOL: 2 }, MODEL: { T_ROWS: [], __WINDOW: { T_ROWS: { TOTAL: 3, COUNT: 3, SIZE: 0 } } } },
+    { S_FRONT: { ID: "X", APP: "A", PROTOCOL: 2 }, MODEL: { S: { T_ROWS: [] }, __WINDOW: { S: { T_ROWS: { TOTAL: "3", COUNT: 3, SIZE: 3 } } } } },
   ],
   request: [
     { value: { S_FRONT: { ID: 7 } } },
@@ -63,6 +66,10 @@ const INVALID = {
     { value: { MODEL: { T: { __delta: { a: { X: 1 } } } } } },
     { value: { S_FRONT: { MS_CLIENT_PREV: -1 } } },
     { value: { S_FRONT: { CONFIG: { S_DEVICE: { SYSTEM: "fridge" } } } } },
+    { value: { S_FRONT: { ID: "X", EVENT: "___ZZZ_WIN" } } },
+    { value: { S_FRONT: { EVENT: "___ZZZ_WIN", T_EVENT_ARG: ["/T_ROWS", "8"] } } },
+    { value: { S_FRONT: { ID: "X", EVENT: "___ZZZ_WIN", T_EVENT_ARG: ["T_ROWS", "8"] } } },
+    { value: { S_FRONT: { ID: "X", EVENT: "___ZZZ_WIN", T_EVENT_ARG: ["/T_ROWS", "4", [{ PATH: "QTY", DESCENDING: true }]] } } },
   ],
   snapshot: [{ snapshotVersion: 2 }, {}],
 };

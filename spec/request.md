@@ -101,7 +101,9 @@ nothing). *Checked by:* `event.roundtrip`, `event.unknown-event`.
   event); the UI5 frontend does not send one.
 - **Reserved event names.** `___ZZZ_NAL` is the leave event: the backend
   does not run the app but leaves it ([navigation.md](navigation.md#the-reserved-leave-event)).
-  An app MUST NOT use it for anything else.
+  An app MUST NOT use it for anything else. `___ZZZ_WIN` is the window
+  request of a windowed table: the backend does not run the app either and
+  answers the rows asked for ([windowed-tables.md](windowed-tables.md#the-window-request)).
 
 ## Event arguments
 
@@ -185,6 +187,9 @@ Rules for the frontend:
   of the same attribute. *Frontend checks:* `model.scalar`,
   `model.number-and-boolean`, `model.structure-whole`, `model.table-cell`,
   `model.table-row-delta`, `model.nested-table`, `model.whole-beats-delta`.
+  A cell of a [windowed table](windowed-tables.md#edits) MUST travel as the
+  `__delta`, never as the whole table. *Frontend check:*
+  `window.edit-as-delta`.
 - The delta is the edited model's: an event from a popup carries the
   popup's edits, not MAIN's ([V1] `_pickModelForRoundtrip`).
   *Frontend check:* `model.slot-model`.
@@ -206,10 +211,17 @@ The backend applies the delta **before** the app runs ([ACT]
 - A row key that is not a non-negative integer, or names a row that does
   not exist, SHOULD be ignored ([MOD] `delta_row_index`). *Checked by:*
   `model.row-out-of-range-ignored`.
-- A cell the backend cannot write - a value that does not convert, a row
-  delta on a sorted or hashed table - SHOULD be ignored and reported to the
-  app (the reference lists it in `get( )-t_model_skipped`, [MOD]
-  `delta_trace_skipped`), never fail the roundtrip.
+- A value the backend cannot write - a cell or a whole scalar that does
+  not convert into its type, a row delta on a sorted or hashed table -
+  SHOULD be ignored and reported to the app (the reference lists it in
+  `get( )-t_model_skipped`, [MOD] `delta_trace_skipped`,
+  `whole_value_trace`), never fail the roundtrip: the attribute keeps its
+  value and the rest of the delta is applied. *Checked by:*
+  `model.unconvertible-scalar-skipped`.
+- On a **windowed table** the row keys of a `__delta` are positions in the
+  order the backend sent, and a whole table value is not written
+  ([windowed-tables.md](windowed-tables.md#edits)). *Checked by:*
+  `window.delta-positions`, `window.whole-table-refused`.
 - **Implementation note.** An attribute bound with `_bind( json = abap_true )`
   is outbound only; a delta for it is skipped ([MOD] `main_json_to_attri`).
 
