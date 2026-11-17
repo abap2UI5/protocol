@@ -3,9 +3,8 @@
 **Protocol 2, specification revision 0.5 (2026-11-16).** Derived from the
 implementations, not designed ahead of them: abap2UI5 commit `6f55b04`
 (the release commit of framework version 1.149.0) for the backend and the
-UI5 frontend, `@abap2ui5/node-runtime` 1.149.0, `@cap2ui5/cds-plugin` 0.5.0
-(which hosts `@abap2ui5/node-runtime` 1.147.0 - it has no windowed tables,
-[../conformance/RESULTS.md](../conformance/RESULTS.md)), abap2UI5/mcp-server
+UI5 frontend, `@abap2ui5/node-runtime` 1.149.0, `@cap2ui5/cds-plugin` 0.6.0
+(which hosts the same runtime), abap2UI5/mcp-server
 `ea4e9fa` and abap2UI5/headless-frontend `c1c24ba` (its simulator class is
 `z2ui5_cl_frontend_sim` since `8f37e54`). Revisions 0.1 to 0.3
 were derived from abap2UI5 `b812079` (1.146.0), revision 0.4 from `610d9ae`

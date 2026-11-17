@@ -1,8 +1,9 @@
 // Conformance app WINDOW - the cap2UI5 equivalent of
 // conformance/apps/abap/z2ui5_cl_conf_window.clas.abap.
 // Behaviour: conformance/apps/README.md, section WINDOW.
-// client.window_bind_tab( ) is abap2UI5's of 1.149.0: a plugin that hosts an
-// older runtime has no such method, and the app's start fails there.
+// client.window_bind_tab( ) is abap2UI5's of 1.149.0 (@cap2ui5/cds-plugin
+// from 0.6.0 on): a plugin that hosts an older runtime has no such method,
+// and the app's start fails there.
 const { defineApp, t } = require("@cap2ui5/cds-plugin");
 
 defineApp("Z2UI5_CL_CONF_WINDOW", class {

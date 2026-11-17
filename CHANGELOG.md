@@ -80,14 +80,15 @@
   1.148.0 holds. Traffic recorded again from both hosts with the UI5
   frontend of the release commit, whose `core/WindowModel.js` the recorder
   now runs as well. Results: `node-runtime` 91 of 91.
-- **The cap2UI5 host stays on `@cap2ui5/cds-plugin` 0.5.0** (runtime
-  1.147.0, no windowed tables; no newer plugin is released): 77 pass, the
-  eleven MUST checks of the windowed tables fail and two SHOULD checks
-  warn on the app's start, plus the known `error.details` warning. Pinned
-  per backend in `test/lib/expected.mjs` (the pins used to be one list for
-  both hosts); `test/traffic.test.mjs` compares the two recordings for
-  every other check. Not conformant at revision 0.5 until a plugin on a
-  runtime from 1.149.0 on is released (RESULTS.md).
+- **cap2UI5 host on `@cap2ui5/cds-plugin` 0.6.0** (0.5.0 before), which
+  hosts the runtime 1.149.0 and has `window_bind_tab( )`: 90 of 91 pass,
+  with the known `error.details` warning. On 0.5.0 (runtime 1.147.0) the
+  start of the app WINDOW failed and the thirteen window checks with it;
+  they were pinned for `cap2ui5` until the plugin was released, and are
+  unpinned. The pins of `test/lib/expected.mjs` are per backend now,
+  failures and warnings (one list for both hosts before);
+  `test/traffic.test.mjs` compares the two recordings for every check, the
+  window exchanges included - they are identical.
 - **CI's frontend job pins abap2UI5 `6f55b04`** (Release 1.149.0); the UI5
   SPA passes 81 of the 85 frontend checks, 4 skipped.
 - **The vendored agent client is `82b75d8`** - README and RESULTS named

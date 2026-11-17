@@ -58,14 +58,12 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   maintainer decided ten open questions in revision 0.3, three are open
   ([spec/open-questions.md](spec/open-questions.md)).
 - **Backend suite: 91 checks** (73 MUST, 18 SHOULD; 84 core, 7 UI5 profile).
-  `node-runtime` (`@abap2ui5/node-runtime` 1.149.0) passes 91/91.
-  `cap2ui5` (`@cap2ui5/cds-plugin` 0.5.0, the newest release, on the
-  runtime 1.147.0) passes 77: its runtime has no windowed tables, so the
-  eleven MUST checks of them fail and two SHOULD checks warn - pinned per
-  backend in `test/lib/expected.mjs` until a newer plugin is released -
-  next to the one known SHOULD warning
-  ([conformance/RESULTS.md](conformance/RESULTS.md#windowed-tables)).
-- **Schemas** validate all 424 recorded requests, 395 responses and 18 agent
+  Both reference backends pass every MUST - `node-runtime`
+  (`@abap2ui5/node-runtime` 1.149.0) 91/91, `cap2ui5`
+  (`@cap2ui5/cds-plugin` 0.6.0, on the same runtime) 90/91 with one SHOULD
+  warning ([conformance/RESULTS.md](conformance/RESULTS.md)). No failure
+  is pinned.
+- **Schemas** validate all 474 recorded requests, 458 responses and 18 agent
   snapshots, checked by the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).

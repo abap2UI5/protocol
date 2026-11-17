@@ -5,18 +5,18 @@ Backend suite, profile `ui5` (91 checks: 84 core, 7 UI5-profile; 73 MUST,
 of these runs is recorded in [`../traffic/`](../traffic/). Revision 0.5
 moved the node-runtime host to abap2UI5 1.149.0 and added the thirteen
 checks of the windowed tables (`window.*`) and
-`model.unconvertible-scalar-skipped` (SHOULD). The cap2UI5 host stays on
-the newest plugin release, whose runtime has no windowed tables: its
-failures are pinned per backend in
-[`../test/lib/expected.mjs`](../test/lib/expected.mjs) -
-see [below](#windowed-tables).
+`model.unconvertible-scalar-skipped` (SHOULD), and moved the cap2UI5 host
+to `@cap2ui5/cds-plugin` 0.6.0, which hosts the same runtime: both
+reference backends pass every MUST, and no failure is pinned
+([`../test/lib/expected.mjs`](../test/lib/expected.mjs); the one pinned
+warning is `error.details`).
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
 | `node-runtime` | `@abap2ui5/node-runtime` 1.149.0 (abap2UI5 1.149.0, transpiled) | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.33) | 91 | 0 | 0 | 0 | conformant (ui5) |
-| `cap2ui5` | `@cap2ui5/cds-plugin` 0.5.0 on `@abap2ui5/node-runtime` 1.147.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 77 | 11 | 3 | 0 | **not conformant at revision 0.5**: the eleven MUST checks of the windowed tables fail and two of their SHOULD checks warn, all on the start of the app ([below](#windowed-tables)); the third warning is `error.details`. Every check of revision 0.4 answers as before |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.6.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 90 | 0 | 1 | 0 | conformant (ui5), one SHOULD warning: `error.details` (below) |
 
-Per area (both backends identical except `window` and `error`):
+Per area (both backends identical except `error`):
 
 | Area | Checks | node-runtime | cap2ui5 |
 |---|---:|---|---|
@@ -24,7 +24,7 @@ Per area (both backends identical except `window` and `error`):
 | response | 8 | 8 pass | 8 pass |
 | event | 5 | 5 pass | 5 pass |
 | model | 11 | 11 pass | 11 pass |
-| window | 13 | 13 pass | 11 fail, 2 warn |
+| window | 13 | 13 pass | 13 pass |
 | message | 4 | 4 pass | 4 pass |
 | slots | 7 | 7 pass | 7 pass |
 | action | 3 | 3 pass | 3 pass |
@@ -37,11 +37,11 @@ The ABAP system itself (abap2UI5 on NetWeaver / ABAP Cloud) has not been run
 yet - it needs a system with the apps pulled in by abapGit; the transpiled
 runtime is the same framework source.
 
-The two hosts do not run the same framework release: cap2UI5 0.5.0 pins
-`@abap2ui5/node-runtime` 1.147.0, the node-runtime host runs 1.149.0. For
-everything both releases have, the recorded traffic of the two is identical
-([below](#differences-between-the-two-backends)); what 1.149.0 added to the
-wire - the windowed tables - only the node-runtime host has.
+Both hosts run the same framework release now: cap2UI5 0.6.0 pins
+`@abap2ui5/node-runtime` 1.149.0, the version the node-runtime host runs
+(with 0.5.0 the cap2UI5 host was on 1.147.0). The recorded traffic of the
+two is identical for every check, the windowed tables included
+([below](#differences-between-the-two-backends)).
 
 ## The move from 1.148.0 to 1.149.0
 
@@ -63,10 +63,11 @@ passed. What changed with the move, as measured:
   the new conformance app WINDOW, and
   `model.unconvertible-scalar-skipped` (SHOULD): a scalar that does not
   convert into its attribute is skipped, the roundtrip does not fail.
-  node-runtime passes all fourteen; the cap2UI5 host passes the scalar
-  check (the reference skipped such a value before 1.149.0 as well - the
-  release only documents it, [IC] `ty_s_model_skip`) and none of the
-  window checks.
+  Both hosts pass all fourteen. The scalar check passed on the cap2UI5
+  host with plugin 0.5.0 (runtime 1.147.0) as well - the reference skipped
+  such a value before 1.149.0, the release only documents it ([IC]
+  `ty_s_model_skip`); the window checks need plugin 0.6.0
+  ([below](#windowed-tables)).
 - **New recorded scenario: the list binding of the UI5 frontend.**
   `scripts/lib/ui5-frontend.mjs` now also loads `core/WindowModel.js` of
   the checkout - on stand-ins for the two UI5 classes it extends - and
@@ -80,38 +81,35 @@ passed. What changed with the move, as measured:
 - **The pins are per backend now.** `test/lib/expected.mjs` names the
   expected failures and warnings of each reference host;
   `scripts/run-conformance.mjs <backend> --expected` and the tests read the
-  backend's own list, and `test/traffic.test.mjs` compares the two
-  recordings for every check neither host is pinned apart on.
+  backend's own list. Both lists of failures are empty; the one warning
+  pinned is `error.details` of `cap2ui5`.
 
 What moved on the wire between the two releases is listed in
 [../CHANGELOG.md](../CHANGELOG.md) and written into the spec.
 
 ## Windowed tables
 
-**The cap2UI5 host cannot run them.** `@cap2ui5/cds-plugin` 0.5.0 - the
-newest release - hosts `@abap2ui5/node-runtime` 1.147.0, which has no
-`window_bind_tab( )`; the plugin's client has no such method, the twin app
-[`apps/cap2ui5/window.js`](apps/cap2ui5/window.js) throws in its first
-`main( )`, and the start of `Z2UI5_CL_CONF_WINDOW` is answered `500`,
-`roundtrip failed (<correlation id>)`. Every `window.*` check ends on that
-first request:
+**Both reference backends pass the thirteen checks**, and answer them
+alike: `test/traffic.test.mjs` compares the window exchanges of the two
+recordings like every other check - status, media type and JSON body,
+draft ids normalized - and finds no difference, and the six `WINDOW:`
+exchanges of the UI5 frontend's own request code
+(`traffic/*/ui5-frontend.json`) are the same on both, requests and
+responses. What differs is outside the comparison and nothing of the
+windowed tables: cap2UI5's responses carry express's weak `ETag` header,
+as all of its responses do.
 
-| | Checks |
-|---|---|
-| fail (MUST) | `window.first-window`, `window.more-rows`, `window.sort`, `window.filter`, `window.growth-keeps-order`, `window.parts-kept-and-cleared`, `window.filters-anded`, `window.sort-last-set`, `window.order-with-the-draft`, `window.delta-positions`, `window.whole-table-refused` |
-| warn (SHOULD) | `window.count-bounds`, `window.unknown-path-ignored` |
-
-*The backend is behind, the checks stay.* The host is kept on 0.5.0 - no
-newer plugin is released - and the thirteen results are pinned for
-`cap2ui5` in [`../test/lib/expected.mjs`](../test/lib/expected.mjs): the
-tests fail when one of them starts to pass (unpin it, record again) as
-well as when another check fails. The fix is a plugin release on a runtime
-from 1.149.0 on. cap2UI5 main has the two client methods since `0f8d821`
-(its #111), and the twin app was run once against that main with
-`@abap2ui5/node-runtime` 1.149.0 in a scratch copy of the host
-(2026-11-16, not part of this repository's runs): 90 of 91 passed, the
-thirteen window checks among them, one warning (`error.details`). Whether
-windowed tables are a part every backend has to offer is
+*How the cap2UI5 host got there.* `@cap2ui5/cds-plugin` 0.5.0 hosted
+`@abap2ui5/node-runtime` 1.147.0, which has no `window_bind_tab( )`: the
+twin app [`apps/cap2ui5/window.js`](apps/cap2ui5/window.js) threw in its
+first `main( )`, the start of `Z2UI5_CL_CONF_WINDOW` was answered `500`,
+and all thirteen checks ended on that first request - eleven failures and
+two warnings (measured 2026-11-16: 77 pass, 11 fail, 3 warn), pinned for
+`cap2ui5` while no newer plugin was released. 0.6.0 (published
+2026-11-16) hosts the runtime 1.149.0 and has `window_bind_tab( )` and
+`window_get_row( )`; the host moved to it, the thirteen pins are removed,
+and no check was changed for it. Whether windowed tables are a part every
+backend has to offer stays
 [open question 12](../spec/open-questions.md#12-windowed-tables-as-a-part-of-the-core-protocol).
 
 **What the frontends do with a windowed table** (the model of
@@ -214,9 +212,8 @@ both).
 
 `test/traffic.test.mjs` compares the two recordings check by check - status,
 media type and JSON body, draft ids normalized - and finds them
-**identical** apart from the following, and apart from the thirteen checks
-of the [windowed tables](#windowed-tables), which the cap2UI5 host does not
-get into (`BACKEND_TRAFFIC_APART` in `test/lib/expected.mjs`). Both are the same framework
+**identical** apart from the following - the thirteen checks of the
+[windowed tables](#windowed-tables) included. Both are the same framework
 (cap2UI5 hosts `@abap2ui5/node-runtime` rather than porting it), so this
 was the expected outcome; what differs is what the host adds around it.
 

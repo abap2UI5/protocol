@@ -44,19 +44,19 @@ test("both backends answer every check identically (status, media type, JSON bod
   }
 });
 
-test("the windowed tables: node-runtime passes every check of them, the cap2UI5 host fails each on the app's start (a 500 - its runtime is 1.147.0)", () => {
+test("the windowed tables: both backends pass every check of them, and nothing keeps their traffic out of the comparison above", () => {
   const windowed = node.checks.filter((c) => c.id.startsWith("window."));
   assert.equal(windowed.length, 13);
-  assert.deepEqual([...pinnedApart].sort(), windowed.map((c) => c.id).sort());
+  assert.deepEqual([...pinnedApart], []);
   for (const c of windowed) {
-    assert.equal(c.status, "pass", c.id);
     const o = cap.checks.find((x) => x.id === c.id);
-    assert.equal(o.exchanges.length, 1, c.id);
-    assert.equal(o.exchanges[0].response.status, 500, c.id);
+    assert.equal(c.status, "pass", `node-runtime ${c.id}`);
+    assert.equal(o.status, "pass", `cap2ui5 ${c.id}`);
+    assert.equal(o.exchanges.length, c.exchanges.length, c.id);
   }
 });
 
-test("the other recorded difference: cap2UI5 hides a JavaScript app's exception text (filed in conformance/RESULTS.md)", () => {
+test("the one recorded difference: cap2UI5 hides a JavaScript app's exception text (filed in conformance/RESULTS.md)", () => {
   const status = (s) => s.checks.find((c) => c.id === "error.details").status;
   assert.equal(status(node), "pass");
   assert.equal(status(cap), "warn");

@@ -351,12 +351,15 @@ app is written once against the client API, and
 `TOTAL` on every backend that runs it.
 
 *Why it is open.* It makes a backend that was conformant at revision 0.4
-non-conformant at 0.5 without a change of its own: `@cap2ui5/cds-plugin`
-0.5.0 hosts a runtime without windowed tables, and the cap2UI5 reference
-host fails every `window.*` check until a plugin on a runtime from 1.149.0
-on is released ([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
-A backend that is no port of the framework has to implement a sort and a
-filter with the semantics of [windowed-tables.md](windowed-tables.md#sorters-and-filters).
+non-conformant at 0.5 without a change of its own. Both reference
+backends offer windowed tables and pass every `window.*` check
+([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)) -
+but both host the same framework: `@cap2ui5/cds-plugin` 0.5.0, on a
+runtime without them, failed all thirteen until 0.6.0 moved to the
+runtime 1.149.0. A backend that is no port of the framework has to
+implement a sort and a filter with the semantics of
+[windowed-tables.md](windowed-tables.md#sorters-and-filters), and none
+has yet.
 
 **Alternatives.**
 - (a) As decided: core.
