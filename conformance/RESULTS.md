@@ -118,15 +118,33 @@ backend has to offer stays
 | Frontend | Rows shown | More rows, sort, filter | A cell edit |
 |---|---|---|---|
 | UI5 SPA (abap2UI5 1.149.0), in Chromium | the window; the growing trigger reads `[ 4 / 12 ]` | window requests: `ui5.window-growth`, `ui5.window-sort-filter` pass | `__delta` of the position (`window.edit-as-delta`) |
-| agent client (mcp-server `82b75d8`) | the four rows as the whole table: `rowCount` 4, `truncated` false - nothing in snapshot v1 names `TOTAL` | none; the two `BINDING_CALL` buttons are listed under `unsupported` ("runs in the browser only") | `__delta` of the position |
+| agent client (mcp-server `8efb3d7`) | the window, and that it is one: `rowCount` 4, `total` 12, `truncated` true, `window: { size: 4, more }` - `more` names the `app_act` that loads rows 5-8 | window requests: `app_act { window }` sends `["/T_ROWS","8"]` for the next window, a sort or a filter it builds itself; the two `BINDING_CALL` buttons are the action `@BINDING_CALL` and send what the UI5 list binding sends (below) | `__delta` of the position |
 | Adaptive Cards renderer | the four rows as the whole table | none; a `BINDING_CALL` wire is outside the portable profile | `__delta` of the position |
 | terminal renderer | the four rows as the whole table - also end to end against the node-runtime host, where the app's `SORT` then shows the first four of the new order and a box ticked before lands in its row | none | `__delta` of the position |
 | Web Components (frontend-webcomponent main `5c52b4d`) | **not run** - read from its source only: no `__WINDOW` and no `___ZZZ_WIN` anywhere in `src/`; `growing` pages locally over the bound array (`src/render/renderer.js`), so it would show the window as the table | none | through its vendored agent client: a `__delta` |
 
 All four frontends that were run pass `window.rows-shown` and
-`window.edit-as-delta`. None but the UI5 SPA tells the user that rows are
-missing - no finding against a rule of this revision, and
-[open question 13](../spec/open-questions.md#13-windowed-tables-in-frontends-that-are-not-the-ui5-frontend).
+`window.edit-as-delta`. Besides the UI5 SPA only the agent client tells
+its user that rows are missing and asks for them - since abap2UI5/mcp-server
+`8efb3d7` (2026-11-17), alternative (c) of
+[open question 13](../spec/open-questions.md#13-windowed-tables-in-frontends-that-are-not-the-ui5-frontend),
+which stays open for the other renderers; the two of this repository show
+the window as the table - no finding against a rule of this revision.
+
+*The agent client's window requests* (`traffic/*/agent-client.json`,
+recorded 2026-11-17 against both hosts, the same requests and snapshots on
+both): after the app start (4 of 12 rows, `total` 12), the `@BINDING_CALL`
+of "Sort list" sends `["/T_ROWS","4","[{\"PATH\":\"QTY\",\"DESCENDING\":true}]"]`,
+`app_act { window: { table } }` then `["/T_ROWS","8"]` (8 rows held, the
+sort kept), and `window.filter [["NAME","Contains","1"]]` sends
+`["/T_ROWS","4","","[[[\"NAME\",\"Contains\",\"1\",null]]]"]` (4 of 4 rows,
+`truncated` false, no `window.more`). These are the arguments the UI5
+frontend's list binding sends for the same asks (`ui5.window-growth`,
+`ui5.window-sort-filter`; `traffic/*/ui5-frontend.json`). The suite cannot
+drive the window requests through the adapter interface, which has no
+"more rows" - the `ui5.window-*` checks are the UI5 profile's and skip the
+agent client; `semantic.recorded-snapshots` replays the start and the
+`@BINDING_CALL` against the recording.
 
 ## The move from 1.146.0 to 1.148.0
 
@@ -287,7 +305,7 @@ perform.
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
 | UI5 SPA (`ui5`) | abap2UI5 1.149.0 `app/webapp` (release commit `6f55b04`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 81 | 0 | 0 | 4 | conformant (ui5) |
-| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `82b75d8` (vendored - `adapters/vendor/mcp-server/source.json`) | semantic | 63 | 0 | 0 | 22 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
+| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `8efb3d7` (vendored - `adapters/vendor/mcp-server/source.json`), run 2026-11-17 | semantic | 63 | 0 | 0 | 22 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 68 | 0 | 0 | 17 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 74 | 0 | 0 | 11 | every check it can be driven through holds, the router checks included |
 | Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
@@ -376,10 +394,18 @@ error body shown verbatim as text.
 Re-vendored at abap2UI5/mcp-server `a4d9f07` (main, PR #44), and again at
 `82b75d8` (its #48 and #49; the commit `adapters/vendor/mcp-server/source.json`
 names - this page and the README named `a4d9f07` until revision 0.5, which
-the vendored copy had left with this repository's #5): **every check that
-applies passes** - 63 pass, 0 fail, 0 warn, 22 skip, two runs identical
-(61 and 20 before the four checks of the windowed tables, two of which
-are the UI5 profile's). The five MUST deviations and three warnings measured at
+the vendored copy had left with this repository's #5), and on 2026-11-17 at
+`8efb3d7` (its #71: windowed tables): **every check that applies passes** -
+63 pass, 0 fail, 0 warn, 22 skip, two runs identical, the same counts as at
+`82b75d8` (61 and 20 before the four checks of the windowed tables, two of
+which are the UI5 profile's). Of the two frontend checks of the windowed
+tables, `window.rows-shown` and `window.edit-as-delta` pass, as at
+`82b75d8`; `ui5.window-growth` and `ui5.window-sort-filter` skip (UI5
+profile). What `8efb3d7` adds - `total` and `window` in the snapshot, the
+window requests - is measured [above](#windowed-tables): no core check
+asks a frontend for it, `semantic.snapshot-schema` now also validates the
+snapshot of a windowed table and `semantic.recorded-snapshots` replays the
+recorded `@BINDING_CALL`. The five MUST deviations and three warnings measured at
 `ea4e9fa` (revision 0.2) are fixed in the client, as filed:
 
 1. PROTOCOL check - a `PROTOCOL: 3` response is refused naming both numbers
@@ -399,7 +425,10 @@ nested-table cell (the snapshot does not describe nested tables), a
 programmatic model edit. `traffic/*/agent-client.json` was recorded again
 on 2026-11-16 with a checkout of the vendored commit (`82b75d8`) against
 both hosts; its exchanges and snapshots are identical to
-the recording of `ea4e9fa` but for the draft ids, and
+the recording of `ea4e9fa` but for the draft ids. On 2026-11-17 it was
+recorded with `8efb3d7` (`git archive` of the vendored commit): the nine
+exchanges and snapshots of before are identical but for the draft ids,
+and four of the windowed table follow ([above](#windowed-tables)); and
 `semantic.recorded-snapshots` passes against it.
 
 ### Findings - the Adaptive Cards renderer

@@ -199,6 +199,18 @@ async function recordAgentClient(backend, dir) {
   s = await snap("NAV: app_start", () => client.start("Z2UI5_CL_CONF_NAV"));
   s = await snap("NAV: act - CALL", () => client.act(s.session, { event: "CALL" }));
   s = await snap("NAV: act - DONE", () => client.act(s.session, { event: "DONE" }));
+  const { BINDING_CALL_EVENT } = await import(pathToFileURL(path.join(home, "lib", "snapshot.mjs")).href);
+  if (!BINDING_CALL_EVENT) {
+    process.stderr.write("[record] agent-client: the windowed table is left out - this client has no window requests (mcp-server 8efb3d7 on)\n");
+  } else {
+    // the windowed table: the first @BINDING_CALL of the screen is the
+    // "Sort list" button, then the next window in that order, then a filter
+    // the client builds itself
+    s = await snap("WINDOW: app_start", () => client.start("Z2UI5_CL_CONF_WINDOW"));
+    s = await snap("WINDOW: act - @BINDING_CALL (Sort list)", () => client.act(s.session, { event: "@BINDING_CALL" }));
+    s = await snap("WINDOW: act - window: the next window", () => client.act(s.session, { window: { table: "T_ROWS" } }));
+    s = await snap("WINDOW: act - window: filter NAME Contains 1", () => client.act(s.session, { window: { table: "T_ROWS", filter: [["NAME", "Contains", "1"]] } }));
+  }
   const pkg = JSON.parse(fs.readFileSync(path.join(home, "package.json"), "utf8"));
   write(dir, "agent-client.json", {
     source: `lib/appclient.mjs of ${pkg.name} ${pkg.version} (${path.basename(home)})`,

@@ -1,5 +1,5 @@
 /*
- * VENDORED - do not edit. abap2UI5/mcp-server lib/viewxml.mjs at commit 82b75d8a4db80799f438bdbef626c1b258970177,
+ * VENDORED - do not edit. abap2UI5/mcp-server lib/viewxml.mjs at commit 8efb3d7eda7a8a57d40e7122eaf924ed3cf415a8,
  * copied unchanged by scripts/vendor-agent-client.mjs. Change it upstream,
  * then re-vendor; test/frontend.test.mjs fails when this copy drifts.
  */
@@ -205,7 +205,10 @@ function splitBindingParts(value) {
   return parts;
 }
 
-const SIMPLE_PATH = /^\s*(?:([A-Za-z_][\w.-]*)>)?(\/?[\w$/.-]*)\s*$/;
+/* `*` is a path segment: abap2UI5 binds a dereferenced data reference as
+ * {/MR_X/*}, and the model holds { MR_X: { '*': [...] } } (getAt walks it
+ * as any other key) */
+const SIMPLE_PATH = /^\s*(?:([A-Za-z_][\w.-]*)>)?(\/?[\w$/.*-]*)\s*$/;
 
 /** One `{...}` body -> { path, model, relative, type } or { expression } or
  *  { computed } (parts/formatter bindings the snapshot cannot evaluate). */

@@ -71,8 +71,29 @@ const INVALID = {
     { value: { S_FRONT: { ID: "X", EVENT: "___ZZZ_WIN", T_EVENT_ARG: ["T_ROWS", "8"] } } },
     { value: { S_FRONT: { ID: "X", EVENT: "___ZZZ_WIN", T_EVENT_ARG: ["/T_ROWS", "4", [{ PATH: "QTY", DESCENDING: true }]] } } },
   ],
-  snapshot: [{ snapshotVersion: 2 }, {}],
+  snapshot: [
+    { snapshotVersion: 2 },
+    {},
+    windowed({ total: -1 }),
+    windowed({ total: "12" }),
+    windowed({ window: {} }),
+    windowed({ window: { size: 0 } }),
+    windowed({ window: { size: 4, more: true } }),
+  ],
 };
+
+/** A snapshot with one windowed table, its table keys overridden. */
+function windowed(table) {
+  return {
+    snapshotVersion: 1, session: "X", app: "A", title: "", layer: "main", fields: [], actions: [],
+    tables: [{
+      id: "t1", path: "/T_ROWS", name: "T_ROWS", label: "T_ROWS", control: "sap.m.Table", columns: [],
+      rowCount: 4, total: 12, rows: [], truncated: true, selectionMode: "None", editableCells: [], layer: "main",
+      window: { size: 4 }, ...table,
+    }],
+    messages: [], texts: [], unsupported: [],
+  };
+}
 
 test("recorded traffic exists for at least one backend", () => {
   const s = samples();

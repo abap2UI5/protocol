@@ -1,5 +1,5 @@
 /*
- * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit 82b75d8a4db80799f438bdbef626c1b258970177,
+ * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit 8efb3d7eda7a8a57d40e7122eaf924ed3cf415a8,
  * copied unchanged by scripts/vendor-agent-client.mjs. Change it upstream,
  * then re-vendor; test/frontend.test.mjs fails when this copy drifts.
  */
@@ -55,6 +55,10 @@ const TEXT_MAX_LEN = 200;
  * keeps them apart from every backend event name. */
 export const FRONTEND_EVENTS = { POPUP: '@CLOSE_POPUP', POPOVER: '@CLOSE_POPOVER' };
 
+/* A BINDING_CALL sort or filter wire on a windowed list: the client sends
+ * the window request the UI5 frontend's list binding would send. */
+export const BINDING_CALL_EVENT = '@BINDING_CALL';
+
 // ------------------------------------------------------------ the state ----
 
 export function emptyState() {
@@ -107,6 +111,12 @@ function destroySlot(next, slot) {
  * A response without MODEL leaves every model as it was: the backend only
  * sends what changed, and the client keeps what the user typed.
  */
+/* An action list of the response, or none: a T_SYSTEM or T_CUSTOM that is
+ * no array (an object, a number) threw a TypeError out of this pure fold -
+ * the client refuses such a response with a sentence first (appclient
+ * receive), and a direct caller gets an empty list, never a throw. */
+const listOf = (v) => (Array.isArray(v) ? v : []);
+
 export function applyResponse(state, response) {
   const prev = state || emptyState();
   const next = { app: prev.app, id: prev.id, slots: { ...prev.slots }, models: { ...prev.models }, custom: [] };
@@ -121,7 +131,7 @@ export function applyResponse(state, response) {
   const data = hasModel ? response.MODEL : {};
   const actions = front.S_ACTION || {};
   const displayed = new Set();
-  for (const raw of actions.T_SYSTEM || []) {
+  for (const raw of listOf(actions.T_SYSTEM)) {
     const a = asArray(raw);
     if (!a || a[0] !== 'VIEW_SLOTS') continue;
     const [, method, slot, xml, options] = a;
@@ -139,7 +149,7 @@ export function applyResponse(state, response) {
       }
     }
   }
-  for (const raw of actions.T_CUSTOM || []) {
+  for (const raw of listOf(actions.T_CUSTOM)) {
     const a = asArray(raw);
     if (!a) continue;
     const b = a[0] === 'CONTROL_GLOBAL' ? a.slice(1) : a;
@@ -169,7 +179,7 @@ export function applyResponse(state, response) {
 export function rebuiltModels(response) {
   const keys = new Set();
   const front = (response && response.S_FRONT) || {};
-  for (const raw of (front.S_ACTION && front.S_ACTION.T_SYSTEM) || []) {
+  for (const raw of listOf(front.S_ACTION && front.S_ACTION.T_SYSTEM)) {
     const a = asArray(raw);
     if (a && a[0] === 'VIEW_SLOTS' && a[1] === 'display' && MODEL_OWNING.includes(a[2])) keys.add(a[2]);
   }
@@ -220,6 +230,43 @@ export function nameOfPath(p) {
   const segs = segments(p);
   if (segs[0] === 'XX' && segs.length > 1) segs.shift();
   return segs.join('-');
+}
+
+// ------------------------------------------------------- windowed tables ----
+
+/* The model key of the window states (z2ui5_if_ui5_types=>cv_window_model_key)
+ * and the reserved event of a window request (cs_event_window) - protocol
+ * spec/windowed-tables.md, abap2UI5 1.149.0 on. */
+export const WINDOW_KEY = '__WINDOW';
+export const WINDOW_EVENT = '___ZZZ_WIN';
+
+/** The window state of the table at the absolute model path `p` -
+ *  `/__WINDOW/<path>` - as { total, count, size }, or null when the table is
+ *  no window (the frontend's rule, core/WindowModel.js bindList: a list is
+ *  windowed when the model carries a state for its path). */
+export function windowStateOf(data, p) {
+  const segs = segments(p);
+  if (!segs.length || !String(p).startsWith('/')) return null;
+  const st = getAt(data, `/${WINDOW_KEY}/${segs.join('/')}`);
+  if (!st || typeof st !== 'object' || Array.isArray(st)) return null;
+  /* an initial value is left out of the JSON (the reference answers a
+   * filter that lets nothing through with { SIZE } alone): absent is 0 */
+  const total = st.TOTAL === undefined || st.TOTAL === null ? 0 : Number(st.TOTAL);
+  if (!Number.isFinite(total) || total < 0) return null;
+  const count = st.COUNT === undefined || st.COUNT === null ? 0 : Number(st.COUNT);
+  const size = Number(st.SIZE);
+  return {
+    total: Math.floor(total),
+    count: Number.isFinite(count) && count >= 0 ? Math.floor(count) : null,
+    size: Number.isFinite(size) && size >= 1 ? Math.floor(size) : 1,
+  };
+}
+
+/** The `count` of the next window, as the UI5 frontend asks for it
+ *  (WindowModel _z2ui5Ensure): the rows held plus one, rounded up to whole
+ *  windows, at most `total`. */
+export function nextWindowCount(held, { size, total }) {
+  return Math.min(total, Math.ceil((held + 1) / size) * size);
 }
 
 // --------------------------------------------------------- control maps ----
@@ -393,7 +440,7 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
     const model = st.models[key] || { data: {} };
     const root = parseViewXml(st.slots[slot].xml);
     const labelFor = collectLabelFor(root, model.data);
-    const ctx = { layer, slot, modelKey: key, data: model.data || {}, row: null, label: null, where: [], labelFor };
+    const ctx = { layer, slot, modelKey: key, data: model.data || {}, row: null, label: null, where: [], labelFor, byId: collectIds(root) };
     walkChildren(root.children, ctx);
   }
 
@@ -743,9 +790,20 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
       const scope = ctx.row ? 'row' : 'screen';
       if (wire.fn === 'eF') {
         const st = wire.args.map((x) => (x.static ? String(x.value) : null));
+        const windowed = wire.action === 'BINDING_CALL' ? bindingCallWindow(st, ctx) : null;
         if (wire.action === 'CONTROL_GLOBAL' && st[0] === 'VIEW_SLOTS' && st[1] === 'destroy' && FRONTEND_EVENTS[st[2]]) {
           pushAction({ event: FRONTEND_EVENTS[st[2]], args: [], label, control: name, trigger: attr, enabled, scope, table: ctx.row && ctx.row.tableId, layer: ctx.layer },
             { wire, node, modelKey: ctx.modelKey, frontend: st[2], tableId: ctx.row && ctx.row.tableId });
+        } else if (windowed && !ctx.row) {
+          /* a sort or filter of a WINDOWED list's binding: the UI5 frontend
+           * turns it into a window request (core/WindowModel.js sort/filter),
+           * and so does the client - so it is an action, not a browser-only
+           * wire. On a list that is no window it sorts in the browser only. */
+          pushAction({
+            event: BINDING_CALL_EVENT,
+            args: wire.args.map((x) => (x.static ? x.value : x.describe)),
+            label, control: name, trigger: attr, enabled, scope, layer: ctx.layer,
+          }, { wire, node, modelKey: ctx.modelKey, bindingCall: windowed });
         } else {
           note(`frontend action ${wire.action}(${wire.args.map((x) => (x.static ? JSON.stringify(x.value) : x.describe)).join(', ')}) on ${node.local} "${clip(label, 60)}" (${ctx.layer}) - runs in the browser only`);
         }
@@ -763,6 +821,21 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
         layer: ctx.layer,
       }, { wire, node, modelKey: ctx.modelKey, tableId: ctx.row && ctx.row.tableId, rowTemplate: (ctx.row && ctx.row.rowTemplate) || null, ...(extra || {}) });
     }
+  }
+
+  /* A BINDING_CALL wire `[id, aggregation, sort|filter, ...]` whose control
+   * (by id, in the same view) binds that aggregation to an absolute path the
+   * model carries a window state for: { path, method }; else null. */
+  function bindingCallWindow(st, ctx) {
+    const [id, agg, method] = st;
+    if (!id || !agg || !['sort', 'filter'].includes(method)) return null;
+    const target = ctx.byId && ctx.byId.get(id);
+    if (!target || target.attrs[agg] === undefined) return null;
+    const b = parseBinding(target.attrs[agg]);
+    const bp = b.kind === 'path' ? b : (b.parts || []).find((p) => p.path !== undefined);
+    if (!bp || !bp.path || bp.model || bp.relative) return null;
+    if (!windowStateOf(ctx.data, bp.path)) return null;
+    return { path: bp.path, method };
   }
 
   function actionLabel(node, ctx, name, attr, fieldRec) {
@@ -974,6 +1047,12 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
       if (selectionField && !(selectionField in r)) r[selectionField] = row ? (row[selectionField] ?? null) : null;
       return r;
     });
+    /* A windowed table (window_bind_tab, protocol spec/windowed-tables.md):
+     * the model carries the first rows of it and the state under
+     * /__WINDOW/<path>. rowCount stays the rows held - the rows `row` and a
+     * cell path can address - `total` is TOTAL, and the table is truncated
+     * while fewer rows are held than the filter lets through. */
+    const win = windowStateOf(ctx.data, bpath.path);
     const rec = {
       id: tableId,
       path: bpath.path,
@@ -982,13 +1061,22 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
       control: name,
       columns,
       rowCount: rows.length,
+      ...(win ? { total: Math.max(win.total, rows.length) } : {}),
       rows: shown,
-      truncated: rows.length > shown.length,
+      truncated: rows.length > shown.length || Boolean(win && rows.length < win.total),
       selectionMode,
       editableCells,
       layer: ctx.layer,
     };
     if (selectionField) rec.selectionField = selectionField;
+    if (win) {
+      rec.window = { size: win.size };
+      if (rows.length < win.total) {
+        const next = nextWindowCount(rows.length, win);
+        rec.window.more = `${rows.length} of ${win.total} rows held - app_act { session, window: { table: "${tableId}" } } loads rows `
+          + `${rows.length + 1}-${next}; window.count, window.sort and window.filter ask the backend for any first rows of all ${win.total}`;
+      }
+    }
     out.tables.push(rec);
     // what lib/appclient.mjs needs to fill a row event's $parameters: the
     // item template and its cells (getCells()[n] counts every cell of a
@@ -998,7 +1086,7 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
       : cells.filter((cl) => cl.visible).map((cl) => cl.node);
     index.tables.set(tableId, {
       table: rec, path: bpath.path, modelKey: ctx.modelKey, cellSpecs, selectionField, ctx,
-      node, kind: spec.kind, dialog: Boolean(spec.dialog), template, cellNodes: itemCells,
+      node, kind: spec.kind, dialog: Boolean(spec.dialog), template, cellNodes: itemCells, window: win,
     });
 
     // the table's own events: a row event on the table is row scope, and so
@@ -1100,6 +1188,19 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
     }
     return null;
   }
+}
+
+/* The controls of a view by their id - what a BINDING_CALL wire names. */
+function collectIds(root) {
+  const map = new Map();
+  const visit = (n) => {
+    for (const ch of n.children) {
+      if (!isAggregation(ch) && ch.attrs && typeof ch.attrs.id === 'string' && !map.has(ch.attrs.id)) map.set(ch.attrs.id, ch);
+      visit(ch);
+    }
+  };
+  visit(root);
+  return map;
 }
 
 /* A Label with labelFor names the control of that id, wherever it is. */
