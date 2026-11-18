@@ -72,7 +72,7 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   SPA of abap2UI5 1.149.0 passes every check that applies but one (81, 1
   failed, 4 skipped: a cell behind a data reference sent whole, fixed in
   abap2UI5 `2cc0344`, which passes 82); the agent client (mcp-server
-  `a521248`), the
+  `332a0b0`), the
   Adaptive Cards renderer and the terminal renderer pass every check that
   applies to them (64, 69 and 75 - the terminal's include the router
   checks); the Web Components frontend passed 68 of 68 of the 81 checks of

@@ -1,5 +1,5 @@
 /*
- * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit a5212486e88c3e78e35933346ff84c92218c95f0,
+ * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit 332a0b0551b27acc6f6f711c45ec8ae3d0504070,
  * copied unchanged by scripts/vendor-agent-client.mjs. Change it upstream,
  * then re-vendor; test/frontend.test.mjs fails when this copy drifts.
  */

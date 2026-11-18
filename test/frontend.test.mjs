@@ -160,7 +160,7 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 // The agent client's result, check by check - a change here is a change of
 // the client (re-vendored) or of a check. Since mcp-server a4d9f07 (PR #44)
 // it follows every frontend rule that applies (conformance/RESULTS.md) - the
-// vendored copy is a521248 (adapters/vendor/mcp-server/source.json); the
+// vendored copy is 332a0b0 (adapters/vendor/mcp-server/source.json); the
 // skips are the portable and UI5 profiles it does not claim, a URL, a DOM,
 // focus, programmatic model edits and the nested-table cell its snapshot
 // does not describe.

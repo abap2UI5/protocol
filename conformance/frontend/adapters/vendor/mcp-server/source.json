@@ -1,18 +1,18 @@
 {
   "repository": "abap2UI5/mcp-server",
-  "commit": "a5212486e88c3e78e35933346ff84c92218c95f0",
+  "commit": "332a0b0551b27acc6f6f711c45ec8ae3d0504070",
   "files": {
     "appclient.mjs": {
       "from": "lib/appclient.mjs",
-      "sha256": "4f1d0cb3c140fc34524927d9a61f2ee0c2cbb0a9a06e4e1b170e6246d7559de5"
+      "sha256": "06012837ff2f418b62117aacea994d5f951e28d1c5a3974751356408f6d3b5c7"
     },
     "snapshot.mjs": {
       "from": "lib/snapshot.mjs",
-      "sha256": "424e13127e41da585625ff28b7ae2ee2586e6018ecb78605d0e2c8ca87c7cd19"
+      "sha256": "09264fd71485c814efb19bbc7686012471c4cce9a88dce2ab47de558a6ea7914"
     },
     "viewxml.mjs": {
       "from": "lib/viewxml.mjs",
-      "sha256": "6c17a55576ea2a322eefd8abe79ba8de89ae685db63950c5eab19f128c09c2cc"
+      "sha256": "58128d633bed2cc37ed3c0ed36b62565715b27419b40ddaf592c72845d4e0e5c"
     }
   }
 }

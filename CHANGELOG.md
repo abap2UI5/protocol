@@ -24,7 +24,7 @@
   - `schema/request.schema.json`: a `{ "*": { "__delta" } }` entry is
     validated as a table delta; three valid and two invalid hand-made
     requests in `test/schema.test.mjs` (the recorded traffic has none).
-  - Agent client re-vendored at abap2UI5/mcp-server `a521248` (its
+  - Agent client re-vendored at abap2UI5/mcp-server `332a0b0` (its
     `7f71d5f`: `buildDelta` as the fixed `buildDeltaFromPaths`; the two
     other modules unchanged). `profiles/semantic.md`: the pick of a
     selection dialog over a data reference sends that delta; the F4
