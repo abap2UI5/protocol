@@ -164,10 +164,12 @@ The frontend builds the delta from the changed binding paths
 | `/T_TAB/<row>/<FIELD>` (a table cell) | `"T_TAB": { "__delta": { "<row>": { "<FIELD>": <value> } } }`, `<row>` 0-based |
 | `/T_TAB/<row>/<SUB>/<row2>/<FIELD>` (a nested table) | the same, recursively: `{ "__delta": { "<row>": { "<SUB>": { "__delta": { "<row2>": { ... } } } } } }` |
 | `/T_TAB/<row>/<S>/<F>` (a structure inside a row) | `"<S>": <whole value>` inside the row entry |
-| any other shape | the whole attribute |
+| `/MR_TAB/*/<row>/<FIELD>` (a cell of a table behind a data reference - an attribute `TYPE REF TO data`, bound dereferenced, is the model node `/MR_TAB/*`) | the same on the `*` node: `"MR_TAB": { "*": { "__delta": { "<row>": { "<FIELD>": <value> } } } }`, nested tables recursively |
+| any other shape - `/MR_S/*/<F>` (a structure behind a reference) and `/MR_V/*` (a value) included | the whole attribute |
 
 When one attribute is queued both whole and by row, the whole value wins
-(it carries every cell). A whole table value replaces the table.
+(it carries every cell) - behind a data reference too: the whole
+`"MR_TAB": { "*": [ ... ] }`. A whole table value replaces the table.
 
 Rules for the frontend:
 
@@ -190,6 +192,13 @@ Rules for the frontend:
   A cell of a [windowed table](windowed-tables.md#edits) MUST travel as the
   `__delta`, never as the whole table. *Frontend check:*
   `window.edit-as-delta`.
+- The `__delta` of a table behind a data reference MUST go on its `*`
+  node - the attribute's client name is `/<attr>/*`, and that is where the
+  backend looks for `__delta` ([MOD] `main_json_to_attri`; [LIB]
+  `buildDeltaFromPaths` from abap2UI5 2cc0344, #3026, on). A frontend that
+  sends such a table whole sends the whole attribute,
+  `{ "MR_TAB": { "*": [ ... ] } }`, which a windowed table refuses.
+  *Frontend check:* `window.edit-as-delta-reference`.
 - The delta is the edited model's: an event from a popup carries the
   popup's edits, not MAIN's ([V1] `_pickModelForRoundtrip`).
   *Frontend check:* `model.slot-model`.
@@ -224,6 +233,12 @@ The backend applies the delta **before** the app runs ([ACT]
   `window.delta-positions`, `window.whole-table-refused`.
 - **Implementation note.** An attribute bound with `_bind( json = abap_true )`
   is outbound only; a delta for it is skipped ([MOD] `main_json_to_attri`).
+- **Implementation note.** The reference reads every entry at the
+  attribute's client name, `/MR_TAB/*` for a table behind a data
+  reference ([MOD] `main_json_to_attri`): a `__delta` there is applied by
+  row, a whole value there replaces the table - unless it is windowed. The
+  conformance apps have no table behind a reference, so no backend check
+  covers it ([open-questions.md](open-questions.md#14-tables-behind-a-data-reference-in-the-backend-suite)).
 
 ## CONFIG: the session block
 

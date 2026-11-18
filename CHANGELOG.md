@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+- **The row delta of a table behind a data reference** (abap2UI5 #3026,
+  `2cc0344`). An attribute `TYPE REF TO data` bound dereferenced is the
+  model node `/<attr>/*`; its cell travels as `{ "MR_TAB": { "*": {
+  "__delta": { ... } } } }` - the backend reads every entry at the
+  attribute's client name ([MOD] `main_json_to_attri`), and a whole
+  attribute is refused for a windowed table, where the edit was lost.
+  - `spec/request.md`: the `/MR_TAB/*/<row>/<FIELD>` row of the delta
+    table, a structure or value behind a reference still whole, a frontend
+    MUST put the `__delta` on the `*` node; an implementation note for the
+    backend side. `spec/windowed-tables.md` *Edits*: the same for a
+    windowed table behind a reference, and the 1.149.0 behaviour as an
+    implementation note.
+  - New frontend check `window.edit-as-delta-reference` (MUST, core,
+    synthetic: no conformance app binds a data reference) - 86 checks
+    (71 MUST, 15 SHOULD; 69 core). The agent client, the Adaptive Cards and
+    the terminal renderer pass it (64, 69, 75); the UI5 SPA of 1.149.0 fails
+    it and is pinned in `test/frontend.test.mjs` `UI5_KNOWN_FAILS` until
+    CI's abap2UI5 commit carries `2cc0344` (finding 3 of
+    `conformance/RESULTS.md`; that frontend passes).
+  - `schema/request.schema.json`: a `{ "*": { "__delta" } }` entry is
+    validated as a table delta; three valid and two invalid hand-made
+    requests in `test/schema.test.mjs` (the recorded traffic has none).
+  - Agent client re-vendored at abap2UI5/mcp-server `332a0b0` (its
+    `7f71d5f`: `buildDelta` as the fixed `buildDeltaFromPaths`; the two
+    other modules unchanged). `profiles/semantic.md`: the pick of a
+    selection dialog over a data reference sends that delta; the F4
+    example is the re-recorded one of mcp-server (`z2ui5_cl_cgui_select`).
+  - [Open question 14](spec/open-questions.md#14-tables-behind-a-data-reference-in-the-backend-suite):
+    whether a backend check (and a conformance app with a data reference,
+    twice) should pin the backend side.
+
 - **Agent client re-vendored at abap2UI5/mcp-server `8efb3d7`** (its #71,
   windowed tables; `82b75d8` before; `npm run vendor:agent`, `--check`
   passes). Between the two commits the three vendored modules also
