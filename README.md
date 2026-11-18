@@ -67,12 +67,14 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   snapshots, checked by the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
-- **Frontend suite: 85 checks** (70 MUST, 15 SHOULD; 68 core, 8 portable,
+- **Frontend suite: 86 checks** (71 MUST, 15 SHOULD; 69 core, 8 portable,
   6 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
-  SPA of abap2UI5 1.149.0 passes every check that applies (81, 4 skipped);
-  the agent client (mcp-server `8efb3d7`), the
+  SPA of abap2UI5 1.149.0 passes every check that applies but one (81, 1
+  failed, 4 skipped: a cell behind a data reference sent whole, fixed in
+  abap2UI5 `2cc0344`, which passes 82); the agent client (mcp-server
+  `332a0b0`), the
   Adaptive Cards renderer and the terminal renderer pass every check that
-  applies to them (63, 68 and 74 - the terminal's include the router
+  applies to them (64, 69 and 75 - the terminal's include the router
   checks); the Web Components frontend passed 68 of 68 of the 81 checks of
   2026-10-03, with one intermittent failure, and was not run again
   ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).

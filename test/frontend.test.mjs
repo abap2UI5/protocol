@@ -160,7 +160,7 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 // The agent client's result, check by check - a change here is a change of
 // the client (re-vendored) or of a check. Since mcp-server a4d9f07 (PR #44)
 // it follows every frontend rule that applies (conformance/RESULTS.md) - the
-// vendored copy is 82b75d8 (adapters/vendor/mcp-server/source.json); the
+// vendored copy is 332a0b0 (adapters/vendor/mcp-server/source.json); the
 // skips are the portable and UI5 profiles it does not claim, a URL, a DOM,
 // focus, programmatic model edits and the nested-table cell its snapshot
 // does not describe.
@@ -222,11 +222,13 @@ test("the terminal renderer: every portable-profile check it can be driven throu
 });
 
 const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER is set" : false;
-// The UI5 SPA's known deviations (RESULTS.md) - none since CI's abap2UI5
-// commit carries the fix of portable.box-details (abap2UI5 72c86cc: message
-// box details on OpenUI5 >= 1.120). A deviation found later goes here with
-// the place of its fix; every other failure fails the test.
-const UI5_KNOWN_FAILS = [];
+// The UI5 SPA's known deviations (RESULTS.md) - a deviation goes here with
+// the place of its fix; every other failure fails the test. CI's abap2UI5
+// commit is the release 1.149.0, which ships a cell behind a data reference
+// as the whole attribute: window.edit-as-delta-reference, fixed in abap2UI5
+// 2cc0344 (#3026, core/Lib.js buildDeltaFromPaths) - unpin it once CI's
+// commit carries that.
+const UI5_KNOWN_FAILS = ["window.edit-as-delta-reference"];
 
 test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { skip: skipBrowser, timeout: 900_000 }, async (t) => {
   if (!locateWebapp()) {

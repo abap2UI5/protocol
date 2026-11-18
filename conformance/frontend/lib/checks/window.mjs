@@ -2,8 +2,8 @@
 // rows it was sent, the window state under /__WINDOW, an edit as positions,
 // and (UI5 profile) the window requests of the list binding. The scripted
 // answers are the node-runtime's, recorded from the conformance app WINDOW.
-import { recorded, answer } from "../responses.mjs";
-import { CHECK } from "./common.mjs";
+import { recorded, answer, button } from "../responses.mjs";
+import { CHECK, startApp } from "./common.mjs";
 
 const W = "spec/windowed-tables.md";
 const U = "profiles/ui5.md#windowed-tables";
@@ -52,6 +52,30 @@ export default [
       await t.posted(2);
       t.equal(t.front(1).ID, first.S_FRONT.ID, "S_FRONT.ID");
       t.deepEqual(t.post(1).MODEL, { T_ROWS: { __delta: { 2: { DONE: true } } } }, "MODEL");
+    },
+  },
+  {
+    id: "window.edit-as-delta-reference",
+    title: "A cell edited in a windowed table behind a data reference travels as a __delta on its * node - never as the whole attribute",
+    level: "MUST",
+    profile: "core",
+    spec: `${W}#edits`,
+    async run(t) {
+      // synthetic: the conformance apps have no table behind a data
+      // reference - the shape is the one abap2UI5's own window.spec.js
+      // reads (MODEL.__WINDOW.MR_TAB["*"]) and #3026's specs send
+      const view = "<Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/MR_ROWS/*}\"><columns><Column/><Column/></columns>"
+        + "<items><ColumnListItem><cells><Text text=\"{NAME}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table>"
+        + button("Check", "CHECK");
+      const rows = [1, 2, 3, 4].map((i) => ({ ID: i, NAME: `item 0${i}`, DONE: false }));
+      const model = { MR_ROWS: { "*": rows }, __WINDOW: { MR_ROWS: { "*": { COUNT: 4, SIZE: 4, TOTAL: 12 } } } };
+      const first = await startApp(t, view, { model, app: APP });
+      await t.fill({ path: "/MR_ROWS/*/2/DONE" }, true);
+      t.mock.reply(answer({ app: APP }));
+      await t.press(CHECK);
+      await t.posted(2);
+      t.equal(t.front(1).ID, first.S_FRONT.ID, "S_FRONT.ID");
+      t.deepEqual(t.post(1).MODEL, { MR_ROWS: { "*": { __delta: { 2: { DONE: true } } } } }, "MODEL");
     },
   },
   {
