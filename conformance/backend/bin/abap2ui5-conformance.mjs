@@ -32,7 +32,7 @@ The backend has to serve the conformance apps - conformance/apps/README.md.
 
 frontend - plays the backend (a scripted server) for a frontend:
   --adapter <name>        ui5 (the UI5 SPA in Chromium), agent (mcp-server's agent
-                          client), webcomponent (frontend-webcomponent),
+                          client), webcomponent (embed-webcomponent),
                           adaptive-cards (the Adaptive Cards renderer of this
                           package, in process), terminal (the terminal renderer
                           of this package, in process), headless (stub)

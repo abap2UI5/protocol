@@ -1,5 +1,5 @@
 /*
- * Adapter: the UI5 Web Components frontend (abap2UI5/frontend-webcomponent,
+ * Adapter: the UI5 Web Components frontend (abap2UI5-addons/embed-webcomponent,
  * the custom element <abap2ui5-app> of dist/abap2ui5-wc.js) in Chromium,
  * driven by Playwright. A portable-profile renderer.
  *
@@ -7,8 +7,8 @@
  * <abap2ui5-app endpoint=<the run's endpoint> app=<?app_start> standalone>,
  * served by the mock at the endpoint with the bundle under /wc/.
  *
- * Needs a built checkout: WC_FRONTEND_HOME (else ../frontend-webcomponent)
- * with dist/abap2ui5-wc.js (`npm run build` there). The frontend is under
+ * Needs a built checkout: WC_FRONTEND_HOME (else ../embed-webcomponent, or
+ * ../frontend-webcomponent - its name before 2026-11-17) with dist/abap2ui5-wc.js (`npm run build` there). The frontend is under
  * construction; the adapter reads its state through the element's public
  * surface (session, diagnostics(), the abap2ui5-* events) plus the
  * data-ui5-id / data-ui5-control attributes its renderer writes, and reports
@@ -26,7 +26,8 @@ export function locateWebComponentDist(explicit) {
   const candidates = [
     explicit,
     process.env.WC_FRONTEND_HOME && path.join(process.env.WC_FRONTEND_HOME, "dist"),
-    path.resolve(ROOT, "../frontend-webcomponent/dist"),
+    path.resolve(ROOT, "../embed-webcomponent/dist"),
+    path.resolve(ROOT, "../frontend-webcomponent/dist"), // the checkout's name before 2026-11-17
   ].filter(Boolean);
   return candidates.find((d) => fs.existsSync(path.join(d, "abap2ui5-wc.js"))) || null;
 }
@@ -120,20 +121,24 @@ export function createWebComponentAdapter({ dist: explicit } = {}) {
 
   const adapter = {
     name: "webcomponent",
-    description: "the UI5 Web Components frontend (abap2UI5/frontend-webcomponent) in Chromium",
+    description: "the UI5 Web Components frontend (abap2UI5-addons/embed-webcomponent) in Chromium",
     profiles: ["core", "portable"],
     capabilities: new Set(["dom", "url", "timers", "title", "concurrent"]),
 
     async open({ mock }) {
-      if (!dist) throw new Unsupported("no frontend-webcomponent build (dist/abap2ui5-wc.js) - set WC_FRONTEND_HOME and run npm run build there");
+      if (!dist) throw new Unsupported("no embed-webcomponent build (dist/abap2ui5-wc.js) - set WC_FRONTEND_HOME and run npm run build there");
       mock.addStatic({ prefix: "/wc/", roots: [dist], maxAge: 3600 });
       browser = await launchChromium();
       context = await browser.newContext({ locale: "en-US", viewport: { width: 1280, height: 800 } });
-      let version = "";
+      // the package's own name: a build from before 2026-11-17 is still
+      // @abap2ui5/frontend-webcomponent
+      let name = "@abap2ui5/embed-webcomponent", version = "";
       try {
-        version = JSON.parse(fs.readFileSync(path.join(dist, "../package.json"), "utf8")).version;
+        const pkg = JSON.parse(fs.readFileSync(path.join(dist, "../package.json"), "utf8"));
+        name = pkg.name || name;
+        version = pkg.version;
       } catch { /* no package.json next to dist */ }
-      adapter.version = `@abap2ui5/frontend-webcomponent ${version} (${dist}), Chromium ${browser.version()}`;
+      adapter.version = `${name} ${version} (${dist}), Chromium ${browser.version()}`;
     },
 
     async start(r, { app, search, hash = "" } = {}) {

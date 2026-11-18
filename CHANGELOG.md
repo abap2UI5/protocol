@@ -32,6 +32,13 @@
   - [Open question 14](spec/open-questions.md#14-tables-behind-a-data-reference-in-the-backend-suite):
     whether a backend check (and a conformance app with a data reference,
     twice) should pin the backend side.
+- **The UI5 Web Components frontend is named by its new repository,**
+  abap2UI5-addons/embed-webcomponent (npm `@abap2ui5/embed-webcomponent`;
+  was abap2UI5/frontend-webcomponent, moved 2026-11-17). The `webcomponent`
+  adapter looks for a built checkout at `../embed-webcomponent` first and
+  still at `../frontend-webcomponent`, and reports the package name its
+  build's `package.json` carries instead of a fixed one. The recorded runs
+  in `conformance/RESULTS.md` keep the name they were made under.
 
 - **Agent client re-vendored at abap2UI5/mcp-server `8efb3d7`** (its #71,
   windowed tables; `82b75d8` before; `npm run vendor:agent`, `--check`

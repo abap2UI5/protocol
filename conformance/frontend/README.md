@@ -22,7 +22,7 @@ layer, a 500 with markup in it, a model push from another app).
 npm ci
 npx abap2ui5-conformance frontend --adapter ui5            # the UI5 SPA in Chromium
 npx abap2ui5-conformance frontend --adapter agent          # mcp-server's agent client
-npx abap2ui5-conformance frontend --adapter webcomponent   # frontend-webcomponent
+npx abap2ui5-conformance frontend --adapter webcomponent   # embed-webcomponent
 npx abap2ui5-conformance frontend --adapter adaptive-cards # the Adaptive Cards renderer of this package
 npx abap2ui5-conformance frontend --adapter terminal       # the terminal renderer of this package
 
@@ -68,7 +68,7 @@ frontend cannot perform throws `Unsupported`.
 |---|---|---|---|
 | `ui5` | the official UI5 SPA, abap2UI5 `app/webapp` | core, portable, ui5 | Chromium via Playwright: the page is the UI5 profile's boot page ([adapters/ui5-page.mjs](adapters/ui5-page.mjs)) at the run's endpoint, UI5 comes from the `@openui5/*` npm packages (no CDN), the frontend from the checkout's webapp folder. Interactions type into real `Input`s and click real `Button`s |
 | `agent` | abap2UI5/mcp-server `lib/appclient.mjs` | core, semantic | in process: `start` / `act`, the snapshot is the state. Vendored at the commit [adapters/vendor/mcp-server/source.json](adapters/vendor/mcp-server/source.json) names (`npm run vendor:agent` re-vendors; `MCP_SERVER_HOME` runs a checkout instead) |
-| `webcomponent` | abap2UI5/frontend-webcomponent `dist/abap2ui5-wc.js` | core, portable | Chromium: `<abap2ui5-app standalone>` on its standalone page; needs a built checkout (`WC_FRONTEND_HOME`, else `../frontend-webcomponent`) |
+| `webcomponent` | abap2UI5-addons/embed-webcomponent `dist/abap2ui5-wc.js` | core, portable | Chromium: `<abap2ui5-app standalone>` on its standalone page; needs a built checkout (`WC_FRONTEND_HOME`, else `../embed-webcomponent` or `../frontend-webcomponent`) |
 | `adaptive-cards` | the Adaptive Cards renderer prototype of this repository ([../../renderers/adaptive-cards/](../../renderers/adaptive-cards/README.md)) | core, portable | in process: its card host speaks HTTP to the scripted backend, every answer is rendered into an Adaptive Card 1.5 and the state is read from the card (a `Container` per slot, inputs with binding paths as ids). `fill` types into a card input, `press` submits what a card host submits for the action - its data and every input value |
 | `terminal` | the terminal renderer of this repository ([../../renderers/terminal/](../../renderers/terminal/README.md)) | core, portable | in process, with keys: its session speaks HTTP to the scripted backend, the adapter drives its state machine as a user does - `fill` Tabs to the field bound to the path and types the value, `press` Tabs to the action and presses Enter, `back` is Alt+Left - and reads the state from the screen (a layer per slot, the bound fields, the hash, the title, the focused widget's id). No TTY needed |
 | `headless` | abap2UI5/headless-frontend (ABAP) | - | **not drivable yet** - see below |
