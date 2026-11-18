@@ -1,5 +1,5 @@
 /*
- * VENDORED - do not edit. abap2UI5/mcp-server lib/appclient.mjs at commit 8efb3d7eda7a8a57d40e7122eaf924ed3cf415a8,
+ * VENDORED - do not edit. abap2UI5/mcp-server lib/appclient.mjs at commit a5212486e88c3e78e35933346ff84c92218c95f0,
  * copied unchanged by scripts/vendor-agent-client.mjs. Change it upstream,
  * then re-vendor; test/frontend.test.mjs fails when this copy drifts.
  */
@@ -53,22 +53,52 @@ const LIST_MAX = 30;
  * The model delta, as the frontend builds it (core/Lib.js
  * buildDeltaFromPaths): a scalar or structure edit ships the whole top-level
  * attribute, a table cell edit ships { TAB: { __delta: { <row>: { COL: v } } } }
- * (recursively for nested tables).
+ * (recursively for nested tables). A table behind a data reference (an
+ * attribute TYPE REF TO data, bound dereferenced) is the model node
+ * <attr>/*, so its cell path is that node's path plus /<row>/<field>, and
+ * the delta goes on that node, where the backend looks for it:
+ * { ATTR: { '*': { __delta: { <row>: { COL: v } } } } }. Shipped whole, the
+ * edit of a windowed table (window_bind_tab) is dropped. A whole attribute
+ * queued by another path still wins, and a structure or a value behind a
+ * reference ships whole.
  */
 export function buildDelta(paths, data) {
   const delta = {};
+  // the objects created here to hold a delta below a data reference -
+  // anything else under `delta` is a whole value of the model
+  const nests = new WeakSet();
   for (const p of paths) {
     const parts = String(p).replace(/^\//, '').split('/');
     const attr = parts[0];
-    const steps = deltaSteps(parts.slice(1));
+    let depth = 1;
+    while (parts[depth] === '*') depth += 1;
+    const steps = deltaSteps(parts.slice(depth));
     if (!steps) {
       delta[attr] = data[attr];
       continue;
     }
-    if (attr in delta && !(delta[attr] && delta[attr].__delta)) continue;
-    if (!(delta[attr] && delta[attr].__delta)) delta[attr] = { __delta: {} };
-    let node = delta[attr];
-    let model = data[attr];
+    // a whole attribute queued by another path already carries every cell
+    const keys = parts.slice(0, depth);
+    let holder = delta;
+    let model = data;
+    let whole = false;
+    for (const key of keys.slice(0, -1)) {
+      if (!(key in holder)) {
+        holder[key] = {};
+        nests.add(holder[key]);
+      } else if (!nests.has(holder[key])) {
+        whole = true;
+        break;
+      }
+      holder = holder[key];
+      model = model ? model[key] : undefined;
+    }
+    if (whole) continue;
+    const tableKey = keys[keys.length - 1];
+    if (tableKey in holder && !(holder[tableKey] && holder[tableKey].__delta)) continue;
+    if (!(holder[tableKey] && holder[tableKey].__delta)) holder[tableKey] = { __delta: {} };
+    let node = holder[tableKey];
+    model = model ? model[tableKey] : undefined;
     for (const { row, field, leaf } of steps) {
       const rows = node.__delta;
       if (!rows[row]) rows[row] = {};

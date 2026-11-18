@@ -9,7 +9,7 @@ alternatives, and what it touches.
 the decision and its rationale; the alternatives that were on the table
 stay below it for the record. A new provisional decision is added here as
 "Current decision" until it is decided the same way - question 11
-(revision 0.4) and questions 12 and 13 (revision 0.5) are.
+(revision 0.4), questions 12 and 13 (revision 0.5) and question 14 are.
 
 The first five came out of the backend suite (revision 0.1,
 [../conformance/RESULTS.md](../conformance/RESULTS.md)); the others out of
@@ -30,6 +30,7 @@ the frontend suite (revision 0.2).
 | 11 | bound arguments (`${/PATH}`) of queued follow-up actions | open - current decision: recorded as what the UI5 frontend does, no rule |
 | 12 | windowed tables as a part of the core protocol | open - current decision: core, and every conforming backend offers them |
 | 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the window and MAY ask for more; not in portable v1; snapshot v1 carries `total` and `window` (alternative (c), additive - the agent client implements it) |
+| 14 | tables behind a data reference in the backend suite | open - current decision: the frontend rule has its check, the backend side is an implementation note without a check |
 
 ## 1. The NEST slots in portable renderers
 
@@ -429,3 +430,31 @@ ones), is the maintainer's to decide.
 **Touches.** `profiles/portable.md`, `profiles/portable-v1.json`,
 `profiles/semantic.md`, `schema/snapshot.schema.json`,
 `renderers/common/`, `conformance/frontend/lib/checks/window.mjs`.
+
+## 14. Tables behind a data reference in the backend suite
+
+**Current decision: a frontend rule with a check, a backend note
+without one.** A table bound through a data reference is the model node
+`/<attr>/*`; its `__delta` goes on that node
+([request.md](request.md#the-model-delta)). The frontend rule is checked
+(`window.edit-as-delta-reference`, a scripted backend), and the UI5
+frontend follows it from abap2UI5 2cc0344 (#3026) on. That the backend
+reads the delta there is written down as what the reference does ([MOD]
+`main_json_to_attri` reads every entry at the attribute's client name) -
+the conformance apps bind no data reference, and the recorded traffic has
+no such table.
+
+*Why it is open.* A backend that looks for `__delta` at `/<attr>` only
+drops every edit of such a table without an error, and nothing in the
+backend suite would notice.
+
+**Alternatives.**
+- (a) As decided.
+- (b) A backend MUST: a `TYPE REF TO data` table in a conformance app -
+  windowed and not - with the cap2UI5 twin, a check `model.reference-delta`
+  (and `window.delta-positions` behind a reference), traffic recorded again
+  from both hosts.
+
+**Touches.** `spec/request.md`, `spec/windowed-tables.md`,
+`conformance/apps/`, `conformance/backend/lib/checks/model.mjs`,
+`traffic/`.

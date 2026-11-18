@@ -213,10 +213,19 @@ frontend's list, with a window request that names a part:
   `__delta` whose row keys are the positions of the rows in the model it
   holds, and MUST NOT send the table whole - the alternative
   [request.md](request.md#the-model-delta) allows for other tables - nor
-  the `__WINDOW` key. *Frontend check:* `window.edit-as-delta`.
+  the `__WINDOW` key. *Frontend check:* `window.edit-as-delta`. A
+  windowed table behind a data reference (model node `/MR_TAB/*`, state at
+  `/__WINDOW/MR_TAB/*`) gets the same `__delta` on its `*` node,
+  `{ "MR_TAB": { "*": { "__delta": { ... } } } }`
+  ([request.md](request.md#the-model-delta)). *Frontend check:*
+  `window.edit-as-delta-reference`.
 - **Implementation note.** The UI5 frontend sends the whole attribute for
   a changed path that is no cell ([LIB] `buildDeltaFromPaths`, "any other
-  shape"); on a windowed table that value is refused. The app reads the
+  shape"); on a windowed table that value is refused. Up to abap2UI5
+  1.149.0 a cell behind a data reference (`/MR_TAB/*/<row>/<field>`) was
+  such a shape: the edit, or the pick of a `TableSelectDialog` over such a
+  table, was dropped. The frontend of 2cc0344 (#3026) sends the `__delta`
+  on the `*` node ([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)). The app reads the
   row behind a position an event hands over (`/T_ROWS/5` of a binding
   context) with `window_get_row( )` ([IC]).
 

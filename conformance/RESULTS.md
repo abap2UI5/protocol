@@ -124,7 +124,16 @@ backend has to offer stays
 | Web Components (frontend-webcomponent main `5c52b4d`) | **not run** - read from its source only: no `__WINDOW` and no `___ZZZ_WIN` anywhere in `src/`; `growing` pages locally over the bound array (`src/render/renderer.js`), so it would show the window as the table | none | through its vendored agent client: a `__delta` |
 
 All four frontends that were run pass `window.rows-shown` and
-`window.edit-as-delta`. Besides the UI5 SPA only the agent client tells
+`window.edit-as-delta`.
+
+*A windowed table behind a data reference* (`window.edit-as-delta-reference`,
+added after abap2UI5 #3026; synthetic - model `/MR_ROWS/*`, state at
+`/__WINDOW/MR_ROWS/*`, a box ticked in row 2): the agent client (mcp-server
+`a521248`), the Adaptive Cards and the terminal renderer send
+`{ "MR_ROWS": { "*": { "__delta": { "2": { "DONE": true } } } } }` and pass.
+The UI5 SPA of 1.149.0 fails it (finding 3 below) - as did the agent client
+before `7f71d5f`, which ported `buildDeltaFromPaths` and sent the same
+whole attribute. Besides the UI5 SPA only the agent client tells
 its user that rows are missing and asks for them - since abap2UI5/mcp-server
 `8efb3d7` (2026-11-17), alternative (c) of
 [open question 13](../spec/open-questions.md#13-windowed-tables-in-frontends-that-are-not-the-ui5-frontend),
@@ -290,8 +299,9 @@ records - as a rule, or as an implementation note:
 
 ## Frontend suite
 
-Frontend suite, 85 checks (70 MUST, 15 SHOULD; 68 core, 8 portable, 6 UI5,
-3 semantic), run 2026-11-16 against the traffic of the 1.149.0 recording -
+Frontend suite, 86 checks (71 MUST, 15 SHOULD; 69 core, 8 portable, 6 UI5,
+3 semantic), run 2026-11-16 against the traffic of the 1.149.0 recording
+(`window.edit-as-delta-reference`, the 86th, run 2026-11-18) -
 the UI5 SPA, the agent client, the Adaptive Cards and the terminal
 renderer; the Web Components row is the run of 2026-10-03 (81 checks) and
 was not repeated - with
@@ -304,10 +314,10 @@ perform.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 1.149.0 `app/webapp` (release commit `6f55b04`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 81 | 0 | 0 | 4 | conformant (ui5) |
-| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `8efb3d7` (vendored - `adapters/vendor/mcp-server/source.json`), run 2026-11-17 | semantic | 63 | 0 | 0 | 22 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
-| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 68 | 0 | 0 | 17 | every check it can be driven through holds |
-| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 74 | 0 | 0 | 11 | every check it can be driven through holds, the router checks included |
+| UI5 SPA (`ui5`) | abap2UI5 1.149.0 `app/webapp` (release commit `6f55b04`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 81 | 1 | 0 | 4 | not conformant: `window.edit-as-delta-reference` (finding 3, fixed after the release in `2cc0344`; that frontend passes 82) |
+| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `a521248` (vendored - `adapters/vendor/mcp-server/source.json`), run 2026-11-18 | semantic | 64 | 0 | 0 | 22 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
+| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 69 | 0 | 0 | 17 | every check it can be driven through holds |
+| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 75 | 0 | 0 | 11 | every check it can be driven through holds, the router checks included |
 | Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
@@ -374,6 +384,17 @@ click on its "More" trigger and two `BINDING_CALL` buttons.
    that). The profile now says the UI5 frontend renders every portable app
    and binds the tolerance rule to the other renderers; the check skips a
    UI5-profile frontend ([open question 6](../spec/open-questions.md#6-the-ui5-frontend-and-the-portable-tolerance-rule)).
+3. **A cell of a windowed table behind a data reference is sent whole** -
+   `window.edit-as-delta-reference`, MUST; *the frontend is wrong* (fixed
+   in abap2UI5 `2cc0344`, #3026, after 1.149.0; pinned in
+   `test/frontend.test.mjs` `UI5_KNOWN_FAILS` while CI pins the 1.149.0
+   release commit). The cell path is `/MR_ROWS/*/2/DONE`; `buildDeltaFromPaths`
+   took the `*` for an unknown shape and sent
+   `{ "MR_ROWS": { "*": [ ...the four rows... ] } }`, which the backend
+   refuses for a windowed table ([MOD] `main_json_to_attri`) - the edit
+   was lost; abap-cloud-gui's value help (a `TableSelectDialog` over such a
+   table) picked nothing. The fixed frontend sends the `__delta` on the
+   `*` node and passes (run against abap2UI5 `1854bf4`, 2026-11-18).
 
 Everything else holds in the browser, with real controls: the envelope,
 ID continuation (also an id seen before), raw JSON event arguments (`true`
@@ -405,7 +426,11 @@ profile). What `8efb3d7` adds - `total` and `window` in the snapshot, the
 window requests - is measured [above](#windowed-tables): no core check
 asks a frontend for it, `semantic.snapshot-schema` now also validates the
 snapshot of a windowed table and `semantic.recorded-snapshots` replays the
-recorded `@BINDING_CALL`. The five MUST deviations and three warnings measured at
+recorded `@BINDING_CALL`. On 2026-11-18 at `a521248` (its `7f71d5f`: the
+row delta behind a data reference, as abap2UI5 #3026): 64 pass, 22 skip -
+`window.edit-as-delta-reference` passes, and failed with `8efb3d7`, which
+sent the whole attribute like the UI5 frontend of 1.149.0. The five MUST
+deviations and three warnings measured at
 `ea4e9fa` (revision 0.2) are fixed in the client, as filed:
 
 1. PROTOCOL check - a `PROTOCOL: 3` response is refused naming both numbers
