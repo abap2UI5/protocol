@@ -201,8 +201,10 @@ frontend's list, with a window request that names a part:
   `delta_apply_nodes`, [WIN] `index`); a position past the rows the filter
   lets through is a row that does not exist. The delta is applied before
   the app runs and before a window request changes the order - an edit
-  that travels with a sort lands in the row it was made in. *Checked by:*
-  `window.delta-positions`.
+  that travels with a sort lands in the row it was made in. The same
+  holds behind a data reference, where the `__delta` is on the `*` node
+  (`/MR_TAB/*`, [MOD] `main_json_to_attri`). *Checked by:*
+  `window.delta-positions`, `window.delta-positions-reference`.
 - A backend MUST NOT write a **whole table value** over a windowed table:
   what a frontend holds is a window, and the window written back would cut
   the table down to it ([MOD] `main_json_to_attri`). It SHOULD report the

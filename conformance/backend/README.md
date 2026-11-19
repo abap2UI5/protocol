@@ -98,6 +98,7 @@ fails when it is out of date).
 | `model.number-and-boolean` | MUST | core | Numbers and booleans in the delta reach typed attributes | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.structure` | MUST | core | A structure travels as its whole value and replaces every component | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.table-row-delta` | MUST | core | A table edited by row (__delta) changes exactly the named cells | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
+| `model.reference-delta` | MUST | core | A table behind a data reference edited by row: the __delta on its * node changes exactly the named cells | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.table-whole` | MUST | core | A table sent as its whole value replaces the table | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.combined-delta` | MUST | core | One delta can carry several attributes of different kinds | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.absent-attributes-kept` | MUST | core | Attributes the delta does not name keep their server value | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
@@ -116,6 +117,7 @@ fails when it is out of date).
 | `window.sort-last-set` | MUST | core | There is one sort: the last one set, by the app or by a window request | [windowed-tables.md#the-order-is-the-backends](../../spec/windowed-tables.md#the-order-is-the-backends) |
 | `window.order-with-the-draft` | MUST | core | The window, the sort, the filter and the rows belong to the draft: a request that continues an earlier draft continues that draft's order | [windowed-tables.md#the-order-is-the-backends](../../spec/windowed-tables.md#the-order-is-the-backends) |
 | `window.delta-positions` | MUST | core | A row of a __delta on a windowed table is a position in the order the backend sent, not a row of the table | [windowed-tables.md#edits](../../spec/windowed-tables.md#edits) |
+| `window.delta-positions-reference` | MUST | core | A windowed table behind a data reference: the __delta on its * node names positions in the order the backend sent | [windowed-tables.md#edits](../../spec/windowed-tables.md#edits) |
 | `window.whole-table-refused` | MUST | core | A windowed table sent back whole is not written - the window never replaces the table | [windowed-tables.md#edits](../../spec/windowed-tables.md#edits) |
 | `window.unknown-path-ignored` | SHOULD | core | A window request for a path that is no windowed table changes nothing and is no error | [windowed-tables.md#the-window-request](../../spec/windowed-tables.md#the-window-request) |
 | `message.toast` | MUST | core | A toast is the follow-up action ["MESSAGE_TOAST", "show", <text>] | [actions.md#messages](../../spec/actions.md#messages) |

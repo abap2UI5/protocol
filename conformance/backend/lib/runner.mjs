@@ -23,6 +23,7 @@ export const DEFAULT_APPS = Object.freeze({
   ERROR: "Z2UI5_CL_CONF_ERROR",
   ACTIONS: "Z2UI5_CL_CONF_ACTIONS",
   WINDOW: "Z2UI5_CL_CONF_WINDOW",
+  REF: "Z2UI5_CL_CONF_REF",
 });
 
 export const PROFILES = Object.freeze({ core: ["core"], ui5: ["core", "ui5"] });

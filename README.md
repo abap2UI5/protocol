@@ -55,14 +55,15 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 - **Protocol 2**, specification revision 0.5, derived from abap2UI5 1.149.0
   (its release commit `6f55b04`) - the release that brought windowed
   tables ([spec/windowed-tables.md](spec/windowed-tables.md)); the
-  maintainer decided ten open questions in revision 0.3, three are open
+  maintainer decided ten open questions in revision 0.3, question 14 is
+  resolved, three are open
   ([spec/open-questions.md](spec/open-questions.md)).
-- **Backend suite: 91 checks** (73 MUST, 18 SHOULD; 84 core, 7 UI5 profile).
-  Both reference backends pass every MUST - `node-runtime`
-  (`@abap2ui5/node-runtime` 1.149.0) 91/91, `cap2ui5`
-  (`@cap2ui5/cds-plugin` 0.6.0, on the same runtime) 90/91 with one SHOULD
-  warning ([conformance/RESULTS.md](conformance/RESULTS.md)). No failure
-  is pinned.
+- **Backend suite: 93 checks** (75 MUST, 18 SHOULD; 86 core, 7 UI5 profile).
+  `node-runtime` (`@abap2ui5/node-runtime` 1.149.0) passes 93/93;
+  `cap2ui5` (`@cap2ui5/cds-plugin` 0.6.0, on the same runtime) 90/93 with
+  one SHOULD warning and two pinned failures - the two checks of a table
+  behind a data reference, which need the plugin's `t.ref( )` after 0.6.0
+  ([conformance/RESULTS.md](conformance/RESULTS.md)).
 - **Schemas** validate all 482 recorded requests, 466 responses and 26 agent
   snapshots, checked by the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
