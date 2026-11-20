@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+- **Open question 14 resolved (b): the backend side of a table behind a
+  data reference gets its checks.** A backend MUST read the entry of such
+  a table at its model node `/<attr>/*` - a `__delta` there changes
+  exactly the named cells, on a windowed table it names positions.
+  - `spec/request.md`: the implementation note became that rule (*Checked
+    by:* `model.reference-delta`, `window.delta-positions-reference`); a
+    whole value at `/<attr>/*` stays an implementation note.
+    `spec/windowed-tables.md` *Edits*: the positions rule names the `*`
+    node. `spec/open-questions.md`: question 14 resolved.
+  - New conformance app REF (`Z2UI5_CL_CONF_REF`, ABAP and cap2UI5 twin,
+    `conformance/apps/README.md`): `MR_TAB` and `MR_WIN`, both
+    `TYPE REF TO data`, bound dereferenced - one with `_bind( )`, one with
+    `window_bind_tab( )` in the order `QTY` descending.
+  - Two backend checks (MUST, core) - 93 checks (75 MUST, 18 SHOULD; 86
+    core). node-runtime (`@abap2ui5/node-runtime` 1.149.0) passes both:
+    its backend reads the `*` node, only its frontend sent the edit wrong.
+    cap2UI5 0.6.0 cannot declare such a field in a JavaScript app; the
+    twin's start fails there, and both checks are pinned for `cap2ui5` in
+    `test/lib/expected.mjs` (and kept out of the traffic comparison,
+    `BACKEND_TRAFFIC_APART`) until a plugin with `t.ref( )`
+    (cap2UI5/cap2UI5 `5085ddc`, not released) is in the host - with it the
+    twin passes both and answers as the ABAP app
+    (`conformance/RESULTS.md`, *Tables behind a data reference*).
+  - Suite traffic recorded again from both hosts (`traffic/*/suite.json`):
+    it carries `{ "*": { "__delta" } }` requests now.
+
 - **The row delta of a table behind a data reference** (abap2UI5 #3026,
   `2cc0344`). An attribute `TYPE REF TO data` bound dereferenced is the
   model node `/<attr>/*`; its cell travels as `{ "MR_TAB": { "*": {

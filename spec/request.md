@@ -233,12 +233,19 @@ The backend applies the delta **before** the app runs ([ACT]
   `window.delta-positions`, `window.whole-table-refused`.
 - **Implementation note.** An attribute bound with `_bind( json = abap_true )`
   is outbound only; a delta for it is skipped ([MOD] `main_json_to_attri`).
-- **Implementation note.** The reference reads every entry at the
-  attribute's client name, `/MR_TAB/*` for a table behind a data
-  reference ([MOD] `main_json_to_attri`): a `__delta` there is applied by
-  row, a whole value there replaces the table - unless it is windowed. The
-  conformance apps have no table behind a reference, so no backend check
-  covers it ([open-questions.md](open-questions.md#14-tables-behind-a-data-reference-in-the-backend-suite)).
+- A table behind a data reference - an attribute `TYPE REF TO data`,
+  bound dereferenced - is the model node `/<attr>/*`, and a backend MUST
+  read its entry there: a `__delta` on the `*` node changes exactly the
+  named cells, as on any table, and on a windowed one names positions
+  ([MOD] `main_json_to_attri` reads every entry at the attribute's client
+  name, `/MR_TAB/*`). A backend that looks for the `__delta` at `/<attr>`
+  only drops every edit of such a table without an error
+  ([open-questions.md](open-questions.md#14-tables-behind-a-data-reference-in-the-backend-suite)).
+  *Checked by:* `model.reference-delta`,
+  `window.delta-positions-reference`.
+- **Implementation note.** A whole value at `/MR_TAB/*` replaces the table
+  behind the reference, unless it is windowed ([MOD]
+  `main_json_to_attri`).
 
 ## CONFIG: the session block
 

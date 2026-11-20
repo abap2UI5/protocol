@@ -146,3 +146,17 @@ shows that they do not reach the app.
 | `FILTER` | the app's filter: `NAME` `Contains` argument 1; no argument clears it. As `SORT` (wired: `FILTER` with `'1'`) |
 | `RERENDER` | displays MAIN again, the sort and the filter passed unchanged |
 | Buttons `Sort list`, `Filter list` | wired frontend actions, no roundtrip of their own: `BINDING_CALL` `rows` `items` `sort` `QTY` `X`, and `rows` `items` `filter` `NAME` `Contains` `1` - the list binding of the UI5 frontend turns each into a window request |
+
+## Z2UI5_CL_CONF_REF
+
+Tables behind a data reference ([../../spec/request.md](../../spec/request.md#the-model-delta)).
+Two attributes `TYPE REF TO data`, bound dereferenced - in ABAP
+`_bind( <tab> )` of the data `mr_tab->*` points to, in cap2UI5
+`t.ref( )` fields bound as `"mr_tab->*"` - so each table is the model node
+`/<attr>/*`.
+
+| | |
+|---|---|
+| Model (initial) | `MR_TAB` { `*`: [{ `ID` 1, `TEXT` "one", `DONE` false }, { 2, "two", false }, { 3, "three", false }] } (bound with `_bind( )`); `MR_WIN` { `*`: six rows `{ ID, QTY, DONE }` } bound with `window_bind_tab( )`, a window of 4 and the app's sort `QTY` descending: `ID` 1 to 6, `QTY` = `ID` * 5 mod 7 (5 3 1 6 4 2), `DONE` false - so the model carries the rows with the `ID` 4 1 5 2 and `__WINDOW` = { `MR_WIN`: { `*`: { `TOTAL` 6, `COUNT` 4, `SIZE` 4 } } }; `SUMMARY` "" |
+| View | Text `{/SUMMARY}`, a button `CHECK`; a Table over `{/MR_TAB/*}` with `{ID}`, an Input `{TEXT}` and a CheckBox `{DONE}` per row; a growing Table `rows` (`growingThreshold` 4) over `{/MR_WIN/*}` with `{ID}`, `{QTY}` and a CheckBox `{DONE}` |
+| `CHECK` | `SUMMARY` = the rows of `MR_TAB` as `ID:TEXT:DONE` (`DONE` as `X` or empty) joined with `,`, then `;`, then the `ID` of the rows of `MR_WIN` that are `DONE`, in the order of the table, joined with `,` - initially `1:one:,2:two:,3:three:;` |

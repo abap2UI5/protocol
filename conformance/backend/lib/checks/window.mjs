@@ -224,6 +224,27 @@ export default [
     },
   },
   {
+    id: "window.delta-positions-reference",
+    title: "A windowed table behind a data reference: the __delta on its * node names positions in the order the backend sent",
+    level: "MUST",
+    profile: "core",
+    spec: `${W}#edits`,
+    async run(t) {
+      // REF binds MR_WIN, six rows, four at a time, in its own order QTY
+      // descending: the IDs 4 1 5 2 6 3
+      const start = await t.start("REF");
+      const refIds = (r) => (r.json.MODEL && r.json.MODEL.MR_WIN && Array.isArray(r.json.MODEL.MR_WIN["*"]) ? r.json.MODEL.MR_WIN["*"].map((row) => row.ID) : undefined);
+      const refState = (r) => r.json.MODEL && r.json.MODEL.__WINDOW && r.json.MODEL.__WINDOW.MR_WIN;
+      t.deepEqual(refIds(start), [4, 1, 5, 2], "the ID of the rows in MODEL.MR_WIN[\"*\"] at the start");
+      t.deepEqual(refState(start), { "*": { TOTAL: 6, COUNT: 4, SIZE: 4 } }, "MODEL.__WINDOW.MR_WIN at the start");
+      const check = await t.event(start, "CHECK", { model: { MR_WIN: { "*": { __delta: { 0: { DONE: true }, 2: { DONE: true } } } } } });
+      t.ok(check.json.MODEL && typeof check.json.MODEL.SUMMARY === "string", "MODEL.SUMMARY after CHECK");
+      t.equal(check.json.MODEL.SUMMARY, "1:one:,2:two:,3:three:;4,5", "SUMMARY (positions 0 and 2 of the order QTY descending are the rows with ID 4 and 5)");
+      t.deepEqual(refIds(check), [4, 1, 5, 2], "the ID of the rows in MODEL.MR_WIN[\"*\"] after the edit");
+      t.deepEqual(check.json.MODEL.MR_WIN["*"].map((row) => row.DONE), [true, false, true, false], "DONE of the rows in MODEL.MR_WIN[\"*\"]");
+    },
+  },
+  {
     id: "window.whole-table-refused",
     title: "A windowed table sent back whole is not written - the window never replaces the table",
     level: "MUST",
