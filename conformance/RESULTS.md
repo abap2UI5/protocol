@@ -1,35 +1,35 @@
 # Results
 
 Backend suite, profile `ui5` (93 checks: 86 core, 7 UI5-profile; 75 MUST,
-18 SHOULD), run 2026-11-19 with `npm run conformance:<backend>`. The traffic
+18 SHOULD), run 2026-11-20 with `npm run conformance:<backend>`. The traffic
 of these runs is recorded in [`../traffic/`](../traffic/). Revision 0.5
 moved the node-runtime host to abap2UI5 1.149.0 and added the thirteen
 checks of the windowed tables (`window.*`) and
 `model.unconvertible-scalar-skipped` (SHOULD), and moved the cap2UI5 host
 to `@cap2ui5/cds-plugin` 0.6.0, which hosts the same runtime. Open question
 14 added the conformance app REF and two checks of a table behind a data
-reference (`model.reference-delta`, `window.delta-positions-reference`):
-node-runtime passes every MUST; cap2UI5 0.6.0 fails those two - its
-JavaScript apps cannot declare a field `TYPE REF TO data`
-([below](#tables-behind-a-data-reference)) - and they are its only pinned
-failures ([`../test/lib/expected.mjs`](../test/lib/expected.mjs); the one
-pinned warning is `error.details`).
+reference (`model.reference-delta`, `window.delta-positions-reference`);
+cap2UI5 0.6.0 failed those two - its JavaScript apps could not declare a
+field `TYPE REF TO data` - and the cap2UI5 host moved to
+`@cap2ui5/cds-plugin` 0.7.0, whose `t.ref( )` declares one
+([below](#tables-behind-a-data-reference)). Both backends pass every MUST
+now; the one pinned result is cap2UI5's SHOULD warning `error.details`
+([`../test/lib/expected.mjs`](../test/lib/expected.mjs)).
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
 | `node-runtime` | `@abap2ui5/node-runtime` 1.149.0 (abap2UI5 1.149.0, transpiled) | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.33) | 93 | 0 | 0 | 0 | conformant (ui5) |
-| `cap2ui5` | `@cap2ui5/cds-plugin` 0.6.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 90 | 2 | 1 | 0 | not conformant (ui5): `model.reference-delta` and `window.delta-positions-reference` fail, pinned ([below](#tables-behind-a-data-reference)); one SHOULD warning: `error.details` (below) |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.7.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 92 | 0 | 1 | 0 | conformant (ui5); one SHOULD warning: `error.details` (below) |
 
-Per area (both backends identical except `error` and the two checks of
-the app REF):
+Per area (both backends identical except `error`):
 
 | Area | Checks | node-runtime | cap2ui5 |
 |---|---:|---|---|
 | transport | 8 | 8 pass | 8 pass |
 | response | 8 | 8 pass | 8 pass |
 | event | 5 | 5 pass | 5 pass |
-| model | 12 | 12 pass | 11 pass, 1 fail (`model.reference-delta`) |
-| window | 14 | 14 pass | 13 pass, 1 fail (`window.delta-positions-reference`) |
+| model | 12 | 12 pass | 12 pass |
+| window | 14 | 14 pass | 14 pass |
 | message | 4 | 4 pass | 4 pass |
 | slots | 7 | 7 pass | 7 pass |
 | action | 3 | 3 pass | 3 pass |
@@ -42,11 +42,12 @@ The ABAP system itself (abap2UI5 on NetWeaver / ABAP Cloud) has not been run
 yet - it needs a system with the apps pulled in by abapGit; the transpiled
 runtime is the same framework source.
 
-Both hosts run the same framework release now: cap2UI5 0.6.0 pins
-`@abap2ui5/node-runtime` 1.149.0, the version the node-runtime host runs
-(with 0.5.0 the cap2UI5 host was on 1.147.0). The recorded traffic of the
-two is identical for every check the cap2UI5 host can run, the windowed
-tables included ([below](#differences-between-the-two-backends)).
+Both hosts run the same framework release now: cap2UI5 0.7.0 (like 0.6.0)
+pins `@abap2ui5/node-runtime` 1.149.0, the version the node-runtime host
+runs (with 0.5.0 the cap2UI5 host was on 1.147.0). The recorded traffic of
+the two is identical for every check but `error.details`, the windowed
+tables and the app REF included
+([below](#differences-between-the-two-backends)).
 
 ## The move from 1.148.0 to 1.149.0
 
@@ -171,13 +172,13 @@ and `MR_WIN` with `window_bind_tab( )` in its own order (`QTY`
 descending); the two checks send `{ "MR_TAB": { "*": { "__delta": { "1":
 { "TEXT": "zwei", "DONE": true } } } } }` and `{ "MR_WIN": { "*": {
 "__delta": { "0": { "DONE": true }, "2": { "DONE": true } } } } }` with
-`CHECK`. Measured 2026-11-19:
+`CHECK`. Measured 2026-11-19 and 2026-11-20:
 
 | Backend | `model.reference-delta` | `window.delta-positions-reference` |
 |---|---|---|
 | `node-runtime` 1.149.0 | pass - exactly row 2 changed, `SUMMARY` `1:one:,2:zwei:X,3:three:;` | pass - positions 0 and 2 land in the rows with `ID` 4 and 5, `SUMMARY` `...;4,5` |
-| `cap2ui5` 0.6.0 | **fail, pinned** - the start answers `500` | **fail, pinned** - the same |
-| `cap2ui5` with `t.ref( )` (cap2UI5/cap2UI5 `5085ddc`, branch `claude/great-mendel-aiaiwu`, not released) | pass | pass |
+| `cap2ui5` 0.6.0 (until 2026-11-20) | fail, was pinned - the start answers `500` | fail, was pinned - the same |
+| `cap2ui5` 0.7.0 (`t.ref( )`) | pass - as node-runtime | pass - as node-runtime |
 
 *node-runtime.* The spec recorded as an implementation note that the
 1.149.0 backend applies the `*`/`__delta`, and that only the 1.149.0
@@ -195,17 +196,17 @@ dereferenced nor survive the draft. The twin
 [`apps/cap2ui5/ref.js`](apps/cap2ui5/ref.js) therefore needs `t.ref( )`:
 on a plugin without it the app is registered as one whose `main( )` throws
 (a declaration with `t.ref( )` would throw while the module loads and take
-every app of the host with it), so the start of `Z2UI5_CL_CONF_REF` is
-answered `500` and both checks end on that first request. *Filed for
-cap2UI5:* `t.ref( )` - a field `TYPE REF TO data`, read and written as the
-data it points to, bound as `"mr_tab->*"` with `_bind( )` and
-`window_bind_tab( )`, kept in the draft by the framework's own S-RTTI -
-on cap2UI5/cap2UI5 branch `claude/great-mendel-aiaiwu` (`5085ddc`). With that plugin
-in the host (its `lib/define-app.js` over the installed 0.6.0, measured,
-not recorded) the twin passes both checks and answers them byte for byte
-as the ABAP app; the suite ends 92 pass, 1 warn (`error.details`). Once a
-release carries it, the host moves to it, the two pins and
-`BACKEND_TRAFFIC_APART` go, and the traffic is recorded again.
+every app of the host with it), so on 0.6.0 the start of
+`Z2UI5_CL_CONF_REF` was answered `500`, both checks ended on that first
+request and were pinned, and `BACKEND_TRAFFIC_APART` kept them out of the
+comparison. Filed for cap2UI5 and released in `@cap2ui5/cds-plugin` 0.7.0:
+`t.ref( )` - a field `TYPE REF TO data`, read and written as the data it
+points to, bound as `"mr_tab->*"` with `_bind( )` and
+`window_bind_tab( )`, kept in the draft by the framework's own S-RTTI. The
+host runs 0.7.0 since 2026-11-20: the twin passes both checks and answers
+them as the ABAP app (compared in the recorded traffic); the suite ends
+92 pass, 1 warn (`error.details`). The two pins and
+`BACKEND_TRAFFIC_APART` are gone.
 
 ## The move from 1.146.0 to 1.148.0
 
@@ -292,10 +293,10 @@ both).
 `test/traffic.test.mjs` compares the two recordings check by check - status,
 media type and JSON body, draft ids normalized - and finds them
 **identical** apart from the following - the thirteen checks of the
-[windowed tables](#windowed-tables) included. The two checks of the app
-REF are left out of the comparison (`BACKEND_TRAFFIC_APART` in
-`test/lib/expected.mjs`): the cap2UI5 host does not get past its start
-([below](#tables-behind-a-data-reference)). Both are the same framework
+[windowed tables](#windowed-tables) and the two checks of the app REF
+([above](#tables-behind-a-data-reference)) included; nothing is left out
+of the comparison (`BACKEND_TRAFFIC_APART` in `test/lib/expected.mjs` is
+empty). Both are the same framework
 (cap2UI5 hosts `@abap2ui5/node-runtime` rather than porting it), so this
 was the expected outcome; what differs is what the host adds around it.
 

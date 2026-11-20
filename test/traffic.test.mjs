@@ -44,10 +44,10 @@ test("both backends answer every check identically (status, media type, JSON bod
   }
 });
 
-test("the windowed tables: both backends pass every check of them but the one behind a data reference, and nothing else keeps their traffic out of the comparison above", () => {
-  const windowed = node.checks.filter((c) => c.id.startsWith("window.") && c.id !== "window.delta-positions-reference");
-  assert.equal(windowed.length, 13);
-  assert.deepEqual([...pinnedApart], ["model.reference-delta", "window.delta-positions-reference"]);
+test("the windowed tables: both backends pass every check of them, the one behind a data reference included, and nothing keeps their traffic out of the comparison above", () => {
+  const windowed = node.checks.filter((c) => c.id.startsWith("window."));
+  assert.equal(windowed.length, 14);
+  assert.deepEqual([...pinnedApart], []);
   for (const c of windowed) {
     const o = cap.checks.find((x) => x.id === c.id);
     assert.equal(c.status, "pass", `node-runtime ${c.id}`);
@@ -65,13 +65,13 @@ test("the one recorded difference: cap2UI5 hides a JavaScript app's exception te
   assert.match(body(cap), /^roundtrip failed \(/);
 });
 
-test("tables behind a data reference (open question 14): node-runtime passes both checks, the twin of cap2UI5 0.6.0 fails its start (pinned in test/lib/expected.mjs)", () => {
-  for (const id of pinnedApart) {
+test("tables behind a data reference (open question 14): both backends pass both checks - cap2UI5 since @cap2ui5/cds-plugin 0.7.0 and its t.ref( ) - and answer them identically (compared above)", () => {
+  for (const id of ["model.reference-delta", "window.delta-positions-reference"]) {
     const n = node.checks.find((c) => c.id === id);
     const o = cap.checks.find((c) => c.id === id);
     assert.equal(n.status, "pass", `node-runtime ${id}`);
-    assert.equal(o.status, "fail", `cap2ui5 ${id}`);
-    assert.equal(o.exchanges.length, 1, `cap2ui5 ${id}: the start, and nothing after it`);
-    assert.equal(o.exchanges[0].response.status, 500, `cap2ui5 ${id}: the start fails`);
+    assert.equal(o.status, "pass", `cap2ui5 ${id}`);
+    assert.ok(!pinnedApart.has(id), `${id} is compared between the backends`);
+    assert.equal(o.exchanges.length, n.exchanges.length, id);
   }
 });

@@ -453,11 +453,11 @@ nothing in the backend suite would have noticed.
 *Status.* `@abap2ui5/node-runtime` 1.149.0 passes both checks: its
 backend has read the `*` node all along ([MOD] `main_json_to_attri`) -
 up to 1.149.0 only its frontend sent such an edit wrong, fixed in
-abap2UI5 2cc0344 (#3026). `@cap2ui5/cds-plugin` 0.6.0 cannot declare a
-field `TYPE REF TO data` in a JavaScript app, so the twin's start fails
-there and both checks are pinned for it in `test/lib/expected.mjs`; the
-plugin's `t.ref( )` (cap2UI5/cap2UI5, after 0.6.0) is the fix, and with
-it the twin answers byte for byte as the ABAP app
+abap2UI5 2cc0344 (#3026). `@cap2ui5/cds-plugin` 0.6.0 could not declare
+a field `TYPE REF TO data` in a JavaScript app, so the twin's start
+failed there and both checks were pinned for it; 0.7.0 brings the
+plugin's `t.ref( )`, the host runs it, and the twin passes both checks
+and answers them as the ABAP app
 ([../conformance/RESULTS.md](../conformance/RESULTS.md#tables-behind-a-data-reference)).
 
 **Alternatives considered.**

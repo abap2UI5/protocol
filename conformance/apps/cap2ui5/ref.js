@@ -2,7 +2,7 @@
 // conformance/apps/abap/z2ui5_cl_conf_ref.clas.abap.
 // Behaviour: conformance/apps/README.md, section REF.
 // t.ref( ) - a field TYPE REF TO data, bound dereferenced as "mr_tab->*" -
-// comes after @cap2ui5/cds-plugin 0.6.0. On a plugin without it the app is
+// came with @cap2ui5/cds-plugin 0.7.0. On a plugin without it the app is
 // registered all the same and its start fails, naming why - a declaration
 // with t.ref( ) would throw while the module loads, and take every other
 // app of the host with it.
