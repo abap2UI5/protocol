@@ -113,8 +113,12 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
   function JSONListBinding(oModel, sPath) {
     this.oModel = oModel;
     this.sPath = sPath;
-    this.aIndices = (oModel.getProperty(sPath) || []).map((_row, i) => i);
   }
+  // the rows at its path in the model as it is now - UI5's binding
+  // refreshes them in update( ), which every model push calls
+  Object.defineProperty(JSONListBinding.prototype, "aIndices", {
+    get() { return (this.oModel.getProperty(this.sPath) || []).map((_row, i) => i); },
+  });
   Object.assign(JSONListBinding.prototype, { getContexts() { return []; }, getLength() { return this.aIndices.length; }, update() {}, sort() { return this; }, filter() { return this; }, applyFilter() {}, applySort() {} });
   JSONListBinding.extend = extend(JSONListBinding);
   function JSONModel() {}
@@ -132,6 +136,9 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
     alive: true,
     state: Object.assign(AppState.createState(), {
       url,
+      // the backend's own page: the component fills it and owns the hash
+      // (Component.js ownsPage) - core/Server.js sends S_FRONT.HASH only then
+      ownsPage: true,
       oConfig: {
         S_UI5: { VERSION: "1.136.0", BUILDTIMESTAMP: "202509010000", GAV: "com.sap.openui5.dist:sdk:1.136.0", THEME: "sap_horizon" },
       },
@@ -187,7 +194,11 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
       model._z2ui5WindowSend = (args, noBusy) => {
         const entry = { args: JSON.parse(JSON.stringify(args)) };
         sent.push(entry);
-        chain = chain.then(async () => { entry.response = await this.fire([WindowModel.EVENT, false, false, false, true, Boolean(noBusy)], args); });
+        chain = chain.then(async () => {
+          entry.response = await this.fire([WindowModel.EVENT, false, false, false, true, Boolean(noBusy)], args);
+          // the model push: UI5 updates every binding of the model
+          binding.update();
+        });
       };
       const binding = model.bindList(listPath);
       return { binding, sent, idle: () => chain, event: WindowModel.EVENT };

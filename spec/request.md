@@ -102,8 +102,9 @@ nothing). *Checked by:* `event.roundtrip`, `event.unknown-event`.
 - **Reserved event names.** `___ZZZ_NAL` is the leave event: the backend
   does not run the app but leaves it ([navigation.md](navigation.md#the-reserved-leave-event)).
   An app MUST NOT use it for anything else. `___ZZZ_WIN` is the window
-  request of a windowed table: the backend does not run the app either and
-  answers the rows asked for ([windowed-tables.md](windowed-tables.md#the-window-request)).
+  request of a windowed table: the backend runs the app with the app's own
+  event the request names, the request in `get( )-r_event_data`
+  ([windowed-tables.md](windowed-tables.md#the-window-request)).
 
 ## Event arguments
 
@@ -187,9 +188,9 @@ Rules for the frontend:
   of the same attribute. *Frontend checks:* `model.scalar`,
   `model.number-and-boolean`, `model.structure-whole`, `model.table-cell`,
   `model.table-row-delta`, `model.nested-table`, `model.whole-beats-delta`.
-  A cell of a [windowed table](windowed-tables.md#edits) MUST travel as the
-  `__delta`, never as the whole table. *Frontend check:*
-  `window.edit-as-delta`.
+  A cell of a [windowed table](windowed-tables.md#edits) travels the same
+  way - the table is what the frontend shows - and never with the
+  `__WINDOW` key. *Frontend check:* `window.edit-row-shown`.
 - The delta is the edited model's: an event from a popup carries the
   popup's edits, not MAIN's ([V1] `_pickModelForRoundtrip`).
   *Frontend check:* `model.slot-model`.
@@ -218,10 +219,10 @@ The backend applies the delta **before** the app runs ([ACT]
   `whole_value_trace`), never fail the roundtrip: the attribute keeps its
   value and the rest of the delta is applied. *Checked by:*
   `model.unconvertible-scalar-skipped`.
-- On a **windowed table** the row keys of a `__delta` are positions in the
-  order the backend sent, and a whole table value is not written
+- A **windowed table** is no exception: the row keys of a `__delta` are
+  rows of the table, and a whole table value is written
   ([windowed-tables.md](windowed-tables.md#edits)). *Checked by:*
-  `window.delta-positions`, `window.whole-table-refused`.
+  `window.delta-rows`, `window.whole-table-written`.
 - **Implementation note.** An attribute bound with `_bind( json = abap_true )`
   is outbound only; a delta for it is skipped ([MOD] `main_json_to_attri`).
 

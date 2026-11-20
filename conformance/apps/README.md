@@ -132,17 +132,26 @@ Follow-up actions.
 
 ## Z2UI5_CL_CONF_WINDOW
 
-A windowed table ([../../spec/windowed-tables.md](../../spec/windowed-tables.md)).
-The backend answers the window requests (`___ZZZ_WIN`) itself; `MAINS`
-shows that they do not reach the app.
+A windowed table the app loads itself
+([../../spec/windowed-tables.md](../../spec/windowed-tables.md)). The
+list binding's window requests (`___ZZZ_WIN`) reach the app as its event
+`ROWS`, with the request in `get( )-r_event_data`; the app sorts, filters
+and counts its rows itself. `LAST` and `REQUEST` show what it was handed.
 
 | | |
 |---|---|
-| Model (initial) | `T_ROWS` - twelve rows `{ ID, NAME, QTY, DONE }`, bound with `window_bind_tab( )` and a window of 4: `ID` 1 to 12, `NAME` "item 01" to "item 12", `QTY` = `ID` * 5 mod 13 (5 10 2 7 12 4 9 1 6 11 3 8), `DONE` false - so the model carries the rows 1 to 4 and `__WINDOW` = { `T_ROWS`: { `TOTAL` 12, `COUNT` 4, `SIZE` 4 } }; `SUMMARY` ""; `MAINS` (integer) |
-| every roundtrip that runs the app | `MAINS` + 1 first - 1 after the start; so every event the app sees pushes the model |
-| View | Texts `{/SUMMARY}`, `{/MAINS}`; the buttons below; a growing `Table` with the id `rows` (`growingThreshold` 4) over `{/T_ROWS}` with `{ID}`, `{NAME}`, `{QTY}` and a CheckBox `{DONE}` per row. The app's sort and filter are passed to `window_bind_tab( )` as `t_sort` / `t_filter` |
-| `CHECK` | `SUMMARY` = the `ID` of the rows that are `DONE`, in the order of the table, joined with `,` |
-| `SORT` | the app's sort: argument 1 the column, argument 2 not empty for descending; no argument clears it. Binds the table again without a view - pushes the model with the first window of the new order (wired: `SORT` with `'QTY'`, `'X'`) |
-| `FILTER` | the app's filter: `NAME` `Contains` argument 1; no argument clears it. As `SORT` (wired: `FILTER` with `'1'`) |
-| `RERENDER` | displays MAIN again, the sort and the filter passed unchanged |
+| Rows | twelve rows `{ ID, NAME, QTY, DONE }` in a table of the app's own (not bound): `ID` 1 to 12, `NAME` "item 01" to "item 12", `QTY` = `ID` * 5 mod 13 (5 10 2 7 12 4 9 1 6 11 3 8), `DONE` false |
+| Model (initial) | `T_ROWS` - the rows loaded, the first four in the order of `ID`, bound with ``window_bind_tab( val = t_rows total = total event = `ROWS` window = 4 )``, so `__WINDOW` = { `T_ROWS`: { `TOTAL` 12, `COUNT` 4, `SIZE` 4, `EVENT` "ROWS" } }; `SUMMARY` "", `MAINS` (integer), `LAST` "", `REQUEST` "" (all Text bindings) |
+| every roundtrip that runs the app | `MAINS` + 1 first - 1 after the start |
+| every event | `LAST` = the event and its arguments (`get( )-t_event_arg`), joined with blanks - `ROWS MORE 4 4` |
+| View | Texts `{/SUMMARY}`, `{/MAINS}`, `{/LAST}`, `{/REQUEST}`; the buttons below; a growing `Table` with the id `rows` (`growingThreshold` 4) over `{/T_ROWS}` with `{ID}`, `{NAME}`, `{QTY}` and a CheckBox `{DONE}` per row |
+| `ROWS` | the window event. `REQUEST` = the request of `r_event_data`: `path reason skip top`, then ` S:<PATH>:<A or D>` per sorter and ` F<group>:<PATH>:<operator>:<value1>:<value2>` per condition (`/T_ROWS SORT 0 4 S:QTY:D`). For any other `path` nothing else happens. Otherwise the `DONE` of the rows held is written back into the app's rows, then: `MORE` keeps the first `skip` rows (at most the ones held) and appends the next `top` rows of the current order; `SORT` and `FILTER` make the request's sorters and filter the current order and load its first `top` rows. `total` = the rows the filter lets through |
+| the app's order | sorters by `ID`, `QTY` (numbers) and `NAME`, the first that tells two rows apart decides, stable; other columns tell nothing apart. Conditions on `NAME` (`Contains`, `EQ`, without regard to case) and on `ID` and `QTY` (`EQ`, `GT`, `LT`, `BT`), a value that is no plain number read as 0; any other condition lets no row through. Groups ANDed, the conditions of a group ORed |
+| `CHECK` | `SUMMARY` = the `ID` of the rows of `T_ROWS` that are `DONE`, in the order of the table, joined with `,` |
+| `TOTAL` | `total` = argument 1 (no rows loaded, no view) - not wired, the suite sends it |
 | Buttons `Sort list`, `Filter list` | wired frontend actions, no roundtrip of their own: `BINDING_CALL` `rows` `items` `sort` `QTY` `X`, and `rows` `items` `filter` `NAME` `Contains` `1` - the list binding of the UI5 frontend turns each into a window request |
+
+The cap2UI5 twin is written in the same shape, but `@cap2ui5/cds-plugin`
+0.6.0 hosts the runtime 1.149.0, whose `window_bind_tab( )` has no `total`
+and no `event`: the app does not start there
+([../RESULTS.md](../RESULTS.md#windowed-tables)).

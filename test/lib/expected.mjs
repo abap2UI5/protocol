@@ -10,25 +10,38 @@
  * spec/errors.md, open question 3) was pinned for both until the hosts ran a
  * release with the fix; abap2UI5 1.147.0 strips the URL ([H]
  * context_info_url_safe), and both pass since @abap2ui5/node-runtime 1.148.0
- * and @cap2ui5/cds-plugin 0.5.0. cap2ui5: none either - the thirteen checks
- * of the windowed tables (spec/windowed-tables.md) were pinned for it while
- * its host ran @cap2ui5/cds-plugin 0.5.0, whose runtime (1.147.0) has no
- * window_bind_tab( ); the host runs 0.6.0 on the runtime 1.149.0 now and
- * passes them.
+ * and @cap2ui5/cds-plugin 0.5.0. cap2ui5: the checks of the windowed tables
+ * (spec/windowed-tables.md) - the app-driven window of abap2UI5 after
+ * 1.149.0 (branch DEV); @cap2ui5/cds-plugin 0.6.0 hosts the runtime 1.149.0,
+ * whose window_bind_tab( ) has no `total` and no `event`: the twin app's
+ * first main( ) throws, the start of Z2UI5_CL_CONF_WINDOW is answered 500
+ * and every check ends on that first request (conformance/RESULTS.md).
  */
+const CAP_WINDOW = "cap2UI5 hosting a runtime with the app-driven window (window_bind_tab( val total event window )) - @cap2ui5/cds-plugin 0.6.0 hosts abap2UI5 1.149.0, and the app WINDOW does not start there";
+
 export const BACKEND_EXPECTED_FAILURES = Object.freeze({
   "node-runtime": Object.freeze({}),
-  cap2ui5: Object.freeze({}),
+  cap2ui5: Object.freeze({
+    "window.first-window": CAP_WINDOW,
+    "window.app-event": CAP_WINDOW,
+    "window.request-sort-filter": CAP_WINDOW,
+    "window.total-from-app": CAP_WINDOW,
+    "window.order-with-the-draft": CAP_WINDOW,
+    "window.delta-rows": CAP_WINDOW,
+    "window.whole-table-written": CAP_WINDOW,
+  }),
 });
 
 /**
  * SHOULD checks a reference backend does not meet (a warning), the same way.
  * `error.details`: cap2UI5 hides a JavaScript app's exception text
- * (conformance/RESULTS.md).
+ * (conformance/RESULTS.md). `window.request-bounds`: the windowed tables, as
+ * above.
  */
 export const BACKEND_EXPECTED_WARNINGS = Object.freeze({
   "node-runtime": Object.freeze({}),
   cap2ui5: Object.freeze({
+    "window.request-bounds": CAP_WINDOW,
     "error.details": "cap2UI5 answers a JavaScript app's exception with a correlation id and logs the text - by design",
   }),
 });
@@ -44,8 +57,18 @@ export const expectedWarningIds = (backend) => ids(BACKEND_EXPECTED_WARNINGS, ba
 
 /**
  * The checks whose recorded traffic cannot be compared between the two
- * backends because one of them never gets past the app's start - none
- * today. Every check is answered identically by both
- * (test/traffic.test.mjs); a pin that keeps a host out of an app goes here.
+ * backends because one of them never gets past the app's start: the
+ * windowed tables, while the cap2UI5 host cannot start the app WINDOW (the
+ * pins above). Every other check is answered identically by both
+ * (test/traffic.test.mjs); the list empties with those pins.
  */
-export const BACKEND_TRAFFIC_APART = Object.freeze([]);
+export const BACKEND_TRAFFIC_APART = Object.freeze([
+  "window.first-window",
+  "window.app-event",
+  "window.request-sort-filter",
+  "window.request-bounds",
+  "window.total-from-app",
+  "window.order-with-the-draft",
+  "window.delta-rows",
+  "window.whole-table-written",
+]);

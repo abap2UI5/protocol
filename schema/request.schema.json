@@ -101,10 +101,10 @@
       }
     },
     "windowRequest": {
-      "description": "The arguments of the reserved window event ___ZZZ_WIN (spec/windowed-tables.md#the-window-request): the model path of the windowed table, the rows wanted, and - only when the frontend's list was told to sort or to filter - the sorters and the filter groups, each as the text of a JSON array. A part that is absent, empty or null says nothing and leaves what the backend holds; \"[]\" clears it.",
+      "description": "The arguments of the reserved window event ___ZZZ_WIN (spec/windowed-tables.md#the-window-request): the model path of the windowed table, the app's event (EVENT of its window state), the reason, skip and top - and, for SORT and FILTER, the sorters and the filter groups, both, each as the text of a JSON array. The backend hands them to the app as its event with the request in get( )-r_event_data.",
       "type": "array",
-      "minItems": 2,
-      "maxItems": 4,
+      "minItems": 5,
+      "maxItems": 7,
       "prefixItems": [
         {
           "description": "The model path of the table, with its leading slash: /T_ROWS.",
@@ -112,27 +112,42 @@
           "pattern": "^/"
         },
         {
-          "description": "The rows wanted, counted from the first row of the backend's order. The UI5 frontend sends it as a string.",
-          "type": [
-            "string",
-            "integer"
-          ]
+          "description": "The app's event: EVENT of the table's window state.",
+          "type": "string",
+          "minLength": 1
         },
         {
-          "description": "The sorters: the text of [{ \"PATH\": <column>, \"DESCENDING\": <boolean> }, ...].",
-          "type": [
-            "string",
-            "null"
-          ]
+          "description": "Why the frontend asks: MORE (more rows), SORT, FILTER (the first rows of a new order).",
+          "enum": ["MORE", "SORT", "FILTER"]
         },
         {
-          "description": "The filter groups: the text of [[[<column>, <operator>, <value1>, <value2>?], ...], ...] - the groups ANDed, the conditions of a group ORed.",
-          "type": [
-            "string",
-            "null"
-          ]
+          "description": "skip: the rows the frontend holds - where MORE goes on; 0 for SORT and FILTER. The UI5 frontend sends it as a string.",
+          "type": "string",
+          "pattern": "^[0-9]{1,9}$"
+        },
+        {
+          "description": "top: the rows wanted now - whole windows, at most TOTAL. The UI5 frontend sends it as a string.",
+          "type": "string",
+          "pattern": "^[0-9]{1,9}$"
+        },
+        {
+          "description": "The sorters: the text of [{ \"PATH\": <column>, \"DESCENDING\": <boolean> }, ...] - [] for none.",
+          "type": "string"
+        },
+        {
+          "description": "The filter groups: the text of [[[<column>, <operator>, <value1>, <value2>], ...], ...] - the groups ANDed, the conditions of a group ORed; [] for none.",
+          "type": "string"
         }
-      ]
+      ],
+      "if": {
+        "prefixItems": [true, true, { "enum": ["SORT", "FILTER"] }]
+      },
+      "then": {
+        "minItems": 7
+      },
+      "else": {
+        "maxItems": 5
+      }
     },
     "config": {
       "type": "object",

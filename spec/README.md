@@ -8,8 +8,10 @@ UI5 frontend, `@abap2ui5/node-runtime` 1.149.0, `@cap2ui5/cds-plugin` 0.6.0
 `ea4e9fa` and abap2UI5/headless-frontend `c1c24ba` (its simulator class is
 `z2ui5_cl_frontend_sim` since `8f37e54`). Revisions 0.1 to 0.3
 were derived from abap2UI5 `b812079` (1.146.0), revision 0.4 from `610d9ae`
-(1.148.0); what moved on the wire since is listed in
-[../CHANGELOG.md](../CHANGELOG.md).
+(1.148.0). The windowed tables are derived from abap2UI5 branch DEV,
+`186f2c9b`, which replaced the window of 1.149.0 by an app-driven one
+([windowed-tables.md](windowed-tables.md)). What moved on the wire since
+is listed in [../CHANGELOG.md](../CHANGELOG.md).
 
 | Document | Content |
 |---|---|
@@ -18,7 +20,7 @@ were derived from abap2UI5 `b812079` (1.146.0), revision 0.4 from `610d9ae`
 | [request.md](request.md) | the request body: `S_FRONT`, events and their arguments, the model delta, `CONFIG` |
 | [response.md](response.md) | the response body: `S_FRONT`, the action queues, view slots, `MODEL`, processing order |
 | [actions.md](actions.md) | follow-up actions (`T_CUSTOM`): messages, the vocabulary, unknown actions |
-| [windowed-tables.md](windowed-tables.md) | a table sent a window at a time: the window state, the window request, sorters and filters, edits |
+| [windowed-tables.md](windowed-tables.md) | a table the app loads a window at a time: the window state, the window request as the app's event, sorters and filters, edits |
 | [sessions.md](sessions.md) | drafts, draft ids, snapshots, expiry, failed roundtrips, the session block |
 | [navigation.md](navigation.md) | which app a request starts, the app stack, routes, the app-state hash, the router action |
 | [errors.md](errors.md) | the error response and how a frontend treats it |
@@ -64,7 +66,7 @@ the repository named.
 | **[FE]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_frontend.clas.abap` - builds and queues the actions |
 | **[EV]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_srv_event.clas.abap` - event wires and action arrays |
 | **[MOD]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_srv_model.clas.abap` - model serialization and the delta |
-| **[WIN]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_srv_window.clas.abap` - the order and the window request of a windowed table |
+| **[WIN]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_srv_window.clas.abap` - the request parser of a windowed table: `request`, `event`, `parse_sort`, `parse_filter`, `count_of` (branch DEV; the order and the window request in 1.149.0) |
 | **[BND]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_srv_bind.clas.abap` - what a bind call registers for an attribute |
 | **[MSG]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_srv_message.clas.abap` - what a message box shows |
 | **[CL]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_client.clas.abap` - the client API implementation |
@@ -79,7 +81,8 @@ the repository named.
 | **[FA]** | abap2UI5 `app/webapp/core/FrontendAction.js` - action dispatch |
 | **[CC]** | abap2UI5 `app/webapp/core/actions/ControlCall.js` - `CONTROL_GLOBAL`, `GLOBAL_TARGETS` |
 | **[SL]** | abap2UI5 `app/webapp/core/actions/Slots.js`, `app/webapp/core/ViewSlots.js` - the view slots |
-| **[WM]** | abap2UI5 `app/webapp/core/WindowModel.js` - the model and the list binding of a windowed table |
+| **[WM]** | abap2UI5 `bundle/webapp/core/WindowModel.js` (branch DEV; `app/webapp/core/` in 1.149.0) - the model and the list binding of a windowed table |
+| **[WT]** | abap2UI5 `node/srv/zcl_tst_window.clas.abap`, `node/tests/e2e/window.spec.js` (branch DEV) - the fixture app and the e2e tests of the windowed table |
 | **[LP]** | abap2UI5 `app/webapp/core/actions/Launchpad.js` - the launchpad actions |
 | **[OFF]** | abap2UI5 `app/webapp/core/Offline.js`, `app/webapp/core/actions/Browser.js` (`evOfflineQueue`) - the offline queue |
 | **[RT]** | abap2UI5 `app/webapp/core/Router.js` - hash routes and the `ROUTER` action |

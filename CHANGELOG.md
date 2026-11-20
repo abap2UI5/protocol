@@ -2,6 +2,59 @@
 
 ## Unreleased
 
+- **Windowed tables: the app-driven window of abap2UI5 branch DEV**
+  (`186f2c9b`, not yet on main), which replaced the window of 1.149.0
+  within days of its release. The app loads, sorts, filters and counts the
+  rows itself; the backend keeps no order.
+  - [spec/windowed-tables.md](spec/windowed-tables.md) rewritten: `MODEL`
+    carries the table as the app holds it, `/__WINDOW/<path>` is `{ TOTAL,
+    COUNT, SIZE, EVENT }` with `TOTAL` the app's total read anew for every
+    response and at least `COUNT` ([MOD] `window_meta`, [BND]
+    `window_adopt`); the window request is `[path, event, reason, skip,
+    top]`, for `SORT` and `FILTER` with the sorters and the filter groups,
+    both ([WM]); the backend runs it as the app's event with the arguments
+    `[reason, skip, top]` and the request in `get( )-r_event_data` ([H],
+    [WIN] `request`, `parse_sort`, `parse_filter`, `count_of`); `__delta`
+    rows are rows of the table and a whole table value is written. The
+    sections on the backend's order, the kept and cleared parts and the
+    two filters are gone; a frontend MUST NOT send a request for a state
+    without `EVENT`. `spec/request.md`, `response.md`, `sessions.md`,
+    `core.md`, `profiles/ui5.md` (the arguments, both parts, the
+    `keepRestart` queue rule), `profiles/semantic.md` (what `app_act {
+    window }` and `@BINDING_CALL` send) and `profiles/portable.md` follow;
+    `spec/README.md` cites the branch and the new source [WT] (the
+    release's fixture app and e2e test).
+  - Protocol 2 stays, as in the branch, although
+    [versioning.md](spec/versioning.md) counts a changed meaning as
+    breaking - new [open question 14](spec/open-questions.md#14-the-app-driven-window-and-the-protocol-number);
+    open questions 12 and 13 updated.
+  - Schemas: `windowRequest` is `[path, event, MORE|SORT|FILTER, skip,
+    top]` plus both parts for `SORT` and `FILTER`; a window state is told
+    by `SIZE` (the reference leaves a `TOTAL` or `COUNT` of 0 out) and may
+    carry `EVENT`.
+  - Backend checks: eight `window.*` replace thirteen - `first-window`,
+    `app-event`, `request-sort-filter`, `request-bounds` (SHOULD),
+    `total-from-app`, `order-with-the-draft`, `delta-rows`,
+    `whole-table-written`. Frontend checks: `window.edit-row-shown`
+    replaces `window.edit-as-delta`, `ui5.window-growth` and
+    `ui5.window-sort-filter` expect the new arguments, new
+    `ui5.window-no-event`.
+  - The conformance app WINDOW (ABAP, abaplint- and abap2UI5-linter-clean,
+    and the cap2UI5 twin) loads its twelve rows itself and echoes what it
+    was handed (`LAST`, `REQUEST`); new event `TOTAL`, the app's `SORT`,
+    `FILTER` and `RERENDER` are gone.
+  - Traffic recorded again: node-runtime with a runtime built from the
+    branch (86 of 86 pass) and its `bundle/webapp`; cap2ui5 (plugin 0.6.0
+    on 1.149.0) fails the window checks on the app's start - seven
+    failures and one warning pinned in `test/lib/expected.mjs` and kept out
+    of the comparison (`BACKEND_TRAFFIC_APART`). Outside `window.*` and the
+    `WINDOW:` scenarios nothing moved; the recorder's UI5 page stand-in
+    sets `ownsPage`, without which the branch's frontend sends no `HASH`.
+  - Finding: the agent client (mcp-server `8efb3d7`) sends the window
+    request of 1.149.0; the recorder marks those exchanges `malformed`,
+    and `semantic.recorded-snapshots` fails on it - pinned in
+    `test/frontend.test.mjs` (`conformance/RESULTS.md`).
+
 - **Agent client re-vendored at abap2UI5/mcp-server `8efb3d7`** (its #71,
   windowed tables; `82b75d8` before; `npm run vendor:agent`, `--check`
   passes). Between the two commits the three vendored modules also

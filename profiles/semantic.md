@@ -388,49 +388,52 @@ The current state from the last response kept — no roundtrip.
 
 ### Windowed tables
 
-A table the app binds with `window_bind_tab( val = mt_rows window = n )`
-([../spec/windowed-tables.md](../spec/windowed-tables.md), abap2UI5 1.149.0
-on) does not travel whole: the model holds its first rows, and
-`MODEL.__WINDOW.<path>` the state `{ TOTAL, COUNT, SIZE }` (an initial value
-is left out of the JSON, so an absent `TOTAL` or `COUNT` is 0). A table is
-windowed when the model carries a state for its absolute path - the UI5
-frontend's rule ([WM] `bindList`; mcp-server `lib/snapshot.mjs`
-`windowStateOf`). Its snapshot carries `total` and `window`, `rowCount`
-stays the rows held, and `truncated` is true while fewer rows are held than
-`total`.
+A table the app binds with ``window_bind_tab( val = mt_rows total = mv_total
+event = `ROWS` window = n )``
+([../spec/windowed-tables.md](../spec/windowed-tables.md)) holds the rows
+the app has loaded: the model carries them at the table's path, and
+`MODEL.__WINDOW.<path>` the state `{ TOTAL, COUNT, SIZE, EVENT }` (an
+initial value is left out of the JSON, so an absent `TOTAL` or `COUNT` is
+0). A table is windowed when the model carries a state for its absolute
+path - the UI5 frontend's rule ([WM] `bindList`; mcp-server
+`lib/snapshot.mjs` `windowStateOf`). Its snapshot carries `total` and
+`window`, `rowCount` stays the rows held, and `truncated` is true while
+fewer rows are held than `total`.
 
 `app_act({ session, window: { table, count?, sort?, filter? }, values? })`
 sends the [window request](../spec/windowed-tables.md#the-window-request)
-the UI5 list binding sends ([WM] `_z2ui5Send`) - the event `___ZZZ_WIN`,
-which the backend answers without running the app (a new draft id, the full
-model). Source: mcp-server `lib/appclient.mjs` at `8efb3d7`.
+the UI5 list binding sends ([WM] `_z2ui5Send`) - the event `___ZZZ_WIN`
+naming the table's `EVENT`, which the backend runs as the app's event (a
+new draft id, the model as the app left it). A table whose state has no
+`EVENT` takes no `window` (refused, naming the table).
 
 | `window` | Sent as `T_EVENT_ARG` |
 | --- | --- |
-| `{ table }` | `[path, count]` with `count` the next window: the rows held plus one, rounded up to whole windows, at most `total` ([WM] `_z2ui5Ensure`); refused when every row is held |
-| `{ table, count }` | `[path, "<count>"]` - the first `count` rows (1 to 999,999,999, a number or a string of digits; counted from row 1, not an offset) |
-| `{ table, sort }` | `[path, count, "[{\"PATH\":…,\"DESCENDING\":…}]"]`, `count` one window unless given ([WM] `_z2ui5Restart`) |
-| `{ table, filter }` | `[path, count, "", "[[[PATH, OPERATOR, value1, value2]]…]"]` |
-| `{ table, sort, filter }` | `[path, count, sort, filter]` |
+| `{ table }` | `[path, EVENT, "MORE", held, top]` with `held` the rows held and `top` the next window: the rows held plus one, rounded up to whole windows, at most `total`, less `held` ([WM] `_z2ui5Ensure`); refused when every row is held |
+| `{ table, count }` | `[path, EVENT, "MORE", held, count - held]` - up to the first `count` rows (1 to 999,999,999, a number or a string of digits; counted from row 1, not an offset); refused when `count` is not more than `held` |
+| `{ table, sort }` | `[path, EVENT, "SORT", "0", top, "[{\"PATH\":…,\"DESCENDING\":…}]", filter]`, `top` one window unless `count` is given ([WM] `_z2ui5Restart`), `filter` the groups this session last sent for the table (`[]` if none) |
+| `{ table, filter }` | `[path, EVENT, "FILTER", "0", top, sort, "[[[PATH, OPERATOR, value1, value2]]…]"]`, `sort` the sorters this session last sent for the table (`[]` if none) |
+| `{ table, sort, filter }` | `[path, EVENT, "FILTER", "0", top, sort, filter]` |
 
 - `table` is the table's id, path (with or without the leading slash) or
   name; a table that is no window is refused naming the windowed ones.
 - `sort` is a list of `{ column, descending? }` (one object is taken as a
-  list of one): the first sorter that tells two rows apart decides.
+  list of one), in the order the app should apply them.
 - `filter` is a list; each item is a **condition** - `[column, operator,
   value, value2?]` or `{ column, operator, value, value2? }` - which is a
   group of its own, or a non-empty **list of conditions**, one group whose
-  conditions are ORed. The groups are ANDed (the backend's shape,
+  conditions are ORed. The groups are ANDed (the shape of
   [../spec/windowed-tables.md](../spec/windowed-tables.md#sorters-and-filters);
   [WM] `filterGroups`). `operator` is one of UI5's `FilterOperator` names
   (`EQ NE LT LE GT GE BT NB Contains NotContains StartsWith NotStartsWith
   EndsWith NotEndsWith`, any case); `value` is a string, number or boolean;
-  `value2` is the upper bound of `BT`/`NB` and refused on the others. Dates
-  compare as `yyyy-MM-dd` or `yyyyMMdd`.
-- A part left out (or `null`) says nothing - the backend keeps the sort or
-  filter it holds; `[]` clears it. The backend keeps ONE sort (the last
-  set, by the app's `t_sort` or a request) and ANDs the request's filter
-  with the app's `t_filter`.
+  `value2` is the upper bound of `BT`/`NB` and refused on the others.
+- **The list's state is the client's.** The backend keeps no order; like
+  the UI5 list binding, the client remembers per table the sorters and
+  the filter groups it sent last, and a `SORT` or `FILTER` carries both
+  ([WM] `_z2ui5Send`). A part left out keeps what the client sent last;
+  `[]` clears it. What the sorters and filters mean - which columns, how
+  they compare - is the app's.
 - A `column` is matched without regard to case against the row's columns -
   every key a held row has with a scalar value and every column the
   template binds, remembered across roundtrips (a filter that lets no row
@@ -439,22 +442,31 @@ model). Source: mcp-server `lib/appclient.mjs` at `8efb3d7`.
   applied first and travel as the delta. A refused request sends nothing
   and changes nothing; a failed one takes its edits back. A `window`
   request queues behind a roundtrip in flight like an event.
-- **Edits are positions** ([../spec/windowed-tables.md](../spec/windowed-tables.md#edits)).
-  The row of a cell path (`"/ROWS/2/QTY"`) is the position in the rows
-  held, in the order the backend sent them; the delta goes out as
-  `{ ROWS: { __delta: { "2": { QTY: … } } } }` and the backend writes it
-  into the row behind that position, after a sort as before (the delta is
-  applied before a window request changes the order).
+- **Edits are rows of the table** ([../spec/windowed-tables.md](../spec/windowed-tables.md#edits)).
+  The row of a cell path (`"/ROWS/2/QTY"`) is the row of the table the
+  model holds; the delta goes out as `{ ROWS: { __delta: { "2": { QTY: …
+  } } } }` and the backend writes it into that row, before the app's
+  event runs.
 
 `@BINDING_CALL` follows the UI5 frontend's `core/actions/BindingCall.js`
 and the list binding ([../profiles/ui5.md](ui5.md#windowed-tables)): a
-`sort` with `[path, descending]` sends `[{ PATH, DESCENDING }]` (`"X"` /
-`"true"` / `true` descending), one without a path `[]`; a `filter` with
-`[path, operator, value1, value2?]` sends one group, without a value it
-clears (`[]`), and a single argument that is a JSON array of groups sends
-those groups. Each asks for one window. What the browser only logs and
+`sort` with `[path, descending]` sets the sorters to `[{ PATH, DESCENDING
+}]` (`"X"` / `"true"` / `true` descending), one without a path `[]`; a
+`filter` with `[path, operator, value1, value2?]` sets the filter groups to
+one group, without a value it clears them (`[]`), and a single argument
+that is a JSON array of groups sets those groups. Each sends `SORT` or
+`FILTER` for one window, with both parts. What the browser only logs and
 does not send (a malformed groups JSON, an operator outside the whitelist)
 is refused, sending nothing.
+
+**The agent client does not follow this yet.** mcp-server `8efb3d7` (the
+vendored client, [AC]) still sends the window request of abap2UI5
+1.149.0, `[path, count]`, `[path, count, sort]` or `[path, count, "",
+filter]`, which a backend with the app-driven window hands to the app as an event
+named after the count, so no row is loaded
+([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
+Its snapshots - `total`, `window`, `@BINDING_CALL` - are unchanged by the
+new wire.
 
 Sending window requests stays optional for a frontend
 ([../spec/windowed-tables.md](../spec/windowed-tables.md#frontends)); whether

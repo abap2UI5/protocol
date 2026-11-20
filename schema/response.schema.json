@@ -12,7 +12,7 @@
       "type": "object",
       "properties": {
         "__WINDOW": {
-          "description": "The window states of the app's windowed tables, mirroring their model paths: /__WINDOW/T_ROWS for the table at /T_ROWS, /__WINDOW/S_DATA/T_ROWS for one in a structure (spec/windowed-tables.md#the-window-state). Absent when the app has none.",
+          "description": "The window states of the app's windowed tables, mirroring their model paths: /__WINDOW/T_ROWS for the table at /T_ROWS, /__WINDOW/S_DATA/T_ROWS for one in a structure, /__WINDOW/MR_TAB/* for one behind a data reference (spec/windowed-tables.md#the-window-state). Absent when the app has none.",
           "$ref": "#/$defs/windowNode"
         }
       }
@@ -20,20 +20,21 @@
   },
   "$defs": {
     "windowNode": {
-      "description": "A window state, or the path segments on the way to one.",
+      "description": "A window state, or the path segments on the way to one. A window state is told by its SIZE, which is never 0 and so always sent.",
       "type": "object",
-      "if": { "required": ["TOTAL"], "properties": { "TOTAL": { "type": "integer" } } },
+      "if": { "required": ["SIZE"], "properties": { "SIZE": { "type": "integer" } } },
       "then": { "$ref": "#/$defs/windowState" },
       "else": { "additionalProperties": { "$ref": "#/$defs/windowNode" } }
     },
     "windowState": {
-      "description": "The state of one windowed table: TOTAL - the rows the filter lets through; COUNT - the rows of them this model carries, the first COUNT in the backend's order; SIZE - the rows of one window.",
+      "description": "The state of one windowed table: TOTAL - the rows there are in all, as the app reports them, at least COUNT; COUNT - the rows the app holds, which the model carries at the table's path; SIZE - the rows the frontend asks for at a time; EVENT - the app's event a window request names. The reference leaves out a TOTAL or COUNT of 0 - read a missing one as 0.",
       "type": "object",
-      "required": ["TOTAL", "COUNT", "SIZE"],
+      "required": ["SIZE"],
       "properties": {
         "TOTAL": { "type": "integer", "minimum": 0 },
         "COUNT": { "type": "integer", "minimum": 0 },
-        "SIZE": { "type": "integer", "minimum": 1 }
+        "SIZE": { "type": "integer", "minimum": 1 },
+        "EVENT": { "type": "string" }
       }
     },
     "sFront": {

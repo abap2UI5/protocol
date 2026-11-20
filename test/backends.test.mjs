@@ -108,8 +108,8 @@ async function terminalEndToEnd(url) {
   assert.equal(out, fs.readFileSync(path.join(ROOT, "renderers/terminal/golden/bind.txt"), "utf8"));
 }
 
-test("cap2ui5 passes every MUST of the ui5 profile but the pinned ones; its one warning is error.details", { skip: skipAll || (!capInstalled && "cap2UI5 host not installed - npm ci --prefix conformance/hosts/cap2ui5"), timeout: 600_000 }, async () => {
+test("cap2ui5 passes every MUST of the ui5 profile but the pinned ones (the windowed tables); its warnings are the windowed tables' SHOULD and error.details", { skip: skipAll || (!capInstalled && "cap2UI5 host not installed - npm ci --prefix conformance/hosts/cap2ui5"), timeout: 600_000 }, async () => {
   const { startCap2ui5 } = await import("../conformance/hosts/cap2ui5/serve.mjs");
   await suite("cap2ui5", () => startCap2ui5(), "ui5");
-  assert.deepEqual(expectedWarningIds("cap2ui5"), ["error.details"]);
+  assert.deepEqual(expectedWarningIds("cap2ui5"), ["window.request-bounds", "error.details"]);
 });

@@ -9,7 +9,7 @@ alternatives, and what it touches.
 the decision and its rationale; the alternatives that were on the table
 stay below it for the record. A new provisional decision is added here as
 "Current decision" until it is decided the same way - question 11
-(revision 0.4) and questions 12 and 13 (revision 0.5) are.
+(revision 0.4) and questions 12 to 14 (revision 0.5) are.
 
 The first five came out of the backend suite (revision 0.1,
 [../conformance/RESULTS.md](../conformance/RESULTS.md)); the others out of
@@ -29,7 +29,8 @@ the frontend suite (revision 0.2).
 | 10 | navigation actions in the portable action list | `portable-v1.json` separates `actions.api` from `actions.wire` |
 | 11 | bound arguments (`${/PATH}`) of queued follow-up actions | open - current decision: recorded as what the UI5 frontend does, no rule |
 | 12 | windowed tables as a part of the core protocol | open - current decision: core, and every conforming backend offers them |
-| 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the window and MAY ask for more; not in portable v1; snapshot v1 carries `total` and `window` (alternative (c), additive - the agent client implements it) |
+| 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the rows the app loaded and MAY ask for more; not in portable v1; snapshot v1 carries `total` and `window` (alternative (c), additive - the agent client implements it, still with the window request of 1.149.0) |
+| 14 | the app-driven window and the protocol number | open - current decision: protocol 2 stays, as in the implementation |
 
 ## 1. The NEST slots in portable renderers
 
@@ -342,24 +343,26 @@ in a frontend that does not resolve it.
 ## 12. Windowed tables as a part of the core protocol
 
 **Current decision (revision 0.5): core, for every backend.** The window
-state, the window request and the rules of the order
+state and the window request handed to the app as its event
 ([windowed-tables.md](windowed-tables.md)) are core rules with core checks
 (`window.*`), and the conformance app WINDOW is one of the apps a
 conforming backend serves ([core.md](core.md#conformance)). The reason: an
-app is written once against the client API, and
-`window_bind_tab( )` has to mean the same rows, the same order and the same
-`TOTAL` on every backend that runs it.
+app is written once against the client API, and `window_bind_tab( )` has
+to hand it the same requests and send the same rows and `TOTAL` on every
+backend that runs it.
 
 *Why it is open.* It makes a backend that was conformant at revision 0.4
-non-conformant at 0.5 without a change of its own. Both reference
-backends offer windowed tables and pass every `window.*` check
-([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)) -
-but both host the same framework: `@cap2ui5/cds-plugin` 0.5.0, on a
-runtime without them, failed all thirteen until 0.6.0 moved to the
-runtime 1.149.0. A backend that is no port of the framework has to
-implement a sort and a filter with the semantics of
-[windowed-tables.md](windowed-tables.md#sorters-and-filters), and none
-has yet.
+non-conformant at 0.5 without a change of its own - twice over: the
+window of abap2UI5 1.149.0 was replaced by the app-driven one of the DEV
+branch within days. The node-runtime host, on a runtime of that branch,
+passes every `window.*` check; the cap2UI5 host (`@cap2ui5/cds-plugin`
+0.6.0, on the runtime 1.149.0) cannot start the app WINDOW and fails
+them, pinned
+([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
+What a backend has to implement is smaller since the window is the app's:
+it parses the request and hands it over, and sorts, filters and counts
+nothing - a backend that is no port of the framework has no sort or
+filter semantics to match any more.
 
 **Alternatives.**
 - (a) As decided: core.
@@ -375,11 +378,13 @@ has yet.
 
 ## 13. Windowed tables in frontends that are not the UI5 frontend
 
-**Current decision (revision 0.5): they show the window; asking for more
-is optional.** A frontend MUST adopt a model with `/__WINDOW` and MUST
-send edits as positions ([windowed-tables.md](windowed-tables.md#frontends),
-frontend checks `window.rows-shown`, `window.edit-as-delta`); it MAY send
-window requests. `window_bind_tab( )` is **not** part of the portable
+**Current decision (revision 0.5): they show the rows the app loaded;
+asking for more is optional.** A frontend MUST adopt a model with
+`/__WINDOW` and MUST send an edit as one of the row it shows
+([windowed-tables.md](windowed-tables.md#frontends), frontend checks
+`window.rows-shown`, `window.edit-row-shown`); it MAY send window
+requests, in the shape of
+[windowed-tables.md](windowed-tables.md#the-window-request). `window_bind_tab( )` is **not** part of the portable
 profile v1. For the semantic profile the decision took alternative (c) as
 an additive change of snapshot v1, after its implementation
 ([versioning.md](versioning.md#compatible-changes-within-protocol-2)
@@ -394,12 +399,14 @@ the snapshot offers, not a duty of every semantic frontend.
 *What the frontends do today* (measured,
 [../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)):
 the Adaptive Cards and the terminal renderer of this repository show the
-rows of the window as the whole table and send no window request. The
+rows the app loaded as the whole table and send no window request. The
 agent client (abap2UI5/mcp-server `8efb3d7` on) implements (c): its
-snapshot names `total` and how to load the next window, and it sends the
-window requests the UI5 list binding sends - more rows, a sort, a filter
-(`traffic/*/agent-client.json`, recorded against both reference
-backends). All three send a cell edit as a `__delta` of the position.
+snapshot names `total` and how to load the next window - but the window
+requests it sends are the ones of abap2UI5 1.149.0, which a backend with
+the app-driven window hands to the app as an event named after a count
+(`traffic/node-runtime/agent-client.json`; a finding of
+[../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
+All three send a cell edit as a `__delta` of the row.
 
 *Why it is open.* An app that binds 10,000 rows with a window of 100 is a
 table of 100 rows in the portable renderers, without a word - the user of a
@@ -412,8 +419,8 @@ ones), is the maintainer's to decide.
 **Alternatives.**
 - (a) As decided.
 - (b) Portable v1.1: a portable renderer MUST show that `TOTAL` exceeds
-  `COUNT` and MUST offer a way to ask for the next window (`[path,
-  count]`); sorting and filtering stay outside. A frontend check drives
+  `COUNT` and MUST offer a way to ask for the next window (`[path, event,
+  "MORE", skip, top]`); sorting and filtering stay outside. A frontend check drives
   it. The two renderers of this repository follow.
 - (c) Snapshot v2 (or an additive key in v1, which
   [versioning.md](versioning.md#compatible-changes-within-protocol-2)
@@ -429,3 +436,45 @@ ones), is the maintainer's to decide.
 **Touches.** `profiles/portable.md`, `profiles/portable-v1.json`,
 `profiles/semantic.md`, `schema/snapshot.schema.json`,
 `renderers/common/`, `conformance/frontend/lib/checks/window.mjs`.
+
+## 14. The app-driven window and the protocol number
+
+**Current decision (revision 0.5): protocol 2 stays, as in the
+implementation.** abap2UI5 after 1.149.0 (branch DEV, `186f2c9b`)
+replaced the windowed table of 1.149.0 by an app-driven one
+([windowed-tables.md](windowed-tables.md)): the arguments of `___ZZZ_WIN`
+are `[path, event, reason, skip, top, sort?, filter?]` and run the app,
+where they were `[path, count, sort?, filter?]` answered by the backend;
+the rows of a `__delta` on a windowed table are rows of the table, where
+they were positions in the backend's order; a whole table value is
+written, where it was refused; `__WINDOW` carries `EVENT`. By
+[versioning.md](versioning.md#compatible-changes-within-protocol-2) -
+"changing a key's type or meaning" - that breaks the wire. The DEV branch
+keeps `c_protocol` and the frontend's `PROTOCOL` at 2 ([TY], [SRV]), and
+this revision follows it: the window of 1.149.0 was public for a few days
+(released 2026-11-16), a frontend and a backend of abap2UI5 ship together,
+and the one frontend outside the framework that sends window requests,
+the agent client, is pinned as a finding
+([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
+
+*Why it is open.* The rule says otherwise, and the protocol number exists
+for exactly the pairing this produces: a pinned webapp of 1.149.0 against
+a newer backend, or a newer frontend against a backend of 1.149.0. Both
+misread each other's window requests without an error - the app sees an
+event named after a count and loads nothing, or the backend reads the
+app's event name as a count and answers one window of its own order.
+
+**Alternatives.**
+- (a) As decided: 2, and the window of 1.149.0 is recorded as withdrawn
+  (this file, [versioning.md](versioning.md), the changelog).
+- (b) Protocol 3 with the release that ships the app-driven window - both
+  halves raised, as the rule asks; a frontend of 1.149.0 then refuses the
+  newer backend's responses, and every non-UI5 frontend has to move too.
+- (c) 2, and the reserved event renamed (for example `___ZZZ_WIN2`), so
+  that a backend of either age refuses or ignores the other's requests
+  instead of misreading them - no number moves, the misreading becomes an
+  unknown event.
+
+**Touches.** abap2UI5 `c_protocol` and the frontend's `PROTOCOL`,
+`spec/versioning.md`, `schema/request.schema.json`, every frontend that
+sends window requests.

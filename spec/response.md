@@ -177,12 +177,10 @@ When it travels:
   `response.model-absent-when-unchanged`.
 - Only bound attributes appear; an attribute the app does not bind stays
   on the server. *Checked by:* `nav.call`.
-- A **windowed table** is the one attribute that does not travel whole:
-  its path carries the rows of the window, and the reserved key `__WINDOW`
-  its state - also in the answer to a window request, which pushes the
-  model although no bound value changed
+- A **windowed table** travels as the app holds it - the rows it has
+  loaded - and the reserved key `__WINDOW` carries its state next to it
   ([windowed-tables.md](windowed-tables.md#the-window-state)). *Checked
-  by:* `window.first-window`, `window.more-rows`.
+  by:* `window.first-window`, `window.app-event`.
 - *Checked by:* `response.model-types`, `model.table-grows`.
 
 A frontend:
@@ -217,9 +215,9 @@ frontend SHOULD do:
    control in the DOM); an action that returns a promise is awaited.
 7. Send the event a queue-last wire kept during the roundtrip, if any -
    and then the window request of a windowed table kept meanwhile, which
-   has a slot of its own ([V1] `_dispatchQueuedEvent`; a later request of
-   the same table takes over the sort or filter the kept one named, [WM]
-   `keepSaid`).
+   has a slot of its own ([V1] `_dispatchQueuedEvent`; a request for more
+   rows does not replace a kept `SORT` or `FILTER` of the same table, [WM]
+   `keepRestart`).
 
 A response that a newer request superseded is dropped whole; its own
 follow-up actions still run when its screen is still the one shown

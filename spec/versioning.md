@@ -44,16 +44,33 @@ them:
   frontend that does not know it skips it ([actions.md](actions.md));
 - a new slot option;
 - a new `ROUTER` option;
-- a new reserved key of `MODEL` and a new reserved event name the backend
-  answers itself - `__WINDOW` and `___ZZZ_WIN` of
-  [windowed-tables.md](windowed-tables.md), revision 0.5: a frontend that
-  knows neither reads a windowed table as a short one and never sends the
-  event, a backend that knows neither never sends the key.
+- a new reserved key of `MODEL` and a new reserved event name - `__WINDOW`
+  and `___ZZZ_WIN` of [windowed-tables.md](windowed-tables.md), revision
+  0.5: a frontend that knows neither reads a windowed table as a short one
+  and never sends the event, a backend that knows neither never sends the
+  key.
 
 These DO break the wire and need a new protocol number: renaming or removing
 a key; changing a key's type or meaning; changing the shape of an action
 array; adding a system action a frontend must run for the screen to be
 right.
+
+**The app-driven window is such a change, and the number stays 2 for
+now.** abap2UI5 after 1.149.0 (branch DEV) gives the arguments of
+`___ZZZ_WIN` another shape and meaning - `[path, event, reason, skip,
+top, ...]` handed to the app instead of `[path, count, sort?, filter?]`
+answered by the backend - and the rows of a `__delta` on a windowed table
+another meaning (rows of the table, no longer positions in the backend's
+order); `__WINDOW` gains `EVENT`
+([windowed-tables.md](windowed-tables.md)). A frontend of 1.149.0 and a
+backend after it, or the other way round, misread each other's window
+requests without an error: the app gets an event named after a count, or
+the backend reads `"ROWS"` as a count. `c_protocol` and the frontend's
+`PROTOCOL` stay 2 in the DEV branch ([TY], [SRV]), the window of 1.149.0
+was released on 2026-11-16 and replaced within days, and this revision
+follows the implementation - whether that is right, or whether the
+change asks for protocol 3, is
+[open question 14](open-questions.md#14-the-app-driven-window-and-the-protocol-number).
 
 ## This specification's own version
 
