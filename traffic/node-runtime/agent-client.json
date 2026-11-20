@@ -1,6 +1,6 @@
 {
   "source": "lib/appclient.mjs of @abap2ui5/mcp-server 1.2.0 (mcp-server)",
-  "backend": "@abap2ui5/node-runtime 1.149.0",
+  "backend": "@abap2ui5/node-runtime 1.150.0",
   "exchanges": [
     {
       "label": "BIND: app_start",
@@ -13,7 +13,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:36481",
+              "ORIGIN": "http://127.0.0.1:44157",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
             }
@@ -30,7 +30,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "140B3EDCDC0B48D29212BA0E0A2BAD20",
+            "ID": "1E7433BE0711451DA4750D3CBA5EFD0E",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -84,7 +84,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "140B3EDCDC0B48D29212BA0E0A2BAD20",
+              "ID": "1E7433BE0711451DA4750D3CBA5EFD0E",
               "EVENT": "CHECK"
             },
             "MODEL": {
@@ -110,7 +110,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "9B61E55C651343998C50D276F5271053",
+            "ID": "CA0E77515BCC430FA03FAF0E7D04FDCA",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -154,7 +154,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:36481",
+              "ORIGIN": "http://127.0.0.1:44157",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_MSG"
             }
@@ -171,7 +171,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_MSG",
-            "ID": "8A4ACEDCC96D4F028A5AD0A300B1D7FF",
+            "ID": "648EFB203D7448FEB5228CD394F5E57B",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -201,7 +201,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "8A4ACEDCC96D4F028A5AD0A300B1D7FF",
+              "ID": "648EFB203D7448FEB5228CD394F5E57B",
               "EVENT": "BOX_CONFIRM"
             }
           }
@@ -217,7 +217,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_MSG",
-            "ID": "D6E59BAC09DE4F90BADFDB1169C8D032",
+            "ID": "39422E48D89348999EAF49816C485E91",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_CUSTOM": [
@@ -250,7 +250,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:36481",
+              "ORIGIN": "http://127.0.0.1:44157",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
             }
@@ -267,7 +267,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "077F2B9459614B0093D1A25FD72AC415",
+            "ID": "D67E4673E5D54F5FBA62EAE8DA056A5A",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -294,7 +294,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "077F2B9459614B0093D1A25FD72AC415",
+              "ID": "D67E4673E5D54F5FBA62EAE8DA056A5A",
               "EVENT": "POPUP_OPEN"
             }
           }
@@ -310,7 +310,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "010E248094E04E90A0C0F371638D3BB3",
+            "ID": "3DE22F6CCB0247B9BA48A46C53F20070",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -340,7 +340,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:36481",
+              "ORIGIN": "http://127.0.0.1:44157",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_NAV"
             }
@@ -357,7 +357,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV",
-            "ID": "EA4AC17C261C44F895A26A840975ABFC",
+            "ID": "AA5C4774559E4E759FA40D6ADF9C38B1",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -388,7 +388,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "EA4AC17C261C44F895A26A840975ABFC",
+              "ID": "AA5C4774559E4E759FA40D6ADF9C38B1",
               "EVENT": "CALL"
             }
           }
@@ -404,7 +404,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV_TGT",
-            "ID": "17D9B66C2AB9448481736AC5992FB450",
+            "ID": "05339017C2D24725A78C69044A83CBD0",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -442,7 +442,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "17D9B66C2AB9448481736AC5992FB450",
+              "ID": "05339017C2D24725A78C69044A83CBD0",
               "EVENT": "DONE"
             }
           }
@@ -458,7 +458,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV",
-            "ID": "43D5C14807E948B0A28C873C1F57FB72",
+            "ID": "8C680C501085420B83CB43BE45E01C95",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -468,7 +468,7 @@
                   "MAIN",
                   "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav caller\"><Text id=\"result\" text=\"{/RESULT}\"/><Text id=\"returns\" text=\"{/RETURNS}\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>",
                   {
-                    "appInstance": "0F946CFAF683420EA9A7ED7F65F285F9",
+                    "appInstance": "9A72BC4238CE4EE09A5953E316A4D205",
                     "navBack": true
                   }
                 ],
@@ -500,7 +500,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ORIGIN": "http://127.0.0.1:36481",
+              "ORIGIN": "http://127.0.0.1:44157",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_WINDOW"
             }
@@ -517,7 +517,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "F204E39946A146BA8F0A2575FD935A12",
+            "ID": "2D2FA6F091AE47F9B72BB8AA294F4E84",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -581,7 +581,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "F204E39946A146BA8F0A2575FD935A12",
+              "ID": "2D2FA6F091AE47F9B72BB8AA294F4E84",
               "EVENT": "___ZZZ_WIN",
               "T_EVENT_ARG": [
                 "/T_ROWS",
@@ -602,7 +602,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "F003540C7CE741DF83FAF051BFF611D7",
+            "ID": "B194D158DDA24676B210D20D93624443",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -656,7 +656,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "F003540C7CE741DF83FAF051BFF611D7",
+              "ID": "B194D158DDA24676B210D20D93624443",
               "EVENT": "___ZZZ_WIN",
               "T_EVENT_ARG": [
                 "/T_ROWS",
@@ -676,7 +676,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "68E6F733756F4523A6721FCE519A3DE7",
+            "ID": "AAFB2B0C8E5F41389A51C821F27B742B",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -754,7 +754,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "68E6F733756F4523A6721FCE519A3DE7",
+              "ID": "AAFB2B0C8E5F41389A51C821F27B742B",
               "EVENT": "___ZZZ_WIN",
               "T_EVENT_ARG": [
                 "/T_ROWS",
@@ -776,7 +776,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "3BF5281087CB4854AE7A89B00B476D69",
+            "ID": "2775CCFB11814C2AB8D8B240B7A238B7",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -825,7 +825,7 @@
       "label": "BIND: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "140B3EDCDC0B48D29212BA0E0A2BAD20",
+        "session": "1E7433BE0711451DA4750D3CBA5EFD0E",
         "app": "Z2UI5_CL_CONF_BIND",
         "title": "conformance - bind",
         "layer": "main",
@@ -972,7 +972,7 @@
       "label": "BIND: act - fill NAME and a cell, fire CHECK",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "9B61E55C651343998C50D276F5271053",
+        "session": "CA0E77515BCC430FA03FAF0E7D04FDCA",
         "app": "Z2UI5_CL_CONF_BIND",
         "title": "conformance - bind",
         "layer": "main",
@@ -1121,7 +1121,7 @@
       "label": "MSG: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "8A4ACEDCC96D4F028A5AD0A300B1D7FF",
+        "session": "648EFB203D7448FEB5228CD394F5E57B",
         "app": "Z2UI5_CL_CONF_MSG",
         "title": "conformance - messages",
         "layer": "main",
@@ -1171,7 +1171,7 @@
       "label": "MSG: act - BOX_CONFIRM",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "D6E59BAC09DE4F90BADFDB1169C8D032",
+        "session": "39422E48D89348999EAF49816C485E91",
         "app": "Z2UI5_CL_CONF_MSG",
         "title": "conformance - messages",
         "layer": "main",
@@ -1240,7 +1240,7 @@
       "label": "SLOTS: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "077F2B9459614B0093D1A25FD72AC415",
+        "session": "D67E4673E5D54F5FBA62EAE8DA056A5A",
         "app": "Z2UI5_CL_CONF_SLOTS",
         "title": "conformance - slots",
         "layer": "main",
@@ -1301,7 +1301,7 @@
       "label": "SLOTS: act - POPUP_OPEN",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "010E248094E04E90A0C0F371638D3BB3",
+        "session": "3DE22F6CCB0247B9BA48A46C53F20070",
         "app": "Z2UI5_CL_CONF_SLOTS",
         "title": "conformance popup",
         "layer": "popup",
@@ -1353,7 +1353,7 @@
       "label": "NAV: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "EA4AC17C261C44F895A26A840975ABFC",
+        "session": "AA5C4774559E4E759FA40D6ADF9C38B1",
         "app": "Z2UI5_CL_CONF_NAV",
         "title": "conformance - nav caller",
         "layer": "main",
@@ -1383,7 +1383,7 @@
       "label": "NAV: act - CALL",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "17D9B66C2AB9448481736AC5992FB450",
+        "session": "05339017C2D24725A78C69044A83CBD0",
         "app": "Z2UI5_CL_CONF_NAV_TGT",
         "title": "conformance - nav target",
         "layer": "main",
@@ -1424,7 +1424,7 @@
       "label": "NAV: act - DONE",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "43D5C14807E948B0A28C873C1F57FB72",
+        "session": "8C680C501085420B83CB43BE45E01C95",
         "app": "Z2UI5_CL_CONF_NAV",
         "title": "conformance - nav caller",
         "layer": "main",
@@ -1455,7 +1455,7 @@
       "label": "WINDOW: app_start",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "F204E39946A146BA8F0A2575FD935A12",
+        "session": "2D2FA6F091AE47F9B72BB8AA294F4E84",
         "app": "Z2UI5_CL_CONF_WINDOW",
         "title": "conformance - window",
         "layer": "main",
@@ -1622,7 +1622,7 @@
       "label": "WINDOW: act - @BINDING_CALL (Sort list)",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "F003540C7CE741DF83FAF051BFF611D7",
+        "session": "B194D158DDA24676B210D20D93624443",
         "app": "Z2UI5_CL_CONF_WINDOW",
         "title": "conformance - window",
         "layer": "main",
@@ -1789,7 +1789,7 @@
       "label": "WINDOW: act - window: the next window",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "68E6F733756F4523A6721FCE519A3DE7",
+        "session": "AAFB2B0C8E5F41389A51C821F27B742B",
         "app": "Z2UI5_CL_CONF_WINDOW",
         "title": "conformance - window",
         "layer": "main",
@@ -1980,7 +1980,7 @@
       "label": "WINDOW: act - window: filter NAME Contains 1",
       "snapshot": {
         "snapshotVersion": 1,
-        "session": "3BF5281087CB4854AE7A89B00B476D69",
+        "session": "2775CCFB11814C2AB8D8B240B7A238B7",
         "app": "Z2UI5_CL_CONF_WINDOW",
         "title": "conformance - window",
         "layer": "main",

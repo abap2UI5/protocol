@@ -12,13 +12,15 @@ reference (`model.reference-delta`, `window.delta-positions-reference`);
 cap2UI5 0.6.0 failed those two - its JavaScript apps could not declare a
 field `TYPE REF TO data` - and the cap2UI5 host moved to
 `@cap2ui5/cds-plugin` 0.7.0, whose `t.ref( )` declares one
-([below](#tables-behind-a-data-reference)). Both backends pass every MUST
+([below](#tables-behind-a-data-reference)). On 2026-11-20 the node-runtime
+host moved to abap2UI5 1.150.0, which changes nothing the suite checks
+([below](#the-move-from-11490-to-11500)). Both backends pass every MUST
 now; the one pinned result is cap2UI5's SHOULD warning `error.details`
 ([`../test/lib/expected.mjs`](../test/lib/expected.mjs)).
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| `node-runtime` | `@abap2ui5/node-runtime` 1.149.0 (abap2UI5 1.149.0, transpiled) | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.33) | 93 | 0 | 0 | 0 | conformant (ui5) |
+| `node-runtime` | `@abap2ui5/node-runtime` 1.150.0 (abap2UI5 1.150.0, transpiled) | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.33) | 93 | 0 | 0 | 0 | conformant (ui5) |
 | `cap2ui5` | `@cap2ui5/cds-plugin` 0.7.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 92 | 0 | 1 | 0 | conformant (ui5); one SHOULD warning: `error.details` (below) |
 
 Per area (both backends identical except `error`):
@@ -42,12 +44,39 @@ The ABAP system itself (abap2UI5 on NetWeaver / ABAP Cloud) has not been run
 yet - it needs a system with the apps pulled in by abapGit; the transpiled
 runtime is the same framework source.
 
-Both hosts run the same framework release now: cap2UI5 0.7.0 (like 0.6.0)
-pins `@abap2ui5/node-runtime` 1.149.0, the version the node-runtime host
-runs (with 0.5.0 the cap2UI5 host was on 1.147.0). The recorded traffic of
-the two is identical for every check but `error.details`, the windowed
-tables and the app REF included
+The two hosts are one framework release apart: cap2UI5 0.7.0 (like 0.6.0)
+pins `@abap2ui5/node-runtime` 1.149.0, the node-runtime host runs 1.150.0
+(with 0.5.0 the cap2UI5 host was on 1.147.0). The recorded traffic of the
+two is identical for every check but `error.details`, the windowed tables
+and the app REF included
 ([below](#differences-between-the-two-backends)).
+
+## The move from 1.149.0 to 1.150.0
+
+Until 2026-11-20 the node-runtime host ran abap2UI5 1.149.0: 93 of 93
+passed. On `@abap2ui5/node-runtime` 1.150.0 (built from the release commit
+`af05dce`, transpiled by `@abaplint/transpiler` 2.14.33 like 1.149.0) the
+same 93 pass, 0 fail, 0 warn. The release changes no protocol - draft-owner
+strictness, RTTI error handling, own apps' `_ddic.mjs`, and in the
+frontend the row delta of a windowed table behind a data reference. As
+measured:
+
+- **The suite traffic is identical** check by check with the recording of
+  1.149.0 (draft ids, the version and time lines of the error bodies and
+  the page's `ETag` normalized), except the page itself, which grew from
+  357,162 to 357,791 characters.
+- **The UI5 frontend's requests and the agent client's traffic are the
+  same**: `traffic/node-runtime/ui5-frontend.json` (the frontend of
+  abap2UI5 1.150.0 run in Node) and `agent-client.json` differ from the
+  recording of 1.149.0 in nothing but draft ids, the measured
+  `MS_CLIENT_PREV` and the host's port.
+- **The UI5 SPA passes `window.edit-as-delta-reference`** - finding 3,
+  fixed in `2cc0344` and released with 1.150.0; CI pins the release commit
+  `af05dce` now and the pin in `test/frontend.test.mjs` is gone
+  ([Frontend suite](#frontend-suite)).
+
+The cap2UI5 host stays on `@cap2ui5/cds-plugin` 0.7.0 and with it on the
+runtime 1.149.0 until a plugin release pins 1.150.0.
 
 ## The move from 1.148.0 to 1.149.0
 
@@ -123,7 +152,7 @@ backend has to offer stays
 
 | Frontend | Rows shown | More rows, sort, filter | A cell edit |
 |---|---|---|---|
-| UI5 SPA (abap2UI5 1.149.0), in Chromium | the window; the growing trigger reads `[ 4 / 12 ]` | window requests: `ui5.window-growth`, `ui5.window-sort-filter` pass | `__delta` of the position (`window.edit-as-delta`) |
+| UI5 SPA (abap2UI5 1.149.0 and 1.150.0), in Chromium | the window; the growing trigger reads `[ 4 / 12 ]` | window requests: `ui5.window-growth`, `ui5.window-sort-filter` pass | `__delta` of the position (`window.edit-as-delta`) |
 | agent client (mcp-server `8efb3d7`) | the window, and that it is one: `rowCount` 4, `total` 12, `truncated` true, `window: { size: 4, more }` - `more` names the `app_act` that loads rows 5-8 | window requests: `app_act { window }` sends `["/T_ROWS","8"]` for the next window, a sort or a filter it builds itself; the two `BINDING_CALL` buttons are the action `@BINDING_CALL` and send what the UI5 list binding sends (below) | `__delta` of the position |
 | Adaptive Cards renderer | the four rows as the whole table | none; a `BINDING_CALL` wire is outside the portable profile | `__delta` of the position |
 | terminal renderer | the four rows as the whole table - also end to end against the node-runtime host, where the app's `SORT` then shows the first four of the new order and a box ticked before lands in its row | none | `__delta` of the position |
@@ -137,7 +166,8 @@ added after abap2UI5 #3026; synthetic - model `/MR_ROWS/*`, state at
 `/__WINDOW/MR_ROWS/*`, a box ticked in row 2): the agent client (mcp-server
 `332a0b0`), the Adaptive Cards and the terminal renderer send
 `{ "MR_ROWS": { "*": { "__delta": { "2": { "DONE": true } } } } }` and pass.
-The UI5 SPA of 1.149.0 fails it (finding 3 below) - as did the agent client
+The UI5 SPA of 1.149.0 fails it (finding 3 below), that of 1.150.0
+passes it - as the agent client failed it the agent client
 before `7f71d5f`, which ported `buildDeltaFromPaths` and sent the same
 whole attribute. Besides the UI5 SPA only the agent client tells
 its user that rows are missing and asks for them - since abap2UI5/mcp-server
@@ -176,7 +206,7 @@ descending); the two checks send `{ "MR_TAB": { "*": { "__delta": { "1":
 
 | Backend | `model.reference-delta` | `window.delta-positions-reference` |
 |---|---|---|
-| `node-runtime` 1.149.0 | pass - exactly row 2 changed, `SUMMARY` `1:one:,2:zwei:X,3:three:;` | pass - positions 0 and 2 land in the rows with `ID` 4 and 5, `SUMMARY` `...;4,5` |
+| `node-runtime` 1.149.0, 1.150.0 | pass - exactly row 2 changed, `SUMMARY` `1:one:,2:zwei:X,3:three:;` | pass - positions 0 and 2 land in the rows with `ID` 4 and 5, `SUMMARY` `...;4,5` |
 | `cap2ui5` 0.6.0 (until 2026-11-20) | fail, was pinned - the start answers `500` | fail, was pinned - the same |
 | `cap2ui5` 0.7.0 (`t.ref( )`) | pass - as node-runtime | pass - as node-runtime |
 
@@ -356,8 +386,7 @@ records - as a rule, or as an implementation note:
 ## Frontend suite
 
 Frontend suite, 86 checks (71 MUST, 15 SHOULD; 69 core, 8 portable, 6 UI5,
-3 semantic), run 2026-11-16 against the traffic of the 1.149.0 recording
-(`window.edit-as-delta-reference`, the 86th, run 2026-11-18) -
+3 semantic), run 2026-11-20 against the traffic of the 1.150.0 recording -
 the UI5 SPA, the agent client, the Adaptive Cards and the terminal
 renderer; the Web Components row is the run of 2026-10-03 (81 checks) and
 was not repeated - with
@@ -370,7 +399,7 @@ perform.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 1.149.0 `app/webapp` (release commit `6f55b04`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 81 | 1 | 0 | 4 | not conformant: `window.edit-as-delta-reference` (finding 3, fixed after the release in `2cc0344`; that frontend passes 82) |
+| UI5 SPA (`ui5`) | abap2UI5 1.150.0 `app/webapp` (release commit `af05dce`, which CI pins), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 82 | 0 | 0 | 4 | conformant (ui5) - finding 3 fixed in the release |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `332a0b0` (vendored - `adapters/vendor/mcp-server/source.json`), run 2026-11-18 | semantic | 64 | 0 | 0 | 22 | conformant (semantic) - the five MUST deviations of `ea4e9fa` fixed |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 69 | 0 | 0 | 17 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 75 | 0 | 0 | 11 | every check it can be driven through holds, the router checks included |
@@ -407,7 +436,13 @@ checks of before pass as before, and the four new ones pass -
 `ui5.window-sort-filter` ([above](#windowed-tables)): 81 pass, 0 fail, 0
 warn, 4 skip, in two consecutive runs. The last two drive a real growing
 `sap.m.Table` over the recorded answers of the conformance app WINDOW: a
-click on its "More" trigger and two `BINDING_CALL` buttons.
+click on its "More" trigger and two `BINDING_CALL` buttons. The 86th,
+`window.edit-as-delta-reference`, failed (finding 3).
+
+Since 2026-11-20 CI pins the release commit of abap2UI5 1.150.0
+(`af05dce`), the frontend `@abap2ui5/node-runtime` 1.150.0 ships: 82 pass,
+0 fail, 0 warn, 4 skip - the 81 of before, and
+`window.edit-as-delta-reference`, whose pin is removed. Every MUST holds.
 
 ### Findings - the UI5 SPA
 
@@ -441,10 +476,10 @@ click on its "More" trigger and two `BINDING_CALL` buttons.
    and binds the tolerance rule to the other renderers; the check skips a
    UI5-profile frontend ([open question 6](../spec/open-questions.md#6-the-ui5-frontend-and-the-portable-tolerance-rule)).
 3. **A cell of a windowed table behind a data reference is sent whole** -
-   `window.edit-as-delta-reference`, MUST; *the frontend is wrong* (fixed
-   in abap2UI5 `2cc0344`, #3026, after 1.149.0; pinned in
-   `test/frontend.test.mjs` `UI5_KNOWN_FAILS` while CI pins the 1.149.0
-   release commit). The cell path is `/MR_ROWS/*/2/DONE`; `buildDeltaFromPaths`
+   `window.edit-as-delta-reference`, MUST; *the frontend was wrong* (fixed
+   in abap2UI5 `2cc0344`, #3026, released with 1.150.0; pinned in
+   `test/frontend.test.mjs` `UI5_KNOWN_FAILS` while CI pinned the 1.149.0
+   release commit, unpinned with the move to 1.150.0). The cell path is `/MR_ROWS/*/2/DONE`; `buildDeltaFromPaths`
    took the `*` for an unknown shape and sent
    `{ "MR_ROWS": { "*": [ ...the four rows... ] } }`, which the backend
    refuses for a windowed table ([MOD] `main_json_to_attri`) - the edit

@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- **node-runtime host and CI's UI5 frontend on abap2UI5 1.150.0** (1.149.0
+  before). `@abap2ui5/node-runtime` 1.150.0 in the host, and the frontend
+  job checks out the release commit `af05dce` it was built from. The
+  release changes no protocol (draft-owner strictness, RTTI error handling,
+  own apps' `_ddic.mjs`, and the frontend's row delta of a windowed table
+  behind a data reference); the specification revision stays 0.5.
+  node-runtime passes 93 of 93 as before; its suite traffic, recorded
+  again, is identical check by check but for the page (357,791 characters,
+  357,162 before), and so are the UI5 frontend's and the agent client's.
+  The UI5 SPA passes 82 of 86 (4 skipped, no failure): it passes
+  `window.edit-as-delta-reference` - the fix of `2cc0344` is in the
+  release - and the pin in `test/frontend.test.mjs` `UI5_KNOWN_FAILS` is
+  gone. The cap2UI5 host stays on `@cap2ui5/cds-plugin` 0.7.0, which pins
+  the runtime 1.149.0 (92 of 93, one SHOULD warning, unchanged).
+  `conformance/RESULTS.md` (*The move from 1.149.0 to 1.150.0*) and the
+  README's status updated.
+
 - **cap2UI5 host on `@cap2ui5/cds-plugin` 0.7.0** (0.6.0 before), the
   release with `t.ref( )` - a field `TYPE REF TO data` in a JavaScript
   app. The twin of `Z2UI5_CL_CONF_REF` starts now and passes
