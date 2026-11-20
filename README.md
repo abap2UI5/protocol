@@ -59,10 +59,10 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   resolved, three are open
   ([spec/open-questions.md](spec/open-questions.md)).
 - **Backend suite: 93 checks** (75 MUST, 18 SHOULD; 86 core, 7 UI5 profile).
-  `node-runtime` (`@abap2ui5/node-runtime` 1.149.0) passes 93/93;
-  `cap2ui5` (`@cap2ui5/cds-plugin` 0.7.0, on the same runtime) 92/93 with
-  one SHOULD warning and no failure - the two checks of a table behind a
-  data reference pass with the plugin's `t.ref( )`, new in 0.7.0
+  `node-runtime` (`@abap2ui5/node-runtime` 1.150.0) passes 93/93;
+  `cap2ui5` (`@cap2ui5/cds-plugin` 0.7.0, on the runtime 1.149.0 it pins)
+  92/93 with one SHOULD warning and no failure - the two checks of a table
+  behind a data reference pass with the plugin's `t.ref( )`, new in 0.7.0
   ([conformance/RESULTS.md](conformance/RESULTS.md)).
 - **Schemas** validate all 490 recorded requests, 474 responses and 26 agent
   snapshots, checked by the shipped validator and by ajv.
@@ -70,11 +70,9 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   controls, 64.8 % run unchanged).
 - **Frontend suite: 86 checks** (71 MUST, 15 SHOULD; 69 core, 8 portable,
   6 UI5, 3 semantic), scripted from the recorded traffic. The official UI5
-  SPA of abap2UI5 1.149.0 passes every check that applies but one (81, 1
-  failed, 4 skipped: a cell behind a data reference sent whole, fixed in
-  abap2UI5 `2cc0344`, which passes 82); the agent client (mcp-server
-  `332a0b0`), the
-  Adaptive Cards renderer and the terminal renderer pass every check that
+  SPA of abap2UI5 1.150.0 passes every check that applies (82, 4 skipped;
+  1.149.0 failed one, a cell behind a data reference sent whole); the
+  agent client (mcp-server `332a0b0`), the Adaptive Cards renderer and the terminal renderer pass every check that
   applies to them (64, 69 and 75 - the terminal's include the router
   checks); the Web Components frontend passed 68 of 68 of the 81 checks of
   2026-10-03, with one intermittent failure, and was not run again

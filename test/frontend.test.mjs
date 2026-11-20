@@ -223,12 +223,12 @@ test("the terminal renderer: every portable-profile check it can be driven throu
 
 const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER is set" : false;
 // The UI5 SPA's known deviations (RESULTS.md) - a deviation goes here with
-// the place of its fix; every other failure fails the test. CI's abap2UI5
-// commit is the release 1.149.0, which ships a cell behind a data reference
-// as the whole attribute: window.edit-as-delta-reference, fixed in abap2UI5
-// 2cc0344 (#3026, core/Lib.js buildDeltaFromPaths) - unpin it once CI's
-// commit carries that.
-const UI5_KNOWN_FAILS = ["window.edit-as-delta-reference"];
+// the place of its fix; every other failure fails the test. None today:
+// window.edit-as-delta-reference (a cell behind a data reference sent as the
+// whole attribute) was pinned while CI's abap2UI5 commit was the release
+// 1.149.0; fixed in abap2UI5 2cc0344 (#3026, core/Lib.js
+// buildDeltaFromPaths), released with 1.150.0, the commit CI pins now.
+const UI5_KNOWN_FAILS = [];
 
 test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { skip: skipBrowser, timeout: 900_000 }, async (t) => {
   if (!locateWebapp()) {
