@@ -13,20 +13,15 @@
  * and @cap2ui5/cds-plugin 0.5.0. cap2ui5: none either - the thirteen checks
  * of the windowed tables (spec/windowed-tables.md) were pinned for it while
  * its host ran @cap2ui5/cds-plugin 0.5.0, whose runtime (1.147.0) has no
- * window_bind_tab( ); the host runs 0.6.0 on the runtime 1.149.0 now and
- * passes them. Pinned for cap2ui5 today: the two checks of a table behind a
- * data reference (spec/request.md, open question 14) - a JavaScript app of
- * @cap2ui5/cds-plugin 0.6.0 cannot declare a field TYPE REF TO data, so the
- * twin of Z2UI5_CL_CONF_REF fails its start; the plugin's t.ref( ) after
- * 0.6.0 (cap2UI5/cap2UI5) is the fix.
+ * window_bind_tab( ); 0.6.0 on the runtime 1.149.0 passes them. The two
+ * checks of a table behind a data reference (spec/request.md, open question
+ * 14) were pinned for it while its host ran @cap2ui5/cds-plugin 0.6.0, which
+ * cannot declare a field TYPE REF TO data, so the twin of Z2UI5_CL_CONF_REF
+ * failed its start; 0.7.0 brings t.ref( ) and passes them.
  */
-const NO_REF = "@cap2ui5/cds-plugin 0.6.0 has no t.ref( ) - the twin of Z2UI5_CL_CONF_REF fails its start; fixed by t.ref( ) in cap2UI5/cap2UI5 after 0.6.0";
 export const BACKEND_EXPECTED_FAILURES = Object.freeze({
   "node-runtime": Object.freeze({}),
-  cap2ui5: Object.freeze({
-    "model.reference-delta": NO_REF,
-    "window.delta-positions-reference": NO_REF,
-  }),
+  cap2ui5: Object.freeze({}),
 });
 
 /**
@@ -52,9 +47,9 @@ export const expectedWarningIds = (backend) => ids(BACKEND_EXPECTED_WARNINGS, ba
 
 /**
  * The checks whose recorded traffic cannot be compared between the two
- * backends because one of them never gets past the app's start: the two of
- * the app REF, which cap2UI5 0.6.0 cannot start (above). Every other check
- * is answered identically by both (test/traffic.test.mjs); a pin that keeps
- * a host out of an app goes here.
+ * backends because one of them never gets past the app's start - none
+ * today (the two of the app REF were, while cap2UI5 0.6.0 could not start
+ * it). Every other check is answered identically by both
+ * (test/traffic.test.mjs); a pin that keeps a host out of an app goes here.
  */
-export const BACKEND_TRAFFIC_APART = Object.freeze(["model.reference-delta", "window.delta-positions-reference"]);
+export const BACKEND_TRAFFIC_APART = Object.freeze([]);

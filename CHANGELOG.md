@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **cap2UI5 host on `@cap2ui5/cds-plugin` 0.7.0** (0.6.0 before), the
+  release with `t.ref( )` - a field `TYPE REF TO data` in a JavaScript
+  app. The twin of `Z2UI5_CL_CONF_REF` starts now and passes
+  `model.reference-delta` and `window.delta-positions-reference`, answering
+  both as the ABAP app: the two pins for `cap2ui5` in
+  `test/lib/expected.mjs` and both entries of `BACKEND_TRAFFIC_APART` are
+  gone, `test/traffic.test.mjs` expects both checks to pass on both
+  backends and compares their traffic. cap2UI5 passes 92 of 93 (one SHOULD
+  warning, `error.details`), node-runtime 93 of 93. Traffic recorded again
+  from both hosts; `conformance/RESULTS.md` updated (*Tables behind a data
+  reference*).
+
 - **Open question 14 resolved (b): the backend side of a table behind a
   data reference gets its checks.** A backend MUST read the entry of such
   a table at its model node `/<attr>/*` - a `__delta` there changes
