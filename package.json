@@ -45,7 +45,7 @@
     "serve:node-runtime": "node conformance/hosts/node-runtime/serve.mjs --build",
     "serve:cap2ui5": "node conformance/hosts/cap2ui5/serve.mjs",
     "record": "node scripts/record-traffic.mjs node-runtime && node scripts/record-traffic.mjs cap2ui5",
-    "lint:abap": "cd conformance/apps && abaplint abaplint.jsonc",
+    "lint:abap": "node scripts/lint-abap.mjs",
     "generate": "node scripts/gen-check-list.mjs && node scripts/render-portable.mjs && node scripts/render-adaptive-cards.mjs && node scripts/render-terminal.mjs",
     "vendor:agent": "node scripts/vendor-agent-client.mjs"
   },
@@ -73,7 +73,7 @@
     "tui"
   ],
   "devDependencies": {
-    "@abap2ui5/node-runtime": "1.149.0",
+    "@abap2ui5/node-runtime": "1.150.0",
     "@abaplint/cli": "2.120.75",
     "@abaplint/transpiler-cli": "2.14.33",
     "@openui5/sap.m": "1.153.0",

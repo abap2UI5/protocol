@@ -459,11 +459,11 @@ that is a JSON array of groups sets those groups. Each sends `SORT` or
 does not send (a malformed groups JSON, an operator outside the whitelist)
 is refused, sending nothing.
 
-**The agent client does not follow this yet.** mcp-server `8efb3d7` (the
-vendored client, [AC]) still sends the window request of abap2UI5
-1.149.0, `[path, count]`, `[path, count, sort]` or `[path, count, "",
-filter]`, which a backend with the app-driven window hands to the app as an event
-named after the count, so no row is loaded
+**The agent client does not follow this yet.** mcp-server `332a0b0` (the
+vendored client, [AC]) still sends the window request of abap2UI5 1.149.0
+and 1.150.0, `[path, count]`, `[path, count, sort]` or `[path, count, "",
+filter]`, which a backend with the app-driven window hands to the app as
+an event named after the count, so no row is loaded
 ([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
 Its snapshots - `total`, `window`, `@BINDING_CALL` - are unchanged by the
 new wire.
@@ -492,8 +492,12 @@ the model delta, and the confirm's event parameters are the selected rows.
    write is a pending edit of the dialog's model and goes out with the
    confirm as its delta — only what changed, as the browser's two-way
    binding writes only changes. (The model path of a data reference ends in
-   `*`, `/MR_TAB_POPUP/*/0/ZZSELKZ`; the delta then ships the whole
-   attribute, as the frontend's `buildDeltaFromPaths` does.)
+   `*`, `/MR_TAB_POPUP/*/0/ZZSELKZ`; the delta then goes on that node,
+   `{ MR_TAB_POPUP: { "*": { __delta: { "0": { ZZSELKZ: true } } } } }`, as
+   the frontend's `buildDeltaFromPaths` does from abap2UI5 #3026 on
+   ([request.md](../spec/request.md#the-model-delta)) - the whole attribute
+   it sent before is never written back into a windowed table, so the pick
+   was lost.)
 3. The selected rows: with a `selectionField`, every row whose field is
    truthy, in model order (a sorter of the items binding is not applied);
    without one, the row given. In single select it is the row given.
@@ -549,11 +553,16 @@ names a parameter outside the table above, is refused naming `args[i]`.
 | `${$parameters>/P}.getCells()[n].get<Prop>()` | the same on the n-th cell: every cell of a `ColumnListItem`, the visible columns' templates of a grid table row |
 | `${$parameters>/P} ? <one of the above> : <literal>` | the shape when `P` is an item or a context (or truthy), else the literal (`'…'`, `"…"`, `null` or a number) |
 
-Example — the abap-cloud-gui F4 popup (`z2ui5_cl_popup_to_select`, single
-select, `selected="{ZZSELKZ}"`): `app_act({ event: "CONFIRM", row: 0 })`
-sends `T_EVENT_ARG: [null]` and `MODEL: { "MR_TAB_POPUP": { "*": [ … the
-filtered rows, row 0 with "ZZSELKZ": true … ] } }`; the popup reads
-`ZZSELKZ` and hands the row back. A `SelectDialog` with
+Example — the abap-cloud-gui F4 popup (`z2ui5_cl_cgui_select`, single
+select, `selected="{ZZSELKZ}"`, a windowed table behind the data reference
+`MR_VIEW`): after a search for "Ber", `app_act({ event: "CGUI_SEL_CONFIRM",
+row: 0 })` sends `T_EVENT_ARG: ["/MR_VIEW/*/0"]` (its
+`${$parameters>/selectedItem}.getBindingContext().getPath()`) and `MODEL: {
+"MR_VIEW": { "*": { "__delta": { "0": { "ZZSELKZ": true } } } } }`; the
+popup hands the row back. (Recorded against abap2UI5 1.149.0; the
+`z2ui5_cl_popup_to_select` of the popups addon, before, sent
+`T_EVENT_ARG: [null]` - its `selectedContexts[0]/sPath` is `null` in a
+JSONModel.) A `SelectDialog` with
 `confirm=".eB(['VH_CONFIRM'], ${$parameters>/selectedItem}.getTitle())"`
 and `<StandardListItem title="{NAME}"/>` sends the picked row's `NAME`.
 

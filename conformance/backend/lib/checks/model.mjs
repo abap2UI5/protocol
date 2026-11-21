@@ -64,6 +64,29 @@ export default [
     },
   },
   {
+    id: "model.reference-delta",
+    title: "A table behind a data reference edited by row: the __delta on its * node changes exactly the named cells",
+    level: "MUST",
+    profile: "core",
+    spec: D,
+    async run(t) {
+      const start = await t.start("REF");
+      t.deepEqual(start.json.MODEL && start.json.MODEL.MR_TAB, { "*": [
+        { DONE: false, ID: 1, TEXT: "one" },
+        { DONE: false, ID: 2, TEXT: "two" },
+        { DONE: false, ID: 3, TEXT: "three" },
+      ] }, "MODEL.MR_TAB at the start (the table is the node /MR_TAB/*)");
+      const r = await t.event(start, "CHECK", { model: { MR_TAB: { "*": { __delta: { 1: { TEXT: "zwei", DONE: true } } } } } });
+      t.ok(r.json.MODEL && typeof r.json.MODEL.SUMMARY === "string", "MODEL.SUMMARY after CHECK");
+      t.equal(r.json.MODEL.SUMMARY, "1:one:,2:zwei:X,3:three:", "SUMMARY");
+      t.deepEqual(r.json.MODEL.MR_TAB, { "*": [
+        { DONE: false, ID: 1, TEXT: "one" },
+        { DONE: true, ID: 2, TEXT: "zwei" },
+        { DONE: false, ID: 3, TEXT: "three" },
+      ] }, "MODEL.MR_TAB (the complete table)");
+    },
+  },
+  {
     id: "model.table-whole",
     title: "A table sent as its whole value replaces the table",
     level: "MUST",

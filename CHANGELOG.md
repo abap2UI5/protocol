@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-- **Windowed tables: the app-driven window of abap2UI5 branch DEV**
-  (`186f2c9b`, not yet on main), which replaced the window of 1.149.0
-  within days of its release. The app loads, sorts, filters and counts the
-  rows itself; the backend keeps no order.
+- **Windowed tables: the app-driven window of abap2UI5 main `694fb262`**
+  (#3032, after 1.150.0; derived first from the DEV branch, `186f2c9b`),
+  which replaced the window of 1.149.0 and 1.150.0. The app loads, sorts,
+  filters and counts the rows itself; the backend keeps no order.
   - [spec/windowed-tables.md](spec/windowed-tables.md) rewritten: `MODEL`
     carries the table as the app holds it, `/__WINDOW/<path>` is `{ TOTAL,
     COUNT, SIZE, EVENT }` with `TOTAL` the app's total read anew for every
@@ -26,34 +26,142 @@
     release's fixture app and e2e test).
   - Protocol 2 stays, as in the branch, although
     [versioning.md](spec/versioning.md) counts a changed meaning as
-    breaking - new [open question 14](spec/open-questions.md#14-the-app-driven-window-and-the-protocol-number);
-    open questions 12 and 13 updated.
+    breaking - new [open question 15](spec/open-questions.md#15-the-app-driven-window-and-the-protocol-number)
+    (14 is main's, resolved); open questions 12 and 13 updated.
   - Schemas: `windowRequest` is `[path, event, MORE|SORT|FILTER, skip,
     top]` plus both parts for `SORT` and `FILTER`; a window state is told
     by `SIZE` (the reference leaves a `TOTAL` or `COUNT` of 0 out) and may
     carry `EVENT`.
-  - Backend checks: eight `window.*` replace thirteen - `first-window`,
+  - Backend checks: nine `window.*` replace fourteen - `first-window`,
     `app-event`, `request-sort-filter`, `request-bounds` (SHOULD),
     `total-from-app`, `order-with-the-draft`, `delta-rows`,
-    `whole-table-written`. Frontend checks: `window.edit-row-shown`
-    replaces `window.edit-as-delta`, `ui5.window-growth` and
-    `ui5.window-sort-filter` expect the new arguments, new
-    `ui5.window-no-event`.
+    `delta-rows-reference` (was `delta-positions-reference`),
+    `whole-table-written` - 88 checks (71 MUST, 17 SHOULD). Frontend
+    checks: `window.edit-row-shown` and `window.edit-row-shown-reference`
+    replace `window.edit-as-delta` and `window.edit-as-delta-reference`
+    (the reference one now on the recorded `MR_WIN`), `ui5.window-growth`
+    and `ui5.window-sort-filter` expect the new arguments, new
+    `ui5.window-no-event` - 87 checks (72 MUST, 15 SHOULD).
   - The conformance app WINDOW (ABAP, abaplint- and abap2UI5-linter-clean,
     and the cap2UI5 twin) loads its twelve rows itself and echoes what it
     was handed (`LAST`, `REQUEST`); new event `TOTAL`, the app's `SORT`,
-    `FILTER` and `RERENDER` are gone.
-  - Traffic recorded again: node-runtime with a runtime built from the
-    branch (86 of 86 pass) and its `bundle/webapp`; cap2ui5 (plugin 0.6.0
-    on 1.149.0) fails the window checks on the app's start - seven
-    failures and one warning pinned in `test/lib/expected.mjs` and kept out
-    of the comparison (`BACKEND_TRAFFIC_APART`). Outside `window.*` and the
+    `FILTER` and `RERENDER` are gone. It took over the windowed table
+    behind a data reference from the app REF (`MR_WIN`, event `WIN`,
+    `WIN_DONE`): REF keeps `MR_TAB` and builds on every runtime.
+  - Traffic recorded with the node-runtime host on a runtime built from
+    `694fb262` (88 of 88 pass) and that commit's `app/webapp`; cap2ui5
+    (plugin 0.7.0 on 1.149.0) fails the window checks on the app's start.
+    The released hosts cannot start the app WINDOW: its eight MUST checks
+    and the SHOULD `window.request-bounds` are pinned in
+    `test/lib/expected.mjs` for cap2UI5, and for node-runtime when the
+    installed runtime has no app-driven window (the released 1.150.0 of
+    `package.json` and CI), with the place of the fix (the next abap2UI5
+    release); `traffic.test.mjs` reads the pins of the recording
+    (`RECORDED_FAILURES`). The node-runtime host and `npm run lint:abap`
+    (now `scripts/lint-abap.mjs`) leave the app WINDOW out on such a
+    runtime. The UI5 SPA's window checks are pinned in
+    `test/frontend.test.mjs` when the checkout has no app-driven
+    `core/WindowModel.js` (CI's `af05dce`). Outside `window.*` and the
     `WINDOW:` scenarios nothing moved; the recorder's UI5 page stand-in
-    sets `ownsPage`, without which the branch's frontend sends no `HASH`.
-  - Finding: the agent client (mcp-server `8efb3d7`) sends the window
-    request of 1.149.0; the recorder marks those exchanges `malformed`,
+    sets `ownsPage` and `ownsHash`, without which the frontend sends no
+    `HASH`.
+  - Finding: the agent client (mcp-server `332a0b0`) sends the window
+    request of 1.149.0 and 1.150.0; the recorder marks those exchanges `malformed`,
     and `semantic.recorded-snapshots` fails on it - pinned in
     `test/frontend.test.mjs` (`conformance/RESULTS.md`).
+
+- **node-runtime host and CI's UI5 frontend on abap2UI5 1.150.0** (1.149.0
+  before). `@abap2ui5/node-runtime` 1.150.0 in the host, and the frontend
+  job checks out the release commit `af05dce` it was built from. The
+  release changes no protocol (draft-owner strictness, RTTI error handling,
+  own apps' `_ddic.mjs`, and the frontend's row delta of a windowed table
+  behind a data reference); the specification revision stays 0.5.
+  node-runtime passes 93 of 93 as before; its suite traffic, recorded
+  again, is identical check by check but for the page (357,791 characters,
+  357,162 before), and so are the UI5 frontend's and the agent client's.
+  The UI5 SPA passes 82 of 86 (4 skipped, no failure): it passes
+  `window.edit-as-delta-reference` - the fix of `2cc0344` is in the
+  release - and the pin in `test/frontend.test.mjs` `UI5_KNOWN_FAILS` is
+  gone. The cap2UI5 host stays on `@cap2ui5/cds-plugin` 0.7.0, which pins
+  the runtime 1.149.0 (92 of 93, one SHOULD warning, unchanged).
+  `conformance/RESULTS.md` (*The move from 1.149.0 to 1.150.0*) and the
+  README's status updated.
+
+- **cap2UI5 host on `@cap2ui5/cds-plugin` 0.7.0** (0.6.0 before), the
+  release with `t.ref( )` - a field `TYPE REF TO data` in a JavaScript
+  app. The twin of `Z2UI5_CL_CONF_REF` starts now and passes
+  `model.reference-delta` and `window.delta-positions-reference`, answering
+  both as the ABAP app: the two pins for `cap2ui5` in
+  `test/lib/expected.mjs` and both entries of `BACKEND_TRAFFIC_APART` are
+  gone, `test/traffic.test.mjs` expects both checks to pass on both
+  backends and compares their traffic. cap2UI5 passes 92 of 93 (one SHOULD
+  warning, `error.details`), node-runtime 93 of 93. Traffic recorded again
+  from both hosts; `conformance/RESULTS.md` updated (*Tables behind a data
+  reference*).
+
+- **Open question 14 resolved (b): the backend side of a table behind a
+  data reference gets its checks.** A backend MUST read the entry of such
+  a table at its model node `/<attr>/*` - a `__delta` there changes
+  exactly the named cells, on a windowed table it names positions.
+  - `spec/request.md`: the implementation note became that rule (*Checked
+    by:* `model.reference-delta`, `window.delta-positions-reference`); a
+    whole value at `/<attr>/*` stays an implementation note.
+    `spec/windowed-tables.md` *Edits*: the positions rule names the `*`
+    node. `spec/open-questions.md`: question 14 resolved.
+  - New conformance app REF (`Z2UI5_CL_CONF_REF`, ABAP and cap2UI5 twin,
+    `conformance/apps/README.md`): `MR_TAB` and `MR_WIN`, both
+    `TYPE REF TO data`, bound dereferenced - one with `_bind( )`, one with
+    `window_bind_tab( )` in the order `QTY` descending.
+  - Two backend checks (MUST, core) - 93 checks (75 MUST, 18 SHOULD; 86
+    core). node-runtime (`@abap2ui5/node-runtime` 1.149.0) passes both:
+    its backend reads the `*` node, only its frontend sent the edit wrong.
+    cap2UI5 0.6.0 cannot declare such a field in a JavaScript app; the
+    twin's start fails there, and both checks are pinned for `cap2ui5` in
+    `test/lib/expected.mjs` (and kept out of the traffic comparison,
+    `BACKEND_TRAFFIC_APART`) until a plugin with `t.ref( )`
+    (cap2UI5/cap2UI5 `5085ddc`, not released) is in the host - with it the
+    twin passes both and answers as the ABAP app
+    (`conformance/RESULTS.md`, *Tables behind a data reference*).
+  - Suite traffic recorded again from both hosts (`traffic/*/suite.json`):
+    it carries `{ "*": { "__delta" } }` requests now.
+
+- **The row delta of a table behind a data reference** (abap2UI5 #3026,
+  `2cc0344`). An attribute `TYPE REF TO data` bound dereferenced is the
+  model node `/<attr>/*`; its cell travels as `{ "MR_TAB": { "*": {
+  "__delta": { ... } } } }` - the backend reads every entry at the
+  attribute's client name ([MOD] `main_json_to_attri`), and a whole
+  attribute is refused for a windowed table, where the edit was lost.
+  - `spec/request.md`: the `/MR_TAB/*/<row>/<FIELD>` row of the delta
+    table, a structure or value behind a reference still whole, a frontend
+    MUST put the `__delta` on the `*` node; an implementation note for the
+    backend side. `spec/windowed-tables.md` *Edits*: the same for a
+    windowed table behind a reference, and the 1.149.0 behaviour as an
+    implementation note.
+  - New frontend check `window.edit-as-delta-reference` (MUST, core,
+    synthetic: no conformance app binds a data reference) - 86 checks
+    (71 MUST, 15 SHOULD; 69 core). The agent client, the Adaptive Cards and
+    the terminal renderer pass it (64, 69, 75); the UI5 SPA of 1.149.0 fails
+    it and is pinned in `test/frontend.test.mjs` `UI5_KNOWN_FAILS` until
+    CI's abap2UI5 commit carries `2cc0344` (finding 3 of
+    `conformance/RESULTS.md`; that frontend passes).
+  - `schema/request.schema.json`: a `{ "*": { "__delta" } }` entry is
+    validated as a table delta; three valid and two invalid hand-made
+    requests in `test/schema.test.mjs` (the recorded traffic has none).
+  - Agent client re-vendored at abap2UI5/mcp-server `332a0b0` (its
+    `7f71d5f`: `buildDelta` as the fixed `buildDeltaFromPaths`; the two
+    other modules unchanged). `profiles/semantic.md`: the pick of a
+    selection dialog over a data reference sends that delta; the F4
+    example is the re-recorded one of mcp-server (`z2ui5_cl_cgui_select`).
+  - [Open question 14](spec/open-questions.md#14-tables-behind-a-data-reference-in-the-backend-suite):
+    whether a backend check (and a conformance app with a data reference,
+    twice) should pin the backend side.
+- **The UI5 Web Components frontend is named by its new repository,**
+  abap2UI5-addons/embed-webcomponent (npm `@abap2ui5/embed-webcomponent`;
+  was abap2UI5/frontend-webcomponent, moved 2026-11-17). The `webcomponent`
+  adapter looks for a built checkout at `../embed-webcomponent` first and
+  still at `../frontend-webcomponent`, and reports the package name its
+  build's `package.json` carries instead of a fixed one. The recorded runs
+  in `conformance/RESULTS.md` keep the name they were made under.
 
 - **Agent client re-vendored at abap2UI5/mcp-server `8efb3d7`** (its #71,
   windowed tables; `82b75d8` before; `npm run vendor:agent`, `--check`

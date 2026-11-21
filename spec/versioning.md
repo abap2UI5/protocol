@@ -56,7 +56,7 @@ array; adding a system action a frontend must run for the screen to be
 right.
 
 **The app-driven window is such a change, and the number stays 2 for
-now.** abap2UI5 after 1.149.0 (branch DEV) gives the arguments of
+now.** abap2UI5 after 1.150.0 (main `694fb262`, #3032) gives the arguments of
 `___ZZZ_WIN` another shape and meaning - `[path, event, reason, skip,
 top, ...]` handed to the app instead of `[path, count, sort?, filter?]`
 answered by the backend - and the rows of a `__delta` on a windowed table
@@ -66,11 +66,11 @@ order); `__WINDOW` gains `EVENT`
 backend after it, or the other way round, misread each other's window
 requests without an error: the app gets an event named after a count, or
 the backend reads `"ROWS"` as a count. `c_protocol` and the frontend's
-`PROTOCOL` stay 2 in the DEV branch ([TY], [SRV]), the window of 1.149.0
+`PROTOCOL` stay 2 on main ([TY], [SRV]), the window of 1.149.0
 was released on 2026-11-16 and replaced within days, and this revision
 follows the implementation - whether that is right, or whether the
 change asks for protocol 3, is
-[open question 14](open-questions.md#14-the-app-driven-window-and-the-protocol-number).
+[open question 15](open-questions.md#15-the-app-driven-window-and-the-protocol-number).
 
 ## This specification's own version
 

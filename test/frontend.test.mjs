@@ -161,7 +161,7 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 // the client (re-vendored) or of a check. From mcp-server a4d9f07 (PR #44)
 // it followed every frontend rule that applies, until the windowed tables
 // became app-driven (conformance/RESULTS.md, below) - the vendored copy is
-// 8efb3d7 (adapters/vendor/mcp-server/source.json); the
+// 332a0b0 (adapters/vendor/mcp-server/source.json); the
 // skips are the portable and UI5 profiles it does not claim, a URL, a DOM,
 // focus, programmatic model edits and the nested-table cell its snapshot
 // does not describe.
@@ -175,7 +175,7 @@ const AGENT_SKIPS = [
 ];
 
 // Its known deviation (RESULTS.md, windowed tables), with the place of the
-// fix: the client sends the window request of abap2UI5 1.149.0
+// fix: the client sends the window request of abap2UI5 1.149.0 and 1.150.0
 // ([path, count, sort?, filter?]), which is no request of this revision -
 // the replay of the "Sort list" BINDING_CALL posts one. Fixed in
 // abap2UI5/mcp-server lib/appclient.mjs (window requests as [path, event,
@@ -232,11 +232,23 @@ test("the terminal renderer: every portable-profile check it can be driven throu
 });
 
 const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER is set" : false;
-// The UI5 SPA's known deviations (RESULTS.md) - none since CI's abap2UI5
-// commit carries the fix of portable.box-details (abap2UI5 72c86cc: message
-// box details on OpenUI5 >= 1.120). A deviation found later goes here with
+// The UI5 SPA's known deviations (RESULTS.md) - a deviation goes here with
 // the place of its fix; every other failure fails the test.
-const UI5_KNOWN_FAILS = [];
+// window.edit-as-delta-reference (a cell behind a data reference sent as the
+// whole attribute) was pinned while CI's abap2UI5 commit was the release
+// 1.149.0; fixed in abap2UI5 2cc0344 (#3026), released with 1.150.0.
+// The three UI5-profile checks of the app-driven window fail on a frontend
+// whose list binding sends the window request of 1.149.0 and 1.150.0 - the
+// release commit af05dce CI checks out; fixed in abap2UI5 main 694fb262
+// (#3032, core/WindowModel.js), the next release after 1.150.0. Pinned only
+// for such a checkout: one whose core/WindowModel.js names the reasons of
+// the app-driven window passes them.
+const WINDOW_UI5 = ["ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event"];
+const appDrivenFrontend = (webapp) => {
+  const file = webapp && path.join(webapp, "core", "WindowModel.js");
+  return !file || !fs.existsSync(file) || /\bREASON\b/.test(fs.readFileSync(file, "utf8"));
+};
+const UI5_KNOWN_FAILS = appDrivenFrontend(locateWebapp()) ? [] : WINDOW_UI5;
 
 test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { skip: skipBrowser, timeout: 900_000 }, async (t) => {
   if (!locateWebapp()) {
@@ -253,7 +265,7 @@ test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { s
   const failed = r.results.filter((x) => x.status === "fail");
   const unknown = failed.filter((x) => !UI5_KNOWN_FAILS.includes(x.id));
   assert.deepEqual(unknown.map((x) => x.id), [], unknown.map((x) => `${x.id}: ${x.message}`).join("\n"));
-  for (const id of UI5_KNOWN_FAILS) if (!failed.some((x) => x.id === id)) t.diagnostic(`${id} passes - this checkout carries the fix; unpin it once CI's abap2UI5 commit does`);
+  assert.deepEqual(UI5_KNOWN_FAILS.filter((id) => !failed.some((x) => x.id === id)), [], "pinned checks that pass now - unpin them");
   assert.deepEqual(r.results.filter((x) => x.status === "warn").map((x) => `${x.id}: ${x.message}`), []);
   if (process.env.PROTOCOL_FRONTEND_REPORT) fs.writeFileSync(process.env.PROTOCOL_FRONTEND_REPORT, `${JSON.stringify(r, null, 2)}\n`);
 });

@@ -64,6 +64,8 @@ const INVALID = {
     { value: { S_FRONT: {} }, extra: 1 },
     { value: { S_FRONT: { UNKNOWN: 1 } } },
     { value: { MODEL: { T: { __delta: { a: { X: 1 } } } } } },
+    { value: { MODEL: { MR_T: { "*": { __delta: { a: { X: 1 } } } } } } },
+    { value: { MODEL: { MR_T: { "*": { __delta: { 0: { SUB: { __delta: [] } } } } } } } },
     { value: { S_FRONT: { MS_CLIENT_PREV: -1 } } },
     { value: { S_FRONT: { CONFIG: { S_DEVICE: { SYSTEM: "fridge" } } } } },
     { value: { S_FRONT: { ID: "X", EVENT: "___ZZZ_WIN" } } },
@@ -80,6 +82,18 @@ const INVALID = {
     windowed({ window: { size: 0 } }),
     windowed({ window: { size: 4, more: true } }),
   ],
+};
+
+// hand-made messages that MUST validate - shapes the recorded traffic does
+// not carry: the conformance apps bind no data reference
+const VALID = {
+  response: [],
+  request: [
+    { value: { S_FRONT: { ID: "X", EVENT: "CHECK" }, MODEL: { MR_T: { "*": { __delta: { 2: { DONE: true } } } } } } },
+    { value: { S_FRONT: { ID: "X", EVENT: "CHECK" }, MODEL: { MR_T: { "*": { __delta: { 0: { SUB: { __delta: { 1: { V: "x" } } } } } } } } } },
+    { value: { S_FRONT: { ID: "X", EVENT: "CHECK" }, MODEL: { MR_T: { "*": [{ DONE: true }] }, MR_S: { "*": { A: 1 } }, MR_V: { "*": "x" } } } },
+  ],
+  snapshot: [],
 };
 
 /** A snapshot with one windowed table, its table keys overridden. */
@@ -106,7 +120,11 @@ for (const name of ["request", "response", "snapshot"]) {
   test(`${name}: the shipped validator and ajv agree on every recorded and every invalid message`, () => {
     const ajv = ajvFor(name);
     const mine = compile(loadSchema(name));
-    const all = [...samples()[name], ...INVALID[name].map((value, i) => ({ where: `invalid #${i}`, value, expect: false }))];
+    const all = [
+      ...samples()[name],
+      ...VALID[name].map((value, i) => ({ where: `valid #${i}`, value, expect: true })),
+      ...INVALID[name].map((value, i) => ({ where: `invalid #${i}`, value, expect: false })),
+    ];
     for (const { where, value, expect } of all) {
       const a = ajv(value);
       const m = mine(value).valid;

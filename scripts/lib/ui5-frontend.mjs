@@ -137,8 +137,10 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
     state: Object.assign(AppState.createState(), {
       url,
       // the backend's own page: the component fills it and owns the hash
-      // (Component.js ownsPage) - core/Server.js sends S_FRONT.HASH only then
+      // (Component.js ownsPage, ownsHash before it) - core/Server.js sends
+      // S_FRONT.HASH only then
       ownsPage: true,
+      ownsHash: true,
       oConfig: {
         S_UI5: { VERSION: "1.136.0", BUILDTIMESTAMP: "202509010000", GAV: "com.sap.openui5.dist:sdk:1.136.0", THEME: "sap_horizon" },
       },

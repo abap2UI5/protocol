@@ -295,21 +295,52 @@
       "additionalProperties": false
     },
     "modelDelta": {
-      "description": "The model delta: per top-level attribute either its whole current value, or - for a table edited by row - { \"__delta\": { \"<0-based row>\": { \"<COLUMN>\": value | <nested delta> } } } (spec/request.md#the-model-delta).",
+      "description": "The model delta: per top-level attribute either its whole current value, or - for a table edited by row - { \"__delta\": { \"<0-based row>\": { \"<COLUMN>\": value | <nested delta> } } }; for a table behind a data reference (the model node <attr>/*) the same on the * node: { \"*\": { \"__delta\": ... } } (spec/request.md#the-model-delta).",
       "type": "object",
       "additionalProperties": {
-        "if": {
-          "type": "object",
-          "required": [
-            "__delta"
-          ],
-          "properties": {
-            "__delta": true
+        "allOf": [
+          {
+            "if": {
+              "type": "object",
+              "required": [
+                "__delta"
+              ],
+              "properties": {
+                "__delta": true
+              }
+            },
+            "then": {
+              "$ref": "#/$defs/tableDelta"
+            }
+          },
+          {
+            "if": {
+              "type": "object",
+              "required": [
+                "*"
+              ],
+              "properties": {
+                "*": {
+                  "type": "object",
+                  "required": [
+                    "__delta"
+                  ],
+                  "properties": {
+                    "__delta": true
+                  }
+                }
+              }
+            },
+            "then": {
+              "type": "object",
+              "properties": {
+                "*": {
+                  "$ref": "#/$defs/tableDelta"
+                }
+              }
+            }
           }
-        },
-        "then": {
-          "$ref": "#/$defs/tableDelta"
-        }
+        ]
       }
     },
     "tableDelta": {

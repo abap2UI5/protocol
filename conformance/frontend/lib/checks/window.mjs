@@ -65,6 +65,32 @@ export default [
     },
   },
   {
+    id: "window.edit-row-shown-reference",
+    title: "A cell edited in a windowed table behind a data reference travels on its * node - a __delta at the row's index or the whole value there - never with /__WINDOW",
+    level: "MUST",
+    profile: "core",
+    spec: `${W}#edits`,
+    async run(t) {
+      // MR_WIN of the app WINDOW: the model node /MR_WIN/*, its state at
+      // /__WINDOW/MR_WIN/*
+      const first = await startWindow(t);
+      await t.fill({ path: "/MR_WIN/*/2/DONE" }, true);
+      t.mock.reply(answer({ app: APP }));
+      await t.press(CHECK);
+      await t.posted(2);
+      t.equal(t.front(1).ID, first.S_FRONT.ID, "S_FRONT.ID");
+      const model = t.post(1).MODEL || {};
+      t.deepEqual(Object.keys(model), ["MR_WIN"], "the attributes of MODEL");
+      const node = model.MR_WIN && model.MR_WIN["*"];
+      if (Array.isArray(node)) {
+        const want = first.MODEL.MR_WIN["*"].map((row, i) => (i === 2 ? { ...row, DONE: true } : row));
+        t.deepEqual(node, want, "MODEL.MR_WIN[\"*\"] sent whole (the rows shown, the third one ticked)");
+      } else {
+        t.deepEqual(model.MR_WIN, { "*": { __delta: { 2: { DONE: true } } } }, "MODEL.MR_WIN");
+      }
+    },
+  },
+  {
     id: "ui5.window-growth",
     title: "A growing list over a windowed table asks the app for the next window: ___ZZZ_WIN [path, event, MORE, skip, top], and shows the rows of the answer",
     level: "MUST",

@@ -3,9 +3,10 @@
 " four at a time. The list binding's requests arrive as the app's event
 " ROWS with the request in get( )-r_event_data; the app appends rows for
 " MORE and starts again from the first row for SORT and FILTER, sorting,
-" filtering and counting itself. LAST and REQUEST show what the app was
-" handed, MAINS how often it ran. Behaviour: conformance/apps/README.md,
-" section WINDOW.
+" filtering and counting itself. MR_WIN is a second windowed table, behind
+" a data reference (the model node /MR_WIN/*), six rows in a fixed order,
+" event WIN. LAST and REQUEST show what the app was handed, MAINS how often
+" it ran. Behaviour: conformance/apps/README.md, section WINDOW.
 CLASS z2ui5_cl_conf_window DEFINITION PUBLIC FINAL CREATE PUBLIC.
 
   PUBLIC SECTION.
@@ -19,13 +20,23 @@ CLASS z2ui5_cl_conf_window DEFINITION PUBLIC FINAL CREATE PUBLIC.
         done TYPE abap_bool,
       END OF ty_s_row.
     TYPES ty_t_row TYPE STANDARD TABLE OF ty_s_row WITH EMPTY KEY.
+    TYPES:
+      BEGIN OF ty_s_win,
+        id   TYPE i,
+        qty  TYPE i,
+        done TYPE abap_bool,
+      END OF ty_s_win.
+    TYPES ty_t_win TYPE STANDARD TABLE OF ty_s_win WITH EMPTY KEY.
 
     DATA t_rows  TYPE ty_t_row.
+    DATA mr_win  TYPE REF TO data.
     DATA total   TYPE i.
     DATA summary TYPE string.
     DATA mains   TYPE i.
     DATA last    TYPE string.
     DATA request TYPE string.
+    DATA win_done TYPE string.
+    DATA win_total TYPE i.
 
   PROTECTED SECTION.
     DATA client   TYPE REF TO z2ui5_if_client.
@@ -34,10 +45,13 @@ CLASS z2ui5_cl_conf_window DEFINITION PUBLIC FINAL CREATE PUBLIC.
     " the order of the list - what the last SORT or FILTER request named
     DATA t_sort   TYPE z2ui5_if_client=>ty_t_bind_tab_sort.
     DATA t_filter TYPE z2ui5_if_client=>ty_t_bind_tab_filter.
+    " all rows of MR_WIN, in its fixed order (QTY descending)
+    DATA t_win_db TYPE ty_t_win.
 
     METHODS view_display.
     METHODS on_event.
     METHODS on_window.
+    METHODS on_win.
     METHODS model_init.
     METHODS save.
 
@@ -101,6 +115,9 @@ CLASS z2ui5_cl_conf_window IMPLEMENTATION.
 
   METHOD view_display.
 
+    FIELD-SYMBOLS <win> TYPE ty_t_win.
+
+    ASSIGN mr_win->* TO <win>.
     DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
         )->ele( n = `View` ns = `mvc`
             )->a( n = `xmlns`     v = `sap.m`
@@ -121,6 +138,9 @@ CLASS z2ui5_cl_conf_window IMPLEMENTATION.
     )->tag( `Text`
         )->a( n = `id`   v = `request`
         )->a( n = `text` v = client->_bind( request )
+    )->tag( `Text`
+        )->a( n = `id`   v = `win_done`
+        )->a( n = `text` v = client->_bind( win_done )
     )->tag( `Button`
         )->a( n = `text`  v = `Check`
         )->a( n = `press` v = client->_event( `CHECK` )
@@ -164,13 +184,44 @@ CLASS z2ui5_cl_conf_window IMPLEMENTATION.
                     )->tag( `CheckBox`
                         )->a( n = `selected` v = `{DONE}` ).
 
+    " the table behind a data reference: bound as what it points to,
+    " /MR_WIN/* in the model
+    page->ele( `Table`
+        )->a( n = `id`               v = `win`
+        )->a( n = `growing`          v = `true`
+        )->a( n = `growingThreshold` v = `4`
+        )->a( n = `items`            v = client->window_bind_tab( val    = <win>
+                                                                  total  = win_total
+                                                                  event  = `WIN`
+                                                                  window = 4 )
+
+        )->ele( `columns`
+
+            )->tag( `Column`
+            )->tag( `Column`
+            )->tag( `Column`
+
+        )->end(
+        )->ele( `items`
+            )->ele( `ColumnListItem`
+                )->ele( `cells`
+
+                    )->tag( `Text`
+                        )->a( n = `text` v = `{ID}`
+                    )->tag( `Text`
+                        )->a( n = `text` v = `{QTY}`
+                    )->tag( `CheckBox`
+                        )->a( n = `selected` v = `{DONE}` ).
+
     client->view_display( view->stringify( ) ).
 
   ENDMETHOD.
 
   METHOD on_event.
 
+    FIELD-SYMBOLS <win> TYPE ty_t_win.
     DATA lt_done TYPE string_table.
+    DATA lt_win  TYPE string_table.
 
     last = client->get( )-event.
     LOOP AT client->get( )-t_event_arg INTO DATA(lv_arg).
@@ -181,12 +232,21 @@ CLASS z2ui5_cl_conf_window IMPLEMENTATION.
       " abap2ui5lint-disable-next-line handler-without-event -- the window event of t_rows, sent by the list binding
       WHEN `ROWS`.
         on_window( ).
+      " abap2ui5lint-disable-next-line handler-without-event -- the window event of mr_win, sent by the list binding
+      WHEN `WIN`.
+        on_win( ).
       WHEN `CHECK`.
         LOOP AT t_rows INTO DATA(ls_row) WHERE done = abap_true.
           INSERT |{ ls_row-id }| INTO TABLE lt_done.
         ENDLOOP.
         summary = concat_lines_of( table = lt_done
                                    sep   = `,` ).
+        ASSIGN mr_win->* TO <win>.
+        LOOP AT <win> INTO DATA(ls_win) WHERE done = abap_true.
+          INSERT |{ ls_win-id }| INTO TABLE lt_win.
+        ENDLOOP.
+        win_done = concat_lines_of( table = lt_win
+                                    sep   = `,` ).
       " abap2ui5lint-disable-next-line handler-without-event -- posted by the conformance suite: the app reports another total
       WHEN `TOTAL`.
         total = num( client->get_event_arg( ) ).
@@ -225,6 +285,43 @@ CLASS z2ui5_cl_conf_window IMPLEMENTATION.
       load( skip = 0
             top  = <req>-top ).
     ENDIF.
+
+  ENDMETHOD.
+
+  METHOD on_win.
+
+    FIELD-SYMBOLS <req> TYPE z2ui5_if_client=>ty_s_window_request.
+    FIELD-SYMBOLS <win> TYPE ty_t_win.
+
+    DATA(lr_req) = client->get( )-r_event_data.
+    IF lr_req IS NOT BOUND.
+      request = `no request`.
+      RETURN.
+    ENDIF.
+    ASSIGN lr_req->* TO <req>.
+    IF <req> IS NOT ASSIGNED.
+      RETURN.
+    ENDIF.
+    request = request_text( <req> ).
+    ASSIGN mr_win->* TO <win>.
+
+    " the order is fixed: MORE keeps the first skip rows and appends top
+    " rows, SORT and FILTER load the first top rows again
+    LOOP AT <win> INTO DATA(ls_win).
+      MODIFY t_win_db FROM ls_win TRANSPORTING done WHERE id = ls_win-id.
+    ENDLOOP.
+    DATA(lv_skip) = COND i( WHEN <req>-reason = z2ui5_if_client=>cs_window_reason-more
+                            THEN nmin( val1 = <req>-skip
+                                       val2 = lines( <win> ) ) ).
+    IF lv_skip < lines( <win> ).
+      DELETE <win> FROM lv_skip + 1.
+    ENDIF.
+    LOOP AT t_win_db INTO ls_win FROM lv_skip + 1.
+      IF sy-tabix > lv_skip + <req>-top.
+        EXIT.
+      ENDIF.
+      INSERT ls_win INTO TABLE <win>.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -390,6 +487,8 @@ CLASS z2ui5_cl_conf_window IMPLEMENTATION.
 
   METHOD model_init.
 
+    FIELD-SYMBOLS <win> TYPE ty_t_win.
+
     " QTY runs in another order than ID: 5 10 2 7 12 4 9 1 6 11 3 8
     DO 12 TIMES.
       INSERT VALUE #( id   = sy-index
@@ -398,6 +497,20 @@ CLASS z2ui5_cl_conf_window IMPLEMENTATION.
     ENDDO.
     load( skip = 0
           top  = 4 ).
+
+    " MR_WIN: QTY = ID * 5 mod 7 (5 3 1 6 4 2), in the order QTY
+    " descending - the IDs 4 1 5 2 6 3
+    DO 6 TIMES.
+      INSERT VALUE #( id  = sy-index
+                      qty = ( sy-index * 5 ) MOD 7 ) INTO TABLE t_win_db.
+    ENDDO.
+    SORT t_win_db BY qty DESCENDING.
+    win_total = lines( t_win_db ).
+    CREATE DATA mr_win TYPE ty_t_win.
+    ASSIGN mr_win->* TO <win>.
+    LOOP AT t_win_db INTO DATA(ls_win) TO 4.
+      INSERT ls_win INTO TABLE <win>.
+    ENDLOOP.
 
   ENDMETHOD.
 

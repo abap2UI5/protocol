@@ -6,7 +6,7 @@
  * header, at one recorded commit. The frontend suite's `agent` adapter runs
  * it; a vendored copy keeps the suite runnable without an mcp-server
  * checkout and without the server's dependencies (the MCP SDK, Playwright).
- * Same scheme as abap2UI5/frontend-webcomponent scripts/vendor-agent.mjs.
+ * Same scheme as abap2UI5-addons/embed-webcomponent scripts/vendor-agent.mjs.
  *
  *   node scripts/vendor-agent-client.mjs [/path/to/mcp-server] [--ref <rev>]
  *   node scripts/vendor-agent-client.mjs [/path/to/mcp-server] --check

@@ -195,6 +195,32 @@ export default [
     },
   },
   {
+    id: "window.delta-rows-reference",
+    title: "A windowed table behind a data reference: its rows and state at /<attr>/*, the __delta on its * node names rows of the table, a window request names the path /<attr>/*",
+    level: "MUST",
+    profile: "core",
+    spec: `${W}#edits`,
+    async run(t) {
+      // WINDOW binds MR_WIN, six rows, four at a time, in a fixed order
+      // (QTY descending): the IDs 4 1 5 2 6 3, event WIN
+      const start = await t.start("WINDOW");
+      const refIds = (r) => (r.json.MODEL && r.json.MODEL.MR_WIN && Array.isArray(r.json.MODEL.MR_WIN["*"]) ? r.json.MODEL.MR_WIN["*"].map((row) => row.ID) : undefined);
+      const refState = (r) => r.json.MODEL && r.json.MODEL.__WINDOW && r.json.MODEL.__WINDOW.MR_WIN;
+      t.deepEqual(refIds(start), [4, 1, 5, 2], "the ID of the rows in MODEL.MR_WIN[\"*\"] at the start");
+      t.deepEqual(refState(start), { "*": { TOTAL: 6, COUNT: 4, SIZE: 4, EVENT: "WIN" } }, "MODEL.__WINDOW.MR_WIN at the start");
+      const check = await t.event(start, "CHECK", { model: { MR_WIN: { "*": { __delta: { 0: { DONE: true }, 2: { DONE: true } } } } } });
+      t.ok(check.json.MODEL && typeof check.json.MODEL.WIN_DONE === "string", "MODEL.WIN_DONE after CHECK");
+      t.equal(check.json.MODEL.WIN_DONE, "4,5", "WIN_DONE (the rows 0 and 2 of the table are the rows with ID 4 and 5)");
+      t.deepEqual(refIds(check), [4, 1, 5, 2], "the ID of the rows in MODEL.MR_WIN[\"*\"] after the edit");
+      t.deepEqual(check.json.MODEL.MR_WIN["*"].map((row) => row.DONE), [true, false, true, false], "DONE of the rows in MODEL.MR_WIN[\"*\"]");
+      const grown = await t.event(check, EVENT, { args: ["/MR_WIN/*", "WIN", "MORE", "4", "4"] });
+      expectHanded(t, grown, "WIN MORE 4 4", "/MR_WIN/* MORE 4 4", "MORE on /MR_WIN/*");
+      t.deepEqual(refIds(grown), [4, 1, 5, 2, 6, 3], "the ID of the rows in MODEL.MR_WIN[\"*\"] after MORE");
+      t.deepEqual(refState(grown), { "*": { TOTAL: 6, COUNT: 6, SIZE: 4, EVENT: "WIN" } }, "MODEL.__WINDOW.MR_WIN after MORE");
+      t.deepEqual(grown.json.MODEL.MR_WIN["*"].map((row) => row.DONE), [true, false, true, false, false, false], "DONE of the rows after MORE (the edit kept)");
+    },
+  },
+  {
     id: "window.whole-table-written",
     title: "A windowed table sent back whole is written like any table - the table is what the frontend shows",
     level: "MUST",

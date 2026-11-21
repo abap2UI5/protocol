@@ -98,6 +98,7 @@ fails when it is out of date).
 | `model.number-and-boolean` | MUST | core | Numbers and booleans in the delta reach typed attributes | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.structure` | MUST | core | A structure travels as its whole value and replaces every component | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.table-row-delta` | MUST | core | A table edited by row (__delta) changes exactly the named cells | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
+| `model.reference-delta` | MUST | core | A table behind a data reference edited by row: the __delta on its * node changes exactly the named cells | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.table-whole` | MUST | core | A table sent as its whole value replaces the table | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.combined-delta` | MUST | core | One delta can carry several attributes of different kinds | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.absent-attributes-kept` | MUST | core | Attributes the delta does not name keep their server value | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
@@ -112,6 +113,7 @@ fails when it is out of date).
 | `window.total-from-app` | MUST | core | TOTAL is the app's total as it holds it when the response is made - read anew, no new view - and never less than COUNT | [windowed-tables.md#the-window-state](../../spec/windowed-tables.md#the-window-state) |
 | `window.order-with-the-draft` | MUST | core | The rows the app loaded and its order belong to the draft: a request that continues an earlier draft continues that draft's rows | [windowed-tables.md#the-app-owns-the-order](../../spec/windowed-tables.md#the-app-owns-the-order) |
 | `window.delta-rows` | MUST | core | A row of a __delta on a windowed table is the row of the table with that index - the table is what the frontend shows - applied before the app's event runs | [windowed-tables.md#edits](../../spec/windowed-tables.md#edits) |
+| `window.delta-rows-reference` | MUST | core | A windowed table behind a data reference: its rows and state at /<attr>/*, the __delta on its * node names rows of the table, a window request names the path /<attr>/* | [windowed-tables.md#edits](../../spec/windowed-tables.md#edits) |
 | `window.whole-table-written` | MUST | core | A windowed table sent back whole is written like any table - the table is what the frontend shows | [windowed-tables.md#edits](../../spec/windowed-tables.md#edits) |
 | `message.toast` | MUST | core | A toast is the follow-up action ["MESSAGE_TOAST", "show", <text>] | [actions.md#messages](../../spec/actions.md#messages) |
 | `message.box` | MUST | core | A message box is ["MESSAGE_BOX", <type>, <text>] | [actions.md#messages](../../spec/actions.md#messages) |

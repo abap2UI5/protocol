@@ -10,12 +10,13 @@ itself - the way an OData service answers `$skip`, `$top`, `$orderby` and
 asks for one with ``window_bind_tab( val = t_rows total = total event =
 `ROWS` window = 4 )`` instead of `_bind( )` ([IC] `window_bind_tab`).
 
-This is the windowed table of abap2UI5 after 1.149.0 (branch DEV,
-`186f2c9b`), which replaced the one the release 1.149.0 shipped - a window
-the backend cut from the whole table, sorted and filtered itself and kept
-with the draft - a few days after it was released. The two wires do not
+This is the windowed table of abap2UI5 main `694fb262` (#3032, after the
+release 1.150.0), which replaced the one the releases 1.149.0 and 1.150.0
+ship - a window the backend cut from the whole table, sorted and filtered
+itself and kept with the draft - a few days after 1.149.0 brought it. The
+two wires do not
 understand each other; why the protocol number stays 2 regardless is
-[open question 14](open-questions.md#14-the-app-driven-window-and-the-protocol-number).
+[open question 15](open-questions.md#15-the-app-driven-window-and-the-protocol-number).
 
 Three things travel for it, all inside the messages of
 [request.md](request.md) and [response.md](response.md):
@@ -69,9 +70,10 @@ table; a plain `_bind( )` of it leaves them as they are ([BND]
 The state mirrors the path: a table in a structure at `/S_DATA/T_ROWS` has
 its state at `/__WINDOW/S_DATA/T_ROWS`, a table behind a data reference,
 which the model carries at `/MR_TAB/*`, at `/__WINDOW/MR_TAB/*` ([WM]
-`windowName`; the release's fixture [WT] binds `mr_tab` and its e2e test
-reads `MODEL.__WINDOW.MR_TAB["*"]` - the conformance app has no such
-table, so this is not in the recorded traffic).
+`windowName`; the fixture [WT] binds `mr_tab` and its e2e test reads
+`MODEL.__WINDOW.MR_TAB["*"]`; the conformance app WINDOW binds `MR_WIN`,
+recorded in `traffic/node-runtime/suite.json`, check
+`window.delta-rows-reference`).
 
 - A backend MUST send, in every `MODEL` that carries a windowed table, the
   table as the app holds it at the table's path and the window state with
@@ -215,9 +217,9 @@ What binds a backend:
   request that continues an earlier draft continues that draft's rows,
   also after later drafts sorted, filtered or edited. *Checked by:*
   `window.order-with-the-draft`.
-- **Implementation note - the draft.** abap2UI5 1.149.0 kept a windowed
-  table in a frame of its own next to the app's serialization ([TY]
-  `ty_s_kept`); that frame is gone with the app-driven window, and a
+- **Implementation note - the draft.** abap2UI5 1.149.0 and 1.150.0 kept
+  a windowed table in a frame of its own next to the app's serialization
+  ([TY] `ty_s_kept`); that frame is gone with the app-driven window, and a
   windowed table is serialized with the app like every other attribute.
   None of it was on the wire.
 
@@ -230,8 +232,10 @@ What binds a backend:
   into those rows ([MOD] `delta_apply_nodes`) - no position is mapped. The
   delta is applied before the app runs, also for a window request, which
   carries it like any event - an edit that travels with a `SORT` is in the
-  table when the app's event loads the rows anew. *Checked by:*
-  `window.delta-rows`.
+  table when the app's event loads the rows anew. The same holds behind a
+  data reference, where the `__delta` is on the `*` node (`/MR_WIN/*`,
+  [MOD] `main_json_to_attri`). *Checked by:* `window.delta-rows`,
+  `window.delta-rows-reference`.
 - A **whole table value** for a windowed table is written like one for any
   table: the table becomes the rows sent, `COUNT` follows them, `TOTAL`
   stays the app's. *Checked by:* `window.whole-table-written`.
@@ -239,11 +243,22 @@ What binds a backend:
   it shows - a `__delta` at its index, or the table whole as
   [request.md](request.md#the-model-delta) allows for any table - and MUST
   NOT send the `__WINDOW` key. *Frontend check:* `window.edit-row-shown`.
+  A windowed table behind a data reference (model node `/MR_TAB/*`, state
+  at `/__WINDOW/MR_TAB/*`) gets its `__delta` on the `*` node,
+  `{ "MR_TAB": { "*": { "__delta": { ... } } } }`, or its whole value
+  there ([request.md](request.md#the-model-delta)). *Frontend check:*
+  `window.edit-row-shown-reference`.
+- **Implementation note.** Up to abap2UI5 1.149.0 the UI5 frontend sent a
+  cell behind a data reference (`/MR_TAB/*/<row>/<field>`) as the whole
+  attribute, which a windowed table of 1.149.0 refused: the edit, or the
+  pick of a `TableSelectDialog` over such a table, was dropped. The
+  frontend of 2cc0344 (#3026, released with 1.150.0) sends the `__delta`
+  on the `*` node ([../conformance/RESULTS.md](../conformance/RESULTS.md#tables-behind-a-data-reference)).
 - An event that hands over a row of the table (`/T_ROWS/5` of a binding
   context) names the row of the table with that index: the app reads
   `t_rows[ 6 ]` ([IC] `window_bind_tab`: "a row, a cell edit or a
   selection is the row of val with the same index"; `window_get_row( )` of
-  1.149.0 is gone).
+  1.149.0 and 1.150.0 is gone).
 
 ## Frontends
 

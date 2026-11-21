@@ -54,31 +54,37 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 
 - **Protocol 2**, specification revision 0.5, derived from abap2UI5 1.149.0
   (its release commit `6f55b04`), the windowed tables from the app-driven
-  window of abap2UI5 branch DEV (`186f2c9b`), which replaced the one of
-  1.149.0 ([spec/windowed-tables.md](spec/windowed-tables.md)); the
-  maintainer decided ten open questions in revision 0.3, four are open
-  ([spec/open-questions.md](spec/open-questions.md)).
-- **Backend suite: 86 checks** (69 MUST, 17 SHOULD; 79 core, 7 UI5 profile).
-  `node-runtime` (`@abap2ui5/node-runtime` built from the DEV branch)
-  passes 86/86; `cap2ui5` (`@cap2ui5/cds-plugin` 0.6.0, on the runtime
-  1.149.0) passes 77 and fails the seven MUST checks of the windowed tables,
-  whose app it cannot start - pinned, with the place of the fix
+  window abap2UI5 merged to main after 1.150.0 (`694fb262`, #3032), which
+  replaced the one of 1.149.0 and 1.150.0
+  ([spec/windowed-tables.md](spec/windowed-tables.md)); the maintainer
+  decided ten open questions in revision 0.3, question 14 is resolved,
+  four are open ([spec/open-questions.md](spec/open-questions.md)).
+- **Backend suite: 88 checks** (71 MUST, 17 SHOULD; 81 core, 7 UI5 profile).
+  `node-runtime` on a runtime built from abap2UI5 main `694fb262` - what
+  `traffic/` is recorded against - passes 88/88; on the released
+  `@abap2ui5/node-runtime` 1.150.0 (`package.json`, CI) and on `cap2ui5`
+  (`@cap2ui5/cds-plugin` 0.7.0, on the runtime 1.149.0) the app WINDOW
+  does not start, and its eight MUST checks are pinned with the place of
+  the fix, the next abap2UI5 release; everything else passes, but
+  cap2UI5's SHOULD warning `error.details`
   ([conformance/RESULTS.md](conformance/RESULTS.md)).
-- **Schemas** validate all 400 recorded requests, 376 responses and 22 agent
+- **Schemas** validate all 408 recorded requests, 383 responses and 22 agent
   snapshots, checked by the shipped validator and by ajv (the agent
-  client's three window requests of 1.149.0 as invalid).
+  client's three window requests of 1.149.0 and 1.150.0 as invalid).
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
-- **Frontend suite: 86 checks** (71 MUST, 15 SHOULD; 68 core, 8 portable,
+- **Frontend suite: 87 checks** (72 MUST, 15 SHOULD; 69 core, 8 portable,
   7 UI5, 3 semantic), scripted from the recorded traffic. The UI5 SPA of
-  abap2UI5 branch DEV passes every check that applies (82, 4 skipped); the
-  Adaptive Cards renderer and the terminal renderer pass every check that
-  applies to them (68 and 74 - the terminal's include the router checks);
-  the agent client (mcp-server `8efb3d7`) passes 62 and fails
-  `semantic.recorded-snapshots` - it sends the window request of 1.149.0,
-  pinned as a finding; the Web Components frontend passed 68 of 68 of the
-  81 checks of 2026-10-03, with one intermittent failure, and was not run
-  again ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
+  abap2UI5 main `694fb262` passes every check that applies (83, 4
+  skipped); the release 1.150.0 that CI pins fails the UI5-profile window
+  checks (UI5_REL_FAILS, pinned); the Adaptive Cards renderer and the
+  terminal renderer pass every check that applies to them (69 and 75 - the
+  terminal's include the router checks); the agent client (mcp-server
+  `332a0b0`) passes 63 and fails `semantic.recorded-snapshots` - it sends
+  the window request of 1.149.0 and 1.150.0, pinned as a finding; the Web
+  Components frontend passed 68 of 68 of the 81 checks of 2026-10-03, with
+  one intermittent failure, and was not run again
+  ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
 - **Adaptive Cards renderer** (prototype, [renderers/adaptive-cards/](renderers/adaptive-cards/README.md)):
   all 65 portable controls mapped onto Adaptive Cards 1.5, the way back from
   an `Action.Submit` to the next request, golden cards of recorded traffic.

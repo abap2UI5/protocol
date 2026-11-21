@@ -14,7 +14,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { runBackendSuite } from "../conformance/backend/index.mjs";
 import { ROOT } from "./lib/traffic.mjs";
-import { expectedFailureIds, expectedWarningIds } from "./lib/expected.mjs";
+import { expectedFailureIds, expectedWarningIds, NODE_RUNTIME_APP_DRIVEN } from "./lib/expected.mjs";
 
 const skipAll = process.env.PROTOCOL_SKIP_BACKENDS ? "PROTOCOL_SKIP_BACKENDS is set" : false;
 const capInstalled = fs.existsSync(path.join(ROOT, "conformance/hosts/cap2ui5/node_modules/@cap2ui5/cds-plugin"));
@@ -34,11 +34,14 @@ async function suite(name, start, profile, after) {
   }
 }
 
-test("node-runtime passes every MUST but the pinned ones and every SHOULD of the ui5 profile", { skip: skipAll, timeout: 600_000 }, async (t) => {
+test("node-runtime passes every MUST but the pinned ones (the windowed tables, on a runtime without the app-driven window) and every SHOULD of the ui5 profile", { skip: skipAll, timeout: 600_000 }, async (t) => {
   const { startNodeRuntime } = await import("../conformance/hosts/node-runtime/serve.mjs");
   // the same host then serves the terminal renderer's end-to-end run
   await suite("node-runtime", () => startNodeRuntime({ build: true, allowedHosts: "*" }), "ui5", (backend) => t.test("the terminal renderer drives the conformance apps on it", () => terminalEndToEnd(backend.url)));
-  assert.deepEqual(expectedFailureIds("node-runtime").concat(expectedWarningIds("node-runtime")), []);
+  // pinned only on a runtime without the app-driven window (the released
+  // 1.150.0): the checks of the windowed tables (test/lib/expected.mjs)
+  const pinned = expectedFailureIds("node-runtime").concat(expectedWarningIds("node-runtime"));
+  assert.ok(NODE_RUNTIME_APP_DRIVEN ? pinned.length === 0 : pinned.every((id) => id.startsWith("window.")), pinned.join(", "));
 });
 
 /*
