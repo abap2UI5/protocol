@@ -1,12 +1,13 @@
 // The recorded traffic (traffic/<backend>/) of the two reference backends:
 // every message validates (schema.test.mjs), every suite check passed when it
-// was recorded but the pinned expected failures (test/lib/expected.mjs, per
-// backend), and the two backends answered the same wherever neither is pinned - see
+// was recorded but the expected failures of the recording (test/lib/expected.mjs,
+// RECORDED_FAILURES - the traffic is recorded with the node-runtime host on a
+// runtime of abap2UI5 main 694fb262, whatever is installed), and the two backends answered the same wherever neither is pinned - see
 // conformance/RESULTS.md for what differs and why.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load, comparable, normalizeIds } from "./lib/traffic.mjs";
-import { expectedFailureIds, expectedWarningIds, BACKEND_TRAFFIC_APART } from "./lib/expected.mjs";
+import { recordedFailureIds as expectedFailureIds, recordedWarningIds as expectedWarningIds, BACKEND_TRAFFIC_APART } from "./lib/expected.mjs";
 
 const node = load("node-runtime", "suite.json");
 const cap = load("cap2ui5", "suite.json");
@@ -44,15 +45,17 @@ test("both backends answer every check identically (status, media type, JSON bod
   }
 });
 
-test("the windowed tables: both backends pass every check of them, the one behind a data reference included, and nothing keeps their traffic out of the comparison above", () => {
+test("the windowed tables: node-runtime (recorded on a runtime of abap2UI5 main 694fb262) passes every check of them, the one behind a data reference included; cap2ui5 fails each on the app's start, as pinned, and only they are kept out of the comparison above", () => {
   const windowed = node.checks.filter((c) => c.id.startsWith("window."));
-  assert.equal(windowed.length, 14);
-  assert.deepEqual([...pinnedApart], []);
+  assert.equal(windowed.length, 9);
+  assert.deepEqual([...pinnedApart].sort(), windowed.map((c) => c.id).sort());
   for (const c of windowed) {
     const o = cap.checks.find((x) => x.id === c.id);
     assert.equal(c.status, "pass", `node-runtime ${c.id}`);
-    assert.equal(o.status, "pass", `cap2ui5 ${c.id}`);
-    assert.equal(o.exchanges.length, c.exchanges.length, c.id);
+    assert.equal(o.status, expectedWarningIds("cap2ui5").includes(c.id) ? "warn" : "fail", `cap2ui5 ${c.id}`);
+    // the app's start, answered 500 - the one exchange of the check
+    assert.equal(o.exchanges.length, 1, c.id);
+    assert.equal(o.exchanges[0].response.status, 500, c.id);
   }
 });
 
@@ -65,8 +68,8 @@ test("the one recorded difference: cap2UI5 hides a JavaScript app's exception te
   assert.match(body(cap), /^roundtrip failed \(/);
 });
 
-test("tables behind a data reference (open question 14): both backends pass both checks - cap2UI5 since @cap2ui5/cds-plugin 0.7.0 and its t.ref( ) - and answer them identically (compared above)", () => {
-  for (const id of ["model.reference-delta", "window.delta-positions-reference"]) {
+test("tables behind a data reference (open question 14): both backends pass model.reference-delta - cap2UI5 since @cap2ui5/cds-plugin 0.7.0 and its t.ref( ) - and answer it identically (compared above); the windowed one is window.delta-rows-reference, above", () => {
+  for (const id of ["model.reference-delta"]) {
     const n = node.checks.find((c) => c.id === id);
     const o = cap.checks.find((c) => c.id === id);
     assert.equal(n.status, "pass", `node-runtime ${id}`);

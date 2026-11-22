@@ -158,14 +158,15 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 });
 
 // The agent client's result, check by check - a change here is a change of
-// the client (re-vendored) or of a check. Since mcp-server a4d9f07 (PR #44)
-// it follows every frontend rule that applies (conformance/RESULTS.md) - the
-// vendored copy is 332a0b0 (adapters/vendor/mcp-server/source.json); the
+// the client (re-vendored) or of a check. From mcp-server a4d9f07 (PR #44)
+// it followed every frontend rule that applies, until the windowed tables
+// became app-driven (conformance/RESULTS.md, below) - the vendored copy is
+// 332a0b0 (adapters/vendor/mcp-server/source.json); the
 // skips are the portable and UI5 profiles it does not claim, a URL, a DOM,
 // focus, programmatic model edits and the nested-table cell its snapshot
 // does not describe.
 const AGENT_SKIPS = [
-  "model.nested-table", "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter",
+  "model.nested-table", "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event",
   "action.after-render", "message.details-sanitized",
   "router.keep", "router.hash-sent", "router.back-restores", "router.app-state",
   "portable.default-aggregation", "portable.unknown-property", "portable.unknown-control", "portable.excluded-action",
@@ -173,11 +174,20 @@ const AGENT_SKIPS = [
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
 ];
 
+// Its known deviation (RESULTS.md, windowed tables), with the place of the
+// fix: the client sends the window request of abap2UI5 1.149.0 and 1.150.0
+// ([path, count, sort?, filter?]), which is no request of this revision -
+// the replay of the "Sort list" BINDING_CALL posts one. Fixed in
+// abap2UI5/mcp-server lib/appclient.mjs (window requests as [path, event,
+// reason, skip, top, sorters, filter groups]), then re-vendored.
+const AGENT_KNOWN_FAILS = ["semantic.recorded-snapshots"];
+
 test("the agent client: the frontend suite's result is the one RESULTS.md records", { timeout: 120_000 }, async () => {
   const r = await runFrontendSuite({ adapter: "agent" });
   assert.equal(r.profile, "semantic");
   const bad = r.results.filter((x) => x.status === "fail" || x.status === "warn");
-  assert.deepEqual(bad.map((x) => `${x.id}: ${x.message}`), []);
+  assert.deepEqual(bad.map((x) => x.id), AGENT_KNOWN_FAILS, bad.map((x) => `${x.id}: ${x.message}`).join("\n"));
+  for (const x of bad) assert.match(x.message, /___ZZZ_WIN.*"T_EVENT_ARG":\["\/T_ROWS","4",/, x.id);
   assert.deepEqual(r.results.filter((x) => x.status === "skip").map((x) => x.id), AGENT_SKIPS);
 });
 
@@ -186,7 +196,7 @@ test("the agent client: the frontend suite's result is the one RESULTS.md record
 // not (a URL, a DOM, focus, a document title, programmatic model edits) and
 // the profiles it does not claim.
 const CARDS_SKIPS = [
-  "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "action.after-render", "message.details-sanitized",
+  "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event", "action.after-render", "message.details-sanitized",
   "router.keep", "router.hash-sent", "router.back-restores", "router.app-state", "portable.set-title",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
@@ -207,7 +217,7 @@ test("the Adaptive Cards renderer: every portable-profile check it can be driven
 // what a terminal has not (a DOM, programmatic model edits) and the
 // profiles it does not claim.
 const TERMINAL_SKIPS = [
-  "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "message.details-sanitized",
+  "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event", "message.details-sanitized",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
 ];
@@ -223,12 +233,22 @@ test("the terminal renderer: every portable-profile check it can be driven throu
 
 const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER is set" : false;
 // The UI5 SPA's known deviations (RESULTS.md) - a deviation goes here with
-// the place of its fix; every other failure fails the test. None today:
+// the place of its fix; every other failure fails the test.
 // window.edit-as-delta-reference (a cell behind a data reference sent as the
 // whole attribute) was pinned while CI's abap2UI5 commit was the release
-// 1.149.0; fixed in abap2UI5 2cc0344 (#3026, core/Lib.js
-// buildDeltaFromPaths), released with 1.150.0, the commit CI pins now.
-const UI5_KNOWN_FAILS = [];
+// 1.149.0; fixed in abap2UI5 2cc0344 (#3026), released with 1.150.0.
+// The three UI5-profile checks of the app-driven window fail on a frontend
+// whose list binding sends the window request of 1.149.0 and 1.150.0 - the
+// release commit af05dce CI checks out; fixed in abap2UI5 main 694fb262
+// (#3032, core/WindowModel.js), the next release after 1.150.0. Pinned only
+// for such a checkout: one whose core/WindowModel.js names the reasons of
+// the app-driven window passes them.
+const WINDOW_UI5 = ["ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event"];
+const appDrivenFrontend = (webapp) => {
+  const file = webapp && path.join(webapp, "core", "WindowModel.js");
+  return !file || !fs.existsSync(file) || /\bREASON\b/.test(fs.readFileSync(file, "utf8"));
+};
+const UI5_KNOWN_FAILS = appDrivenFrontend(locateWebapp()) ? [] : WINDOW_UI5;
 
 test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { skip: skipBrowser, timeout: 900_000 }, async (t) => {
   if (!locateWebapp()) {
@@ -245,7 +265,7 @@ test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { s
   const failed = r.results.filter((x) => x.status === "fail");
   const unknown = failed.filter((x) => !UI5_KNOWN_FAILS.includes(x.id));
   assert.deepEqual(unknown.map((x) => x.id), [], unknown.map((x) => `${x.id}: ${x.message}`).join("\n"));
-  for (const id of UI5_KNOWN_FAILS) if (!failed.some((x) => x.id === id)) t.diagnostic(`${id} passes - this checkout carries the fix; unpin it once CI's abap2UI5 commit does`);
+  assert.deepEqual(UI5_KNOWN_FAILS.filter((id) => !failed.some((x) => x.id === id)), [], "pinned checks that pass now - unpin them");
   assert.deepEqual(r.results.filter((x) => x.status === "warn").map((x) => `${x.id}: ${x.message}`), []);
   if (process.env.PROTOCOL_FRONTEND_REPORT) fs.writeFileSync(process.env.PROTOCOL_FRONTEND_REPORT, `${JSON.stringify(r, null, 2)}\n`);
 });

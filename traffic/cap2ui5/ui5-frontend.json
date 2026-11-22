@@ -1,5 +1,5 @@
 {
-  "source": "app/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.149.0 (abap2UI5), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
+  "source": "app/webapp/core/Server.js, Session.js, Lib.js of abap2UI5 1.150.0 (a2-main), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
   "backend": "@cap2ui5/cds-plugin 0.7.0 on @abap2ui5/node-runtime 1.149.0",
   "exchanges": [
     {
@@ -42,7 +42,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:6496",
+              "ORIGIN": "http://127.0.0.1:6930",
               "PATHNAME": "/rest/root/z2ui5",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
             }
@@ -54,13 +54,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"43d-42NvSGVws1SAza54Jwz2BYud4Rw\"",
+          "etag": "W/\"43d-nF5n5EwbMy/McHQDtSLQM8PSyhM\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "AEF802E60D54491EB7BB8F7AE70BF7A5",
+            "ID": "442F0BA48D554C6199B19C32501E37EB",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -129,9 +129,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "AEF802E60D54491EB7BB8F7AE70BF7A5",
+              "ID": "442F0BA48D554C6199B19C32501E37EB",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 24
+              "MS_CLIENT_PREV": 34
             }
           }
         }
@@ -141,13 +141,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"160-8VBucdK6HM7cfLzhwUyi5wwjhOM\"",
+          "etag": "W/\"160-z+Xc/RvmU9FJZU7r20qB9wxEZmU\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "512F8B01699F46638C63F8B4BFC7C7F4",
+            "ID": "CD69E92F05B24513BD8ADA0531CEB866",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -191,9 +191,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "512F8B01699F46638C63F8B4BFC7C7F4",
+              "ID": "CD69E92F05B24513BD8ADA0531CEB866",
               "EVENT": "ADD_ROW",
-              "MS_CLIENT_PREV": 53
+              "MS_CLIENT_PREV": 52
             }
           }
         }
@@ -203,13 +203,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"18a-pUPI0N5rtLRAWaQL9WQ/CI0DO0k\"",
+          "etag": "W/\"18a-2TkybjxWfGouHr7GEtfIp8Ewr3c\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "DAC7ADC5FDB1402AA60412186C0C5EC4",
+            "ID": "68AB2E21462A437BBA7EFDFFB7B50213",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -287,7 +287,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:6496",
+              "ORIGIN": "http://127.0.0.1:6930",
               "PATHNAME": "/rest/root/z2ui5",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -299,13 +299,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"294-8zpKArggUCujvy6XGu9HvVpG3dc\"",
+          "etag": "W/\"294-62tflBtf4qVxMXp8Iaf+8GE4yLw\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "9930CF6CB40744D8BB299D380BFA81D7",
+            "ID": "7F18A8C4839A4477A8C0275D74461728",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -337,9 +337,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "9930CF6CB40744D8BB299D380BFA81D7",
+              "ID": "7F18A8C4839A4477A8C0275D74461728",
               "EVENT": "ECHO",
-              "MS_CLIENT_PREV": 17,
+              "MS_CLIENT_PREV": 19,
               "T_EVENT_ARG": [
                 "alpha",
                 2,
@@ -357,13 +357,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"ab-Bnvr5LuT49LiW9GVmjs2l5AVVpY\"",
+          "etag": "W/\"ab-KPEdsFEM3UVxT9y/GlmrgyuDrUc\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "9D67554F230245ABB77073C87E5B5C07",
+            "ID": "DDA9FFD708DB4FF58571EC504799FEB5",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -385,9 +385,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "9D67554F230245ABB77073C87E5B5C07",
+              "ID": "DDA9FFD708DB4FF58571EC504799FEB5",
               "EVENT": "NOOP",
-              "MS_CLIENT_PREV": 23
+              "MS_CLIENT_PREV": 24
             }
           }
         }
@@ -397,13 +397,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"5d-QJp3S5UbPjyJx3juEtrXb3IVNlk\"",
+          "etag": "W/\"5d-igmn41+gEsAZH7GMYgBR6GEmcJw\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "8F85DAA6445A48188DAA477DCA582C68",
+            "ID": "88C7AEA2AFD7498082B617D147242753",
             "PROTOCOL": 2
           }
         }
@@ -420,7 +420,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/z2ui5-xapp-state=9D67554F230245ABB77073C87E5B5C07",
+              "HASH": "#/z2ui5-xapp-state=DDA9FFD708DB4FF58571EC504799FEB5",
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -450,8 +450,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 22,
-              "ORIGIN": "http://127.0.0.1:6496",
+              "MS_CLIENT_PREV": 19,
+              "ORIGIN": "http://127.0.0.1:6930",
               "PATHNAME": "/rest/root/z2ui5",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -463,13 +463,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"2dc-xFvTjwbD1C1NMybUxieXeJeyx2g\"",
+          "etag": "W/\"2dc-p3yA3TKOAux4KK6hdsRa+H2W4ZY\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "01F16BA760CD466B93F93BAB0CA506DB",
+            "ID": "DFF356AB6C8F4FDA9A26468CAC3E3803",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -537,7 +537,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:6496",
+              "ORIGIN": "http://127.0.0.1:6930",
               "PATHNAME": "/rest/root/z2ui5",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -549,13 +549,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"1ce-TibDOqs5QOjiMG/Sai9Jzqrnxms\"",
+          "etag": "W/\"1ce-cFHDU8o+wt8UdSgp3tFvyuNE0Kk\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "CF22A9560E234E74A790996758CFD041",
+            "ID": "21F696EBFAB84263B73B514DB35C191A",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -592,7 +592,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "CF22A9560E234E74A790996758CFD041",
+              "ID": "21F696EBFAB84263B73B514DB35C191A",
               "EVENT": "COUNT",
               "MS_CLIENT_PREV": 18
             }
@@ -604,13 +604,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"72-rZFdnhpeaot9xmDlZhZKWaeUQm0\"",
+          "etag": "W/\"72-BUbZN9vCXdcBoLoYQjtMn4wta04\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "2141EE33074A4D83A72733EF781515F9",
+            "ID": "CD15CE8D04EC452499BF09C31D472EF3",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -630,9 +630,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "2141EE33074A4D83A72733EF781515F9",
+              "ID": "CD15CE8D04EC452499BF09C31D472EF3",
               "EVENT": "CALL",
-              "MS_CLIENT_PREV": 21
+              "MS_CLIENT_PREV": 16
             }
           }
         }
@@ -642,13 +642,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"298-gu5Bz6M7jsqfj8SGSQVtaUoq/Gs\"",
+          "etag": "W/\"298-3yS9aaJAiRnrbFbG1bTF6C3dNik\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV_TGT",
-            "ID": "FB339DB14EFC4E41B9A3A33FDF6D64E9",
+            "ID": "4DA61909DE6948298AEFB52139877675",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -664,7 +664,7 @@
                   {
                     "checkNavAppCall": true,
                     "navAppCallPrevApp": "Z2UI5_CL_CONF_ROUTE",
-                    "navAppCallPrevId": "E394E86EF5004D3395BAFE79A3F81DDA",
+                    "navAppCallPrevId": "93446FBBC3F44AD480BE18CE31E6217F",
                     "setNavRouting": "KEEP"
                   }
                 ]
@@ -689,7 +689,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/2141EE33074A4D83A72733EF781515F9",
+              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/CD15CE8D04EC452499BF09C31D472EF3",
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -720,7 +720,7 @@
                 }
               },
               "MS_CLIENT_PREV": 33,
-              "ORIGIN": "http://127.0.0.1:6496",
+              "ORIGIN": "http://127.0.0.1:6930",
               "PATHNAME": "/rest/root/z2ui5",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -732,13 +732,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"1ce-EaOYDga1GkkLCeL9ki7j5ngJVZs\"",
+          "etag": "W/\"1ce-wfu92bEdAjRqZHk7m/B06FNFpec\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "66E8AB7338104C0FBFE02346FDBEEB1C",
+            "ID": "29CE5070679D409CB10BEFA3A821AD6A",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -804,7 +804,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:6496",
+              "ORIGIN": "http://127.0.0.1:6930",
               "PATHNAME": "/rest/root/z2ui5",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
             }
@@ -816,13 +816,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"23c-iwDpi1GaCa5guoc+t8SLhBBlX5U\"",
+          "etag": "W/\"23c-lW764T5IjiRAMHVDr2k/p/5GVA0\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "A7F846EEF6744B49849FF0CCE597D638",
+            "ID": "25F99004EFD64BD2850D6BBCFC7D9E4E",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -849,9 +849,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "A7F846EEF6744B49849FF0CCE597D638",
+              "ID": "25F99004EFD64BD2850D6BBCFC7D9E4E",
               "EVENT": "POPUP_OPEN",
-              "MS_CLIENT_PREV": 14
+              "MS_CLIENT_PREV": 15
             }
           }
         }
@@ -861,13 +861,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"21c-ZRdj7Xcu47iV80ry0nzbMnwjF60\"",
+          "etag": "W/\"21c-7kh8gX/f5NHtES0a8NKYWkTJFfI\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "194DD189E37845C880512B388B068A73",
+            "ID": "5E8D6948808F47B89643DCB06B97300B",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -897,9 +897,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "194DD189E37845C880512B388B068A73",
+              "ID": "5E8D6948808F47B89643DCB06B97300B",
               "EVENT": "POPOVER_OPEN",
-              "MS_CLIENT_PREV": 17
+              "MS_CLIENT_PREV": 15
             }
           }
         }
@@ -909,13 +909,13 @@
         "headers": {
           "cache-control": "no-cache, no-store, must-revalidate",
           "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"19b-twZas9DBYKMTjjoLhHPK63jx8Fc\"",
+          "etag": "W/\"19b-PAXeGwL64ws0nZatYe6n4Bz71M8\"",
           "x-content-type-options": "nosniff"
         },
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "E35A57947EF34C5F8132FBAADFD79808",
+            "ID": "83C7BEA1F81649DFBB811DEE9C2BA130",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -933,556 +933,6 @@
           },
           "MODEL": {
             "POPUP_TEXT": ""
-          }
-        }
-      }
-    },
-    {
-      "label": "WINDOW: page load",
-      "request": {
-        "method": "POST",
-        "headers": {
-          "content-type": "application/json",
-          "sap-contextid-accept": "header"
-        },
-        "body": {
-          "value": {
-            "S_FRONT": {
-              "CONFIG": {
-                "S_UI5": {
-                  "VERSION": "1.136.0",
-                  "BUILDTIMESTAMP": "202509010000",
-                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
-                  "THEME": "sap_horizon"
-                },
-                "S_DEVICE": {
-                  "SYSTEM": "desktop",
-                  "BROWSER": {
-                    "NAME": "cr",
-                    "VERSION": "140"
-                  },
-                  "OS": {
-                    "NAME": "linux",
-                    "VERSION": ""
-                  },
-                  "SUPPORT": {
-                    "TOUCH": false,
-                    "POINTER": true,
-                    "RETINA": false
-                  },
-                  "ORIENTATION": "landscape",
-                  "RESIZE": {
-                    "WIDTH": 1280,
-                    "HEIGHT": 800
-                  }
-                }
-              },
-              "ORIGIN": "http://127.0.0.1:6496",
-              "PATHNAME": "/rest/root/z2ui5",
-              "SEARCH": "?app_start=Z2UI5_CL_CONF_WINDOW"
-            }
-          }
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "cache-control": "no-cache, no-store, must-revalidate",
-          "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"550-0NKWeFzyoyrG+d4hZVtY4GaF2JI\"",
-          "x-content-type-options": "nosniff"
-        },
-        "body": {
-          "S_FRONT": {
-            "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "BF8998454BB54F56B234CF4C82770CCC",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - window\"><Text id=\"summary\" text=\"{/SUMMARY}\"/><Text id=\"mains\" text=\"{/MAINS}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Sort\" press=\".eB(['SORT'], 'QTY', 'X')\"/><Button text=\"Filter\" press=\".eB(['FILTER'], '1')\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/><Button text=\"Sort list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'sort', 'QTY', 'X')\"/><Button text=\"Filter list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'filter', 'NAME', 'Contains', '1')\"/><Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/T_ROWS}\"><columns><Column/><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{NAME}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
-                ]
-              ]
-            }
-          },
-          "MODEL": {
-            "MAINS": 1,
-            "SUMMARY": "",
-            "T_ROWS": [
-              {
-                "DONE": false,
-                "ID": 1,
-                "NAME": "item 01",
-                "QTY": 5
-              },
-              {
-                "DONE": false,
-                "ID": 2,
-                "NAME": "item 02",
-                "QTY": 10
-              },
-              {
-                "DONE": false,
-                "ID": 3,
-                "NAME": "item 03",
-                "QTY": 2
-              },
-              {
-                "DONE": false,
-                "ID": 4,
-                "NAME": "item 04",
-                "QTY": 7
-              }
-            ],
-            "__WINDOW": {
-              "T_ROWS": {
-                "COUNT": 4,
-                "SIZE": 4,
-                "TOTAL": 12
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "label": "WINDOW: the list is asked for rows past its window - getContexts(0, 8)",
-      "request": {
-        "method": "POST",
-        "headers": {
-          "content-type": "application/json",
-          "sap-contextid-accept": "header"
-        },
-        "body": {
-          "value": {
-            "S_FRONT": {
-              "ID": "BF8998454BB54F56B234CF4C82770CCC",
-              "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 22,
-              "T_EVENT_ARG": [
-                "/T_ROWS",
-                "8"
-              ]
-            }
-          }
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "cache-control": "no-cache, no-store, must-revalidate",
-          "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"23b-46YkkR23GOUipa+Mm3LKl0NFcVc\"",
-          "x-content-type-options": "nosniff"
-        },
-        "body": {
-          "S_FRONT": {
-            "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "89161B7FAD514E6EBF5D034EB057EB33",
-            "PROTOCOL": 2
-          },
-          "MODEL": {
-            "MAINS": 1,
-            "SUMMARY": "",
-            "T_ROWS": [
-              {
-                "DONE": false,
-                "ID": 1,
-                "NAME": "item 01",
-                "QTY": 5
-              },
-              {
-                "DONE": false,
-                "ID": 2,
-                "NAME": "item 02",
-                "QTY": 10
-              },
-              {
-                "DONE": false,
-                "ID": 3,
-                "NAME": "item 03",
-                "QTY": 2
-              },
-              {
-                "DONE": false,
-                "ID": 4,
-                "NAME": "item 04",
-                "QTY": 7
-              },
-              {
-                "DONE": false,
-                "ID": 5,
-                "NAME": "item 05",
-                "QTY": 12
-              },
-              {
-                "DONE": false,
-                "ID": 6,
-                "NAME": "item 06",
-                "QTY": 4
-              },
-              {
-                "DONE": false,
-                "ID": 7,
-                "NAME": "item 07",
-                "QTY": 9
-              },
-              {
-                "DONE": false,
-                "ID": 8,
-                "NAME": "item 08",
-                "QTY": 1
-              }
-            ],
-            "__WINDOW": {
-              "T_ROWS": {
-                "COUNT": 8,
-                "SIZE": 4,
-                "TOTAL": 12
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "label": "WINDOW: sort( ) on the list binding - QTY descending",
-      "request": {
-        "method": "POST",
-        "headers": {
-          "content-type": "application/json",
-          "sap-contextid-accept": "header"
-        },
-        "body": {
-          "value": {
-            "S_FRONT": {
-              "ID": "89161B7FAD514E6EBF5D034EB057EB33",
-              "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 33,
-              "T_EVENT_ARG": [
-                "/T_ROWS",
-                "4",
-                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]"
-              ]
-            }
-          }
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "cache-control": "no-cache, no-store, must-revalidate",
-          "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"181-89AkO1iyC2ax4j0jxbgvCkxL1Bg\"",
-          "x-content-type-options": "nosniff"
-        },
-        "body": {
-          "S_FRONT": {
-            "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "E4598653DB49404FBFD6138E72CE80E5",
-            "PROTOCOL": 2
-          },
-          "MODEL": {
-            "MAINS": 1,
-            "SUMMARY": "",
-            "T_ROWS": [
-              {
-                "DONE": false,
-                "ID": 5,
-                "NAME": "item 05",
-                "QTY": 12
-              },
-              {
-                "DONE": false,
-                "ID": 10,
-                "NAME": "item 10",
-                "QTY": 11
-              },
-              {
-                "DONE": false,
-                "ID": 2,
-                "NAME": "item 02",
-                "QTY": 10
-              },
-              {
-                "DONE": false,
-                "ID": 7,
-                "NAME": "item 07",
-                "QTY": 9
-              }
-            ],
-            "__WINDOW": {
-              "T_ROWS": {
-                "COUNT": 4,
-                "SIZE": 4,
-                "TOTAL": 12
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "label": "WINDOW: filter( ) on the list binding - QTY greater than 6",
-      "request": {
-        "method": "POST",
-        "headers": {
-          "content-type": "application/json",
-          "sap-contextid-accept": "header"
-        },
-        "body": {
-          "value": {
-            "S_FRONT": {
-              "ID": "E4598653DB49404FBFD6138E72CE80E5",
-              "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 33,
-              "T_EVENT_ARG": [
-                "/T_ROWS",
-                "4",
-                "",
-                "[[[\"QTY\",\"GT\",6,null]]]"
-              ]
-            }
-          }
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "cache-control": "no-cache, no-store, must-revalidate",
-          "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"180-FqP2vAJUxFy433YmZ1o8ppS+abY\"",
-          "x-content-type-options": "nosniff"
-        },
-        "body": {
-          "S_FRONT": {
-            "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "8670CF0E19A74FCAA45092B3A16D9749",
-            "PROTOCOL": 2
-          },
-          "MODEL": {
-            "MAINS": 1,
-            "SUMMARY": "",
-            "T_ROWS": [
-              {
-                "DONE": false,
-                "ID": 5,
-                "NAME": "item 05",
-                "QTY": 12
-              },
-              {
-                "DONE": false,
-                "ID": 10,
-                "NAME": "item 10",
-                "QTY": 11
-              },
-              {
-                "DONE": false,
-                "ID": 2,
-                "NAME": "item 02",
-                "QTY": 10
-              },
-              {
-                "DONE": false,
-                "ID": 7,
-                "NAME": "item 07",
-                "QTY": 9
-              }
-            ],
-            "__WINDOW": {
-              "T_ROWS": {
-                "COUNT": 4,
-                "SIZE": 4,
-                "TOTAL": 6
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "label": "WINDOW: the list grows inside the sort and the filter - getContexts(0, 8)",
-      "request": {
-        "method": "POST",
-        "headers": {
-          "content-type": "application/json",
-          "sap-contextid-accept": "header"
-        },
-        "body": {
-          "value": {
-            "S_FRONT": {
-              "ID": "8670CF0E19A74FCAA45092B3A16D9749",
-              "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 34,
-              "T_EVENT_ARG": [
-                "/T_ROWS",
-                "6"
-              ]
-            }
-          }
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "cache-control": "no-cache, no-store, must-revalidate",
-          "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"1df-z+0e+g7wbGeHUn/GjGahXYPxono\"",
-          "x-content-type-options": "nosniff"
-        },
-        "body": {
-          "S_FRONT": {
-            "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "CF6EC6AE78A347FA877D9F02480BEC91",
-            "PROTOCOL": 2
-          },
-          "MODEL": {
-            "MAINS": 1,
-            "SUMMARY": "",
-            "T_ROWS": [
-              {
-                "DONE": false,
-                "ID": 5,
-                "NAME": "item 05",
-                "QTY": 12
-              },
-              {
-                "DONE": false,
-                "ID": 10,
-                "NAME": "item 10",
-                "QTY": 11
-              },
-              {
-                "DONE": false,
-                "ID": 2,
-                "NAME": "item 02",
-                "QTY": 10
-              },
-              {
-                "DONE": false,
-                "ID": 7,
-                "NAME": "item 07",
-                "QTY": 9
-              },
-              {
-                "DONE": false,
-                "ID": 12,
-                "NAME": "item 12",
-                "QTY": 8
-              },
-              {
-                "DONE": false,
-                "ID": 4,
-                "NAME": "item 04",
-                "QTY": 7
-              }
-            ],
-            "__WINDOW": {
-              "T_ROWS": {
-                "COUNT": 6,
-                "SIZE": 4,
-                "TOTAL": 6
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "label": "WINDOW: CHECK with the first and the third row shown ticked",
-      "request": {
-        "method": "POST",
-        "headers": {
-          "content-type": "application/json",
-          "sap-contextid-accept": "header"
-        },
-        "body": {
-          "value": {
-            "MODEL": {
-              "T_ROWS": {
-                "__delta": {
-                  "0": {
-                    "DONE": true
-                  },
-                  "2": {
-                    "DONE": true
-                  }
-                }
-              }
-            },
-            "S_FRONT": {
-              "ID": "CF6EC6AE78A347FA877D9F02480BEC91",
-              "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 36
-            }
-          }
-        }
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "cache-control": "no-cache, no-store, must-revalidate",
-          "content-type": "application/json; charset=UTF-8",
-          "etag": "W/\"1e0-/JsMvTpJs1txt3PQn0srb9LcbR0\"",
-          "x-content-type-options": "nosniff"
-        },
-        "body": {
-          "S_FRONT": {
-            "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "5C25ECF067FB4AA8A5BEB01864648895",
-            "PROTOCOL": 2
-          },
-          "MODEL": {
-            "MAINS": 2,
-            "SUMMARY": "2,5",
-            "T_ROWS": [
-              {
-                "DONE": true,
-                "ID": 5,
-                "NAME": "item 05",
-                "QTY": 12
-              },
-              {
-                "DONE": false,
-                "ID": 10,
-                "NAME": "item 10",
-                "QTY": 11
-              },
-              {
-                "DONE": true,
-                "ID": 2,
-                "NAME": "item 02",
-                "QTY": 10
-              },
-              {
-                "DONE": false,
-                "ID": 7,
-                "NAME": "item 07",
-                "QTY": 9
-              },
-              {
-                "DONE": false,
-                "ID": 12,
-                "NAME": "item 12",
-                "QTY": 8
-              },
-              {
-                "DONE": false,
-                "ID": 4,
-                "NAME": "item 04",
-                "QTY": 7
-              }
-            ],
-            "__WINDOW": {
-              "T_ROWS": {
-                "COUNT": 6,
-                "SIZE": 4,
-                "TOTAL": 6
-              }
-            }
           }
         }
       }

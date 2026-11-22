@@ -129,10 +129,11 @@ async function recordUi5Frontend(backend, dir) {
   await step("SLOTS: POPOVER_OPEN", () => f.fire("POPOVER_OPEN"));
 
   // The windowed table (spec/windowed-tables.md), with the frontend's own
-  // list binding (core/WindowModel.js, from abap2UI5 1.149.0 on) saying what
-  // a request names: more rows, a sort, a filter - and a cell edited in a
-  // sorted window. A backend without windowed tables fails the page load;
-  // the scenario is then left out, as it is for a frontend without them.
+  // list binding (core/WindowModel.js) saying what a request names: more
+  // rows, a sort, a filter - each the app's event ROWS with reason, skip and
+  // top - and a cell edited in a sorted window. A backend that cannot start
+  // the app WINDOW fails the page load; the scenario is then left out, as it
+  // is for a frontend without windowed tables.
   f = session("?app_start=Z2UI5_CL_CONF_WINDOW");
   scenarios.push("WINDOW: page load");
   const first = await f.start();
@@ -156,10 +157,22 @@ async function recordUi5Frontend(backend, dir) {
 
   const pkg = JSON.parse(fs.readFileSync(path.join(home, "package.json"), "utf8"));
   write(dir, "ui5-frontend.json", {
-    source: `app/webapp/core/Server.js, Session.js, Lib.js${w ? ", WindowModel.js" : ""} of abap2UI5 ${pkg.version} (${path.basename(home)}), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed`,
+    source: `${path.relative(home, webapp).split(path.sep).join("/")}/core/Server.js, Session.js, Lib.js${w ? ", WindowModel.js" : ""} of abap2UI5 ${pkg.version} (${path.basename(home)}), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed`,
     backend: backend.version,
     exchanges,
   });
+}
+
+// A window request in the shape of abap2UI5 1.149.0 - [path, count, sort?,
+// filter?] - which the agent client (mcp-server 8efb3d7) still sends: it is
+// no request of this revision (schema/request.schema.json) and is recorded
+// as such, a finding of conformance/RESULTS.md (windowed tables).
+const OLD_WINDOW_WIRE = "the window request of abap2UI5 1.149.0 ([path, count, sort?, filter?]) - no request of this revision (conformance/RESULTS.md, windowed tables)";
+function oldWindowWire(body) {
+  const front = body && body.value && body.value.S_FRONT;
+  if (!front || front.EVENT !== "___ZZZ_WIN") return false;
+  const args = front.T_EVENT_ARG || [];
+  return !["MORE", "SORT", "FILTER"].includes(args[2]);
 }
 
 async function recordAgentClient(backend, dir) {
@@ -176,9 +189,11 @@ async function recordAgentClient(backend, dir) {
   const fetchImpl = async (u, init) => {
     const res = await fetch(u, init);
     const text = await res.text();
+    const body = parse(init.body);
     exchanges.push({
       label,
-      request: { method: init.method, headers: pick(init.headers), body: parse(init.body) },
+      ...(oldWindowWire(body) ? { malformed: OLD_WINDOW_WIRE } : {}),
+      request: { method: init.method, headers: pick(init.headers), body },
       response: { status: res.status, headers: pick(Object.fromEntries(res.headers.entries())), body: parse(text) },
     });
     return new Response(text, { status: res.status, headers: res.headers });
@@ -206,10 +221,21 @@ async function recordAgentClient(backend, dir) {
     // the windowed table: the first @BINDING_CALL of the screen is the
     // "Sort list" button, then the next window in that order, then a filter
     // the client builds itself
-    s = await snap("WINDOW: app_start", () => client.start("Z2UI5_CL_CONF_WINDOW"));
-    s = await snap("WINDOW: act - @BINDING_CALL (Sort list)", () => client.act(s.session, { event: "@BINDING_CALL" }));
-    s = await snap("WINDOW: act - window: the next window", () => client.act(s.session, { window: { table: "T_ROWS" } }));
-    s = await snap("WINDOW: act - window: filter NAME Contains 1", () => client.act(s.session, { window: { table: "T_ROWS", filter: [["NAME", "Contains", "1"]] } }));
+    // A backend that cannot start the app WINDOW leaves the scenario out,
+    // as the UI5 frontend's does above.
+    let started = null;
+    try {
+      started = await snap("WINDOW: app_start", () => client.start("Z2UI5_CL_CONF_WINDOW"));
+    } catch (e) {
+      while (exchanges.length && exchanges[exchanges.length - 1].label === "WINDOW: app_start") exchanges.pop();
+      process.stderr.write(`[record] agent-client: the windowed table is left out - the backend does not start Z2UI5_CL_CONF_WINDOW (${e.message})\n`);
+    }
+    if (started) {
+      s = started;
+      s = await snap("WINDOW: act - @BINDING_CALL (Sort list)", () => client.act(s.session, { event: "@BINDING_CALL" }));
+      s = await snap("WINDOW: act - window: the next window", () => client.act(s.session, { window: { table: "T_ROWS" } }));
+      s = await snap("WINDOW: act - window: filter NAME Contains 1", () => client.act(s.session, { window: { table: "T_ROWS", filter: [["NAME", "Contains", "1"]] } }));
+    }
   }
   const pkg = JSON.parse(fs.readFileSync(path.join(home, "package.json"), "utf8"));
   write(dir, "agent-client.json", {

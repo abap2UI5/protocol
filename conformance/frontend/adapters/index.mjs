@@ -2,7 +2,7 @@
 // only when its adapter is asked for, so the suite has no static dependency
 // on a browser driver.
 export const ADAPTERS = Object.freeze({
-  ui5: { module: "./ui5.mjs", factory: "createUi5Adapter", description: "the UI5 SPA (abap2UI5 app/webapp) in Chromium via Playwright" },
+  ui5: { module: "./ui5.mjs", factory: "createUi5Adapter", description: "the UI5 SPA (abap2UI5 bundle/webapp) in Chromium via Playwright" },
   agent: { module: "./agent.mjs", factory: "createAgentAdapter", description: "the agent client of abap2UI5/mcp-server (lib/appclient.mjs)" },
   webcomponent: { module: "./webcomponent.mjs", factory: "createWebComponentAdapter", description: "the UI5 Web Components frontend (abap2UI5-addons/embed-webcomponent dist/abap2ui5-wc.js) in Chromium" },
   "adaptive-cards": { module: "./adaptive-cards.mjs", factory: "createAdaptiveCardsAdapter", description: "the Adaptive Cards renderer prototype of this repository (renderers/adaptive-cards/), in process" },

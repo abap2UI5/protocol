@@ -17,6 +17,13 @@
  * Result: .build/node-runtime/abap2ui5/ - a complete runtime with the
  * conformance classes in it and a host.mjs, the package's exports running on
  * that output, which serve.mjs imports instead of the package.
+ *
+ * The app WINDOW is written for the app-driven window
+ * (window_bind_tab( val total event window ), abap2UI5 main 694fb262 on); a
+ * runtime before it - the released 1.150.0 - does not compile it, and the
+ * transpile would fail for every app. On such a runtime the app is left
+ * out (appDrivenWindow( ), said on stderr): its start then fails, and the
+ * checks of the windowed tables with it, as test/lib/expected.mjs pins.
  * Usage: node conformance/hosts/node-runtime/build.mjs
  */
 import { execFileSync } from "node:child_process";
@@ -38,6 +45,17 @@ function log(line) {
   process.stderr.write(`[build node-runtime] ${line}\n`);
 }
 
+/** The ABAP apps that need the app-driven window, by file name prefix. */
+export const APP_DRIVEN_APPS = Object.freeze(["z2ui5_cl_conf_window."]);
+
+/** Whether the installed @abap2ui5/node-runtime has the app-driven window:
+ *  its client interface declares cs_window_reason (abap2UI5 main 694fb262,
+ *  #3032, on). */
+export function appDrivenWindow() {
+  const intf = path.join(path.dirname(require.resolve(`${PKG}/package.json`)), "downport", "02", "z2ui5_if_client.intf.abap");
+  return fs.existsSync(intf) && /\bcs_window_reason\b/i.test(fs.readFileSync(intf, "utf8"));
+}
+
 function runtimeMeta() {
   return JSON.parse(fs.readFileSync(require.resolve(`${PKG}/package.json`), "utf8"));
 }
@@ -48,10 +66,19 @@ export function build() {
   // an output of the recipe before 1.148.0 (apps/index.mjs) is no transpile
   // output the command would empty
   fs.rmSync(BUILD_DIR, { recursive: true, force: true });
-  log(`transpiling ${PKG} ${meta.version} and ${rel(INPUT_DIR)}`);
+  let input = INPUT_DIR;
+  if (!appDrivenWindow()) {
+    input = path.join(BUILD_DIR, "apps");
+    fs.mkdirSync(input, { recursive: true });
+    for (const f of fs.readdirSync(INPUT_DIR)) {
+      if (!APP_DRIVEN_APPS.some((p) => f.startsWith(p))) fs.copyFileSync(path.join(INPUT_DIR, f), path.join(input, f));
+    }
+    log(`${PKG} ${meta.version} has no app-driven window (cs_window_reason): ${APP_DRIVEN_APPS.join(", ")} left out`);
+  }
+  log(`transpiling ${PKG} ${meta.version} and ${rel(input)}`);
   const transpile = require.resolve(`${PKG}/setup/transpile.mjs`);
   // the command's own summary goes to stderr like its progress: stdout is the caller's (reports, --json)
-  execFileSync(process.execPath, [transpile, rel(INPUT_DIR), rel(OUTPUT_DIR)], { cwd: ROOT, stdio: ["ignore", 2, "inherit"] });
+  execFileSync(process.execPath, [transpile, rel(input), rel(OUTPUT_DIR)], { cwd: ROOT, stdio: ["ignore", 2, "inherit"] });
   log(`runtime ready in ${rel(OUTPUT_DIR)}`);
   return { outputDir: OUTPUT_DIR, hostEntry: HOST_ENTRY, runtime: meta.version };
 }

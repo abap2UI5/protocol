@@ -78,7 +78,7 @@ export default [
       ] }, "MODEL.MR_TAB at the start (the table is the node /MR_TAB/*)");
       const r = await t.event(start, "CHECK", { model: { MR_TAB: { "*": { __delta: { 1: { TEXT: "zwei", DONE: true } } } } } });
       t.ok(r.json.MODEL && typeof r.json.MODEL.SUMMARY === "string", "MODEL.SUMMARY after CHECK");
-      t.equal(r.json.MODEL.SUMMARY, "1:one:,2:zwei:X,3:three:;", "SUMMARY");
+      t.equal(r.json.MODEL.SUMMARY, "1:one:,2:zwei:X,3:three:", "SUMMARY");
       t.deepEqual(r.json.MODEL.MR_TAB, { "*": [
         { DONE: false, ID: 1, TEXT: "one" },
         { DONE: true, ID: 2, TEXT: "zwei" },

@@ -416,13 +416,13 @@ actions above), `_event`, `_event_client`, `_event_nav_app_leave`, `_bind`;
 `nav_app_call` / `nav_app_leave` and `get_event_arg` are server-side and
 transparent to the frontend. Not in v1: `nest_view_display` /
 `nest2_view_display`, `view_display( switch_default_model_path )`, and
-`window_bind_tab( )` / `window_get_row( )` - a portable frontend shows the
-rows the model carries and need not ask for more
+`window_bind_tab( )` - a portable frontend shows the rows the model
+carries and need not ask for more
 ([../spec/windowed-tables.md](../spec/windowed-tables.md#frontends),
 [open question 13](../spec/open-questions.md#13-windowed-tables-in-frontends-that-are-not-the-ui5-frontend)).
 It still meets the model of a windowed table from an app outside the
 profile, and the core rules bind it: the reserved `/__WINDOW` key, an edit
-as a `__delta` of positions.
+of the row shown.
 
 ## 7. Explicit exclusions
 
@@ -467,7 +467,7 @@ as a `__delta` of positions.
    sequence that the frontend has to group (Appendix A).
 7. **Tables are `sap.m.Table`** (63 core apps) with `ColumnListItem`
    templates; growing is local paging over rows already in the model (the
-   rows of the window, when the table is a windowed one).
+   rows the app loaded, when the table is a windowed one).
 
 ## 9. v1.1 candidates (informative)
 

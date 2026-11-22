@@ -132,31 +132,45 @@ Follow-up actions.
 
 ## Z2UI5_CL_CONF_WINDOW
 
-A windowed table ([../../spec/windowed-tables.md](../../spec/windowed-tables.md)).
-The backend answers the window requests (`___ZZZ_WIN`) itself; `MAINS`
-shows that they do not reach the app.
+A windowed table the app loads itself
+([../../spec/windowed-tables.md](../../spec/windowed-tables.md)). The
+list binding's window requests (`___ZZZ_WIN`) reach the app as its event
+`ROWS`, with the request in `get( )-r_event_data`; the app sorts, filters
+and counts its rows itself. `LAST` and `REQUEST` show what it was handed.
 
 | | |
 |---|---|
-| Model (initial) | `T_ROWS` - twelve rows `{ ID, NAME, QTY, DONE }`, bound with `window_bind_tab( )` and a window of 4: `ID` 1 to 12, `NAME` "item 01" to "item 12", `QTY` = `ID` * 5 mod 13 (5 10 2 7 12 4 9 1 6 11 3 8), `DONE` false - so the model carries the rows 1 to 4 and `__WINDOW` = { `T_ROWS`: { `TOTAL` 12, `COUNT` 4, `SIZE` 4 } }; `SUMMARY` ""; `MAINS` (integer) |
-| every roundtrip that runs the app | `MAINS` + 1 first - 1 after the start; so every event the app sees pushes the model |
-| View | Texts `{/SUMMARY}`, `{/MAINS}`; the buttons below; a growing `Table` with the id `rows` (`growingThreshold` 4) over `{/T_ROWS}` with `{ID}`, `{NAME}`, `{QTY}` and a CheckBox `{DONE}` per row. The app's sort and filter are passed to `window_bind_tab( )` as `t_sort` / `t_filter` |
-| `CHECK` | `SUMMARY` = the `ID` of the rows that are `DONE`, in the order of the table, joined with `,` |
-| `SORT` | the app's sort: argument 1 the column, argument 2 not empty for descending; no argument clears it. Binds the table again without a view - pushes the model with the first window of the new order (wired: `SORT` with `'QTY'`, `'X'`) |
-| `FILTER` | the app's filter: `NAME` `Contains` argument 1; no argument clears it. As `SORT` (wired: `FILTER` with `'1'`) |
-| `RERENDER` | displays MAIN again, the sort and the filter passed unchanged |
+| Rows | twelve rows `{ ID, NAME, QTY, DONE }` in a table of the app's own (not bound): `ID` 1 to 12, `NAME` "item 01" to "item 12", `QTY` = `ID` * 5 mod 13 (5 10 2 7 12 4 9 1 6 11 3 8), `DONE` false |
+| Model (initial) | `T_ROWS` - the rows loaded, the first four in the order of `ID`, bound with ``window_bind_tab( val = t_rows total = total event = `ROWS` window = 4 )``, so `__WINDOW` = { `T_ROWS`: { `TOTAL` 12, `COUNT` 4, `SIZE` 4, `EVENT` "ROWS" } }; `SUMMARY` "", `MAINS` (integer), `LAST` "", `REQUEST` "" (all Text bindings) |
+| every roundtrip that runs the app | `MAINS` + 1 first - 1 after the start |
+| `MR_WIN` | a second windowed table, behind a data reference (`TYPE REF TO data`, bound dereferenced, so the model node is `/MR_WIN/*`): six rows `{ ID, QTY, DONE }` in a fixed order, `QTY` = `ID` * 5 mod 7 (5 3 1 6 4 2), ordered by `QTY` descending (the `ID` 4 1 5 2 6 3); the first four loaded, ``window_bind_tab( val = <win> total = win_total event = `WIN` window = 4 )``, so `__WINDOW` = { `MR_WIN`: { `*`: { `TOTAL` 6, `COUNT` 4, `SIZE` 4, `EVENT` "WIN" } } }; `WIN_DONE` "" |
+| every event | `LAST` = the event and its arguments (`get( )-t_event_arg`), joined with blanks - `ROWS MORE 4 4` |
+| View | Texts `{/SUMMARY}`, `{/MAINS}`, `{/LAST}`, `{/REQUEST}`, `{/WIN_DONE}`; the buttons below; a growing `Table` with the id `rows` (`growingThreshold` 4) over `{/T_ROWS}` with `{ID}`, `{NAME}`, `{QTY}` and a CheckBox `{DONE}` per row; a growing `Table` `win` (`growingThreshold` 4) over `{/MR_WIN/*}` with `{ID}`, `{QTY}` and a CheckBox `{DONE}` |
+| `ROWS` | the window event. `REQUEST` = the request of `r_event_data`: `path reason skip top`, then ` S:<PATH>:<A or D>` per sorter and ` F<group>:<PATH>:<operator>:<value1>:<value2>` per condition (`/T_ROWS SORT 0 4 S:QTY:D`). For any other `path` nothing else happens. Otherwise the `DONE` of the rows held is written back into the app's rows, then: `MORE` keeps the first `skip` rows (at most the ones held) and appends the next `top` rows of the current order; `SORT` and `FILTER` make the request's sorters and filter the current order and load its first `top` rows. `total` = the rows the filter lets through |
+| the app's order | sorters by `ID`, `QTY` (numbers) and `NAME`, the first that tells two rows apart decides, stable; other columns tell nothing apart. Conditions on `NAME` (`Contains`, `EQ`, without regard to case) and on `ID` and `QTY` (`EQ`, `GT`, `LT`, `BT`), a value that is no plain number read as 0; any other condition lets no row through. Groups ANDed, the conditions of a group ORed |
+| `WIN` | the window event of `MR_WIN`: `REQUEST` as for `ROWS`; the `DONE` of the rows held written back, then `MORE` keeps the first `skip` rows and appends the next `top` of the fixed order, `SORT` and `FILTER` load its first `top` rows (the sorters and the filter are not applied) |
+| `CHECK` | `SUMMARY` = the `ID` of the rows of `T_ROWS` that are `DONE`, in the order of the table, joined with `,`; `WIN_DONE` the same for `MR_WIN` |
+| `TOTAL` | `total` = argument 1 (no rows loaded, no view) - not wired, the suite sends it |
 | Buttons `Sort list`, `Filter list` | wired frontend actions, no roundtrip of their own: `BINDING_CALL` `rows` `items` `sort` `QTY` `X`, and `rows` `items` `filter` `NAME` `Contains` `1` - the list binding of the UI5 frontend turns each into a window request |
+
+The cap2UI5 twin is written in the same shape, but `@cap2ui5/cds-plugin`
+0.7.0 hosts the runtime 1.150.0, whose `window_bind_tab( )` has no `total`
+and no `event`: the app does not start there
+([../RESULTS.md](../RESULTS.md#windowed-tables)).
 
 ## Z2UI5_CL_CONF_REF
 
-Tables behind a data reference ([../../spec/request.md](../../spec/request.md#the-model-delta)).
-Two attributes `TYPE REF TO data`, bound dereferenced - in ABAP
-`_bind( <tab> )` of the data `mr_tab->*` points to, in cap2UI5
-`t.ref( )` fields bound as `"mr_tab->*"` - so each table is the model node
-`/<attr>/*`.
+A table behind a data reference ([../../spec/request.md](../../spec/request.md#the-model-delta)).
+An attribute `TYPE REF TO data`, bound dereferenced - in ABAP
+`_bind( <tab> )` of the data `mr_tab->*` points to, in cap2UI5 a
+`t.ref( )` field bound as `"mr_tab->*"` - so the table is the model node
+`/MR_TAB/*`. The windowed table behind a reference is `MR_WIN` of the app
+[WINDOW](#z2ui5_cl_conf_window) (it was this app's until the app-driven
+window, whose `window_bind_tab( )` the released runtimes do not compile -
+REF stays buildable on every runtime).
 
 | | |
 |---|---|
-| Model (initial) | `MR_TAB` { `*`: [{ `ID` 1, `TEXT` "one", `DONE` false }, { 2, "two", false }, { 3, "three", false }] } (bound with `_bind( )`); `MR_WIN` { `*`: six rows `{ ID, QTY, DONE }` } bound with `window_bind_tab( )`, a window of 4 and the app's sort `QTY` descending: `ID` 1 to 6, `QTY` = `ID` * 5 mod 7 (5 3 1 6 4 2), `DONE` false - so the model carries the rows with the `ID` 4 1 5 2 and `__WINDOW` = { `MR_WIN`: { `*`: { `TOTAL` 6, `COUNT` 4, `SIZE` 4 } } }; `SUMMARY` "" |
-| View | Text `{/SUMMARY}`, a button `CHECK`; a Table over `{/MR_TAB/*}` with `{ID}`, an Input `{TEXT}` and a CheckBox `{DONE}` per row; a growing Table `rows` (`growingThreshold` 4) over `{/MR_WIN/*}` with `{ID}`, `{QTY}` and a CheckBox `{DONE}` |
-| `CHECK` | `SUMMARY` = the rows of `MR_TAB` as `ID:TEXT:DONE` (`DONE` as `X` or empty) joined with `,`, then `;`, then the `ID` of the rows of `MR_WIN` that are `DONE`, in the order of the table, joined with `,` - initially `1:one:,2:two:,3:three:;` |
+| Model (initial) | `MR_TAB` { `*`: [{ `ID` 1, `TEXT` "one", `DONE` false }, { 2, "two", false }, { 3, "three", false }] } (bound with `_bind( )`); `SUMMARY` "" |
+| View | Text `{/SUMMARY}`, a button `CHECK`; a Table over `{/MR_TAB/*}` with `{ID}`, an Input `{TEXT}` and a CheckBox `{DONE}` per row |
+| `CHECK` | `SUMMARY` = the rows of `MR_TAB` as `ID:TEXT:DONE` (`DONE` as `X` or empty) joined with `,` - initially `1:one:,2:two:,3:three:` |

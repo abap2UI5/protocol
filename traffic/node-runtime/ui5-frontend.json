@@ -1,5 +1,5 @@
 {
-  "source": "app/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.150.0 (abap2UI5), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
+  "source": "app/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.150.0 (a2-main), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
   "backend": "@abap2ui5/node-runtime 1.150.0",
   "exchanges": [
     {
@@ -42,7 +42,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44157",
+              "ORIGIN": "http://127.0.0.1:44611",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
             }
@@ -59,7 +59,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "8F6FF02DBF2E4A8BBD25C4D1C82A3106",
+            "ID": "C2ABCB0277CB477AB5E740EE7E189712",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -128,9 +128,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "8F6FF02DBF2E4A8BBD25C4D1C82A3106",
+              "ID": "C2ABCB0277CB477AB5E740EE7E189712",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 28
+              "MS_CLIENT_PREV": 17
             }
           }
         }
@@ -145,7 +145,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "E308D83E415445B1867A082E79468E97",
+            "ID": "D8AE9BA5F31E415D9E79F76DFC6070B3",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -189,9 +189,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "E308D83E415445B1867A082E79468E97",
+              "ID": "D8AE9BA5F31E415D9E79F76DFC6070B3",
               "EVENT": "ADD_ROW",
-              "MS_CLIENT_PREV": 18
+              "MS_CLIENT_PREV": 14
             }
           }
         }
@@ -206,7 +206,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "771B6902476E4F5BA16328BEA2294DEA",
+            "ID": "3B7D6F000E6D43069854680307DA0648",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -284,7 +284,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44157",
+              "ORIGIN": "http://127.0.0.1:44611",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -301,7 +301,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "FF38B2E3A8F64DB2A851967044B2F804",
+            "ID": "CF4B553C86244D08843F8714AE3EF18D",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -333,7 +333,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "FF38B2E3A8F64DB2A851967044B2F804",
+              "ID": "CF4B553C86244D08843F8714AE3EF18D",
               "EVENT": "ECHO",
               "MS_CLIENT_PREV": 13,
               "T_EVENT_ARG": [
@@ -358,7 +358,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "E50A8F1AD23446698071D556EABEE4E4",
+            "ID": "8D2E8AA96DFB44879586E954DB265A0F",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -380,9 +380,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "E50A8F1AD23446698071D556EABEE4E4",
+              "ID": "8D2E8AA96DFB44879586E954DB265A0F",
               "EVENT": "NOOP",
-              "MS_CLIENT_PREV": 10
+              "MS_CLIENT_PREV": 11
             }
           }
         }
@@ -397,7 +397,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "71D71C952D91407DB7B0B0963FD7DE53",
+            "ID": "54188F345D044E5CB3C250BD2D8DFFFF",
             "PROTOCOL": 2
           }
         }
@@ -414,7 +414,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/z2ui5-xapp-state=E50A8F1AD23446698071D556EABEE4E4",
+              "HASH": "#/z2ui5-xapp-state=8D2E8AA96DFB44879586E954DB265A0F",
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -444,8 +444,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 11,
-              "ORIGIN": "http://127.0.0.1:44157",
+              "MS_CLIENT_PREV": 7,
+              "ORIGIN": "http://127.0.0.1:44611",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -462,7 +462,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "1F278BC9A1BA4438BC7D06C98F971D94",
+            "ID": "C84B0B8581C94AA2A2B75A8ADFBA171C",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -530,7 +530,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44157",
+              "ORIGIN": "http://127.0.0.1:44611",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -547,7 +547,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "2E7D86FD89104BB3B01165DEBED88642",
+            "ID": "F07A1AF88F8541D085E526DDB09F5DBE",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -584,9 +584,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "2E7D86FD89104BB3B01165DEBED88642",
+              "ID": "F07A1AF88F8541D085E526DDB09F5DBE",
               "EVENT": "COUNT",
-              "MS_CLIENT_PREV": 13
+              "MS_CLIENT_PREV": 10
             }
           }
         }
@@ -601,7 +601,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "6A5316F4D8B143CEAE812239C7B8B570",
+            "ID": "F0C126542D9149DA8DA20AAB70D6F925",
             "PROTOCOL": 2
           },
           "MODEL": {
@@ -621,9 +621,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "6A5316F4D8B143CEAE812239C7B8B570",
+              "ID": "F0C126542D9149DA8DA20AAB70D6F925",
               "EVENT": "CALL",
-              "MS_CLIENT_PREV": 8
+              "MS_CLIENT_PREV": 7
             }
           }
         }
@@ -638,7 +638,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV_TGT",
-            "ID": "B2668A2AB2AC449CBDD759615E25D0C1",
+            "ID": "A03DBC7824A64267A80B647ED41CDD1D",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -654,7 +654,7 @@
                   {
                     "checkNavAppCall": true,
                     "navAppCallPrevApp": "Z2UI5_CL_CONF_ROUTE",
-                    "navAppCallPrevId": "375695B3A0F64D94BC1377A92851F82E",
+                    "navAppCallPrevId": "328C701F48F44823A81FA91F3FBBAE66",
                     "setNavRouting": "KEEP"
                   }
                 ]
@@ -679,7 +679,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/6A5316F4D8B143CEAE812239C7B8B570",
+              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/F0C126542D9149DA8DA20AAB70D6F925",
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -709,8 +709,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 18,
-              "ORIGIN": "http://127.0.0.1:44157",
+              "MS_CLIENT_PREV": 22,
+              "ORIGIN": "http://127.0.0.1:44611",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -727,7 +727,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "8F4D757C843241E5A2D04833E91B30DF",
+            "ID": "9382EFFC5BD94E9188FA591BA7314813",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -793,7 +793,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44157",
+              "ORIGIN": "http://127.0.0.1:44611",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
             }
@@ -810,7 +810,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "27F63E1001B44E37A955235068B43CEF",
+            "ID": "E7D1C28394224158B9BBF9BDA357856C",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -837,9 +837,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "27F63E1001B44E37A955235068B43CEF",
+              "ID": "E7D1C28394224158B9BBF9BDA357856C",
               "EVENT": "POPUP_OPEN",
-              "MS_CLIENT_PREV": 15
+              "MS_CLIENT_PREV": 17
             }
           }
         }
@@ -854,7 +854,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "DAED9979266C481F85D4C3A9C48EA448",
+            "ID": "CBC36F7A76364ADC8DD05B62EE9BD595",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -884,9 +884,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "DAED9979266C481F85D4C3A9C48EA448",
+              "ID": "CBC36F7A76364ADC8DD05B62EE9BD595",
               "EVENT": "POPOVER_OPEN",
-              "MS_CLIENT_PREV": 11
+              "MS_CLIENT_PREV": 12
             }
           }
         }
@@ -901,7 +901,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "51400F359AFC4E819FCB0A1DE4E34AA9",
+            "ID": "E7284310853E45309B482DF55FE1DB13",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -963,7 +963,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44157",
+              "ORIGIN": "http://127.0.0.1:44611",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_WINDOW"
             }
@@ -980,7 +980,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "5175644528864A02BC83931CA9005D2A",
+            "ID": "AF05E88E34C14C2C9EB759DAF769327E",
             "PROTOCOL": 2,
             "S_ACTION": {
               "T_SYSTEM": [
@@ -988,13 +988,39 @@
                   "VIEW_SLOTS",
                   "display",
                   "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - window\"><Text id=\"summary\" text=\"{/SUMMARY}\"/><Text id=\"mains\" text=\"{/MAINS}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Sort\" press=\".eB(['SORT'], 'QTY', 'X')\"/><Button text=\"Filter\" press=\".eB(['FILTER'], '1')\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/><Button text=\"Sort list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'sort', 'QTY', 'X')\"/><Button text=\"Filter list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'filter', 'NAME', 'Contains', '1')\"/><Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/T_ROWS}\"><columns><Column/><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{NAME}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - window\"><Text id=\"summary\" text=\"{/SUMMARY}\"/><Text id=\"mains\" text=\"{/MAINS}\"/><Text id=\"last\" text=\"{/LAST}\"/><Text id=\"request\" text=\"{/REQUEST}\"/><Text id=\"win_done\" text=\"{/WIN_DONE}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Sort list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'sort', 'QTY', 'X')\"/><Button text=\"Filter list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'filter', 'NAME', 'Contains', '1')\"/><Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/T_ROWS}\"><columns><Column/><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{NAME}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table><Table id=\"win\" growing=\"true\" growingThreshold=\"4\" items=\"{/MR_WIN/*}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
                 ]
               ]
             }
           },
           "MODEL": {
+            "LAST": "",
             "MAINS": 1,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "",
             "SUMMARY": "",
             "T_ROWS": [
               {
@@ -1022,9 +1048,19 @@
                 "QTY": 7
               }
             ],
+            "WIN_DONE": "",
             "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
               "T_ROWS": {
                 "COUNT": 4,
+                "EVENT": "ROWS",
                 "SIZE": 4,
                 "TOTAL": 12
               }
@@ -1044,12 +1080,15 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "5175644528864A02BC83931CA9005D2A",
+              "ID": "AF05E88E34C14C2C9EB759DAF769327E",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 29,
+              "MS_CLIENT_PREV": 37,
               "T_EVENT_ARG": [
                 "/T_ROWS",
-                "8"
+                "ROWS",
+                "MORE",
+                "4",
+                "4"
               ]
             }
           }
@@ -1065,11 +1104,37 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "3F5CCCE3A1F04FFF88A36899A8298512",
+            "ID": "5E5E8859EE7646A6A3C40249E54705AB",
             "PROTOCOL": 2
           },
           "MODEL": {
-            "MAINS": 1,
+            "LAST": "ROWS MORE 4 4",
+            "MAINS": 2,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS MORE 4 4",
             "SUMMARY": "",
             "T_ROWS": [
               {
@@ -1121,9 +1186,19 @@
                 "QTY": 1
               }
             ],
+            "WIN_DONE": "",
             "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
               "T_ROWS": {
                 "COUNT": 8,
+                "EVENT": "ROWS",
                 "SIZE": 4,
                 "TOTAL": 12
               }
@@ -1143,13 +1218,17 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "3F5CCCE3A1F04FFF88A36899A8298512",
+              "ID": "5E5E8859EE7646A6A3C40249E54705AB",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 13,
+              "MS_CLIENT_PREV": 23,
               "T_EVENT_ARG": [
                 "/T_ROWS",
+                "ROWS",
+                "SORT",
+                "0",
                 "4",
-                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]"
+                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]",
+                "[]"
               ]
             }
           }
@@ -1165,11 +1244,37 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "66AD964E628F4A8D8F482919F1A4FE90",
+            "ID": "345BE65175154025AC90A48101A07EF0",
             "PROTOCOL": 2
           },
           "MODEL": {
-            "MAINS": 1,
+            "LAST": "ROWS SORT 0 4",
+            "MAINS": 3,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS SORT 0 4 S:QTY:D",
             "SUMMARY": "",
             "T_ROWS": [
               {
@@ -1197,9 +1302,19 @@
                 "QTY": 9
               }
             ],
+            "WIN_DONE": "",
             "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
               "T_ROWS": {
                 "COUNT": 4,
+                "EVENT": "ROWS",
                 "SIZE": 4,
                 "TOTAL": 12
               }
@@ -1219,13 +1334,16 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "66AD964E628F4A8D8F482919F1A4FE90",
+              "ID": "345BE65175154025AC90A48101A07EF0",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 17,
+              "MS_CLIENT_PREV": 29,
               "T_EVENT_ARG": [
                 "/T_ROWS",
+                "ROWS",
+                "FILTER",
+                "0",
                 "4",
-                "",
+                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]",
                 "[[[\"QTY\",\"GT\",6,null]]]"
               ]
             }
@@ -1242,11 +1360,37 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "12A91834C5FC42FA84D762B4D7FB7105",
+            "ID": "A0C6F40B3DD649FC9F85DEA6E4AC0F99",
             "PROTOCOL": 2
           },
           "MODEL": {
-            "MAINS": 1,
+            "LAST": "ROWS FILTER 0 4",
+            "MAINS": 4,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS FILTER 0 4 S:QTY:D F1:QTY:GT:6:",
             "SUMMARY": "",
             "T_ROWS": [
               {
@@ -1274,9 +1418,19 @@
                 "QTY": 9
               }
             ],
+            "WIN_DONE": "",
             "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
               "T_ROWS": {
                 "COUNT": 4,
+                "EVENT": "ROWS",
                 "SIZE": 4,
                 "TOTAL": 6
               }
@@ -1296,12 +1450,15 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "12A91834C5FC42FA84D762B4D7FB7105",
+              "ID": "A0C6F40B3DD649FC9F85DEA6E4AC0F99",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 15,
+              "MS_CLIENT_PREV": 25,
               "T_EVENT_ARG": [
                 "/T_ROWS",
-                "6"
+                "ROWS",
+                "MORE",
+                "4",
+                "2"
               ]
             }
           }
@@ -1317,11 +1474,37 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "CEDE1CB0020A46229B90BC3D0309007F",
+            "ID": "85FE9B8B1CF240828B7D9ED1EDB0C528",
             "PROTOCOL": 2
           },
           "MODEL": {
-            "MAINS": 1,
+            "LAST": "ROWS MORE 4 2",
+            "MAINS": 5,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS MORE 4 2",
             "SUMMARY": "",
             "T_ROWS": [
               {
@@ -1361,9 +1544,19 @@
                 "QTY": 7
               }
             ],
+            "WIN_DONE": "",
             "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
               "T_ROWS": {
                 "COUNT": 6,
+                "EVENT": "ROWS",
                 "SIZE": 4,
                 "TOTAL": 6
               }
@@ -1395,9 +1588,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "CEDE1CB0020A46229B90BC3D0309007F",
+              "ID": "85FE9B8B1CF240828B7D9ED1EDB0C528",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 11
+              "MS_CLIENT_PREV": 22
             }
           }
         }
@@ -1412,12 +1605,38 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "D22C8C2866BE47939F3488404A702236",
+            "ID": "ED5F2EB0683A4B0486F566E8415456C6",
             "PROTOCOL": 2
           },
           "MODEL": {
-            "MAINS": 2,
-            "SUMMARY": "2,5",
+            "LAST": "CHECK",
+            "MAINS": 6,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS MORE 4 2",
+            "SUMMARY": "5,2",
             "T_ROWS": [
               {
                 "DONE": true,
@@ -1456,9 +1675,19 @@
                 "QTY": 7
               }
             ],
+            "WIN_DONE": "",
             "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
               "T_ROWS": {
                 "COUNT": 6,
+                "EVENT": "ROWS",
                 "SIZE": 4,
                 "TOTAL": 6
               }

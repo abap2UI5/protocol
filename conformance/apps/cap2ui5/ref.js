@@ -18,7 +18,6 @@ class NoRef {
 
 defineApp("Z2UI5_CL_CONF_REF", typeof t.ref !== "function" ? NoRef : class {
   mr_tab = t.ref(t.table({ id: 0, text: "", done: false }));
-  mr_win = t.ref(t.table({ id: 0, qty: 0, done: false }));
   summary = "";
 
   main(client) {
@@ -43,22 +42,14 @@ defineApp("Z2UI5_CL_CONF_REF", typeof t.ref !== "function" ? NoRef : class {
       `<items><ColumnListItem><cells>` +
       `<Text text="{ID}"/><Input value="{TEXT}"/><CheckBox selected="{DONE}"/>` +
       `</cells></ColumnListItem></items></Table>` +
-      `<Table id="rows" growing="true" growingThreshold="4" items="${client.window_bind_tab({ val: "mr_win->*", window: 4, t_sort: [{ path: "qty", descending: true }] })}">` +
-      `<columns><Column/><Column/><Column/></columns>` +
-      `<items><ColumnListItem><cells>` +
-      `<Text text="{ID}"/><Text text="{QTY}"/><CheckBox selected="{DONE}"/>` +
-      `</cells></ColumnListItem></items></Table>` +
       `</Page></mvc:View>`);
   }
 
   summary_build() {
-    this.summary = this.mr_tab.map((r) => `${r.id}:${r.text}:${r.done ? "X" : ""}`).join(",") + ";" +
-      this.mr_win.filter((r) => r.done).map((r) => r.id).join(",");
+    this.summary = this.mr_tab.map((r) => `${r.id}:${r.text}:${r.done ? "X" : ""}`).join(",");
   }
 
   model_init() {
     this.mr_tab = [{ id: 1, text: "one" }, { id: 2, text: "two" }, { id: 3, text: "three" }];
-    // QTY runs in another order than ID: 5 3 1 6 4 2
-    this.mr_win = Array.from({ length: 6 }, (_, i) => ({ id: i + 1, qty: ((i + 1) * 5) % 7, done: false }));
   }
 });

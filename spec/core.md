@@ -91,8 +91,8 @@ the portable profile is a property of the app, not of the backend.
 | follow-up action | an entry of `T_CUSTOM`: something the app asked the frontend to do after rendering |
 | model | the JSON object a view binds to; it holds the app's **bound** attributes, upper case |
 | model delta | the part of the model the user changed, sent with the next event |
-| windowed table | a bound table the backend sends a window of rows at a time; its state is at `/__WINDOW/<path>` of the model |
-| window request | the event request with the reserved event `___ZZZ_WIN` a frontend asks for more rows, a sort or a filter of a windowed table with - answered without running the app |
+| windowed table | a bound table the app loads a window of rows at a time; its state is at `/__WINDOW/<path>` of the model |
+| window request | the event request with the reserved event `___ZZZ_WIN` a frontend asks for more rows, a sort or a filter of a windowed table with - the backend runs it as the app's own event |
 | app start | a request without draft id: the backend creates (or restores) an app |
 | app stack | the chain of apps `nav_app_call` builds and `nav_app_leave` unwinds |
 

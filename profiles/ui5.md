@@ -125,34 +125,50 @@ gets a list binding of the frontend's own instead of UI5's client-side one
 ([WM] `WindowModel.bindList`, `WindowListBinding`). The view says nothing
 about it - the aggregation is bound as ever (`items="{/T_ROWS}"`,
 `rows="{/T_ROWS}"`), and a path without a window state keeps the plain JSON
-binding.
+binding. Every request it sends is the app's event `EVENT` of the window
+state behind `___ZZZ_WIN`
+([../spec/windowed-tables.md](../spec/windowed-tables.md#the-window-request)),
+through the slot's `eB` so that it carries the slot's model delta ([SL]
+`createViewModel`: `eB(['___ZZZ_WIN', false, false, false, true,
+<noBusy>], path, event, reason, skip, top, ...)`); without an `EVENT` it
+sends nothing and logs it ([WM] `_z2ui5Send`).
 
-- **Length.** The binding answers its length with `TOTAL`, as final: a
-  growing `sap.m.Table` or `List` shows `[ 4 / 12 ]`, a
-  `sap.ui.table.Table` a scrollbar over all rows ([WM] `getLength`,
-  `isLengthFinal`).
+- **Length.** The binding answers its length with `TOTAL` (at least the
+  rows it holds), as final: a growing `sap.m.Table` or `List` shows
+  `[ 4 / 12 ]`, a `sap.ui.table.Table` a scrollbar over all rows ([WM]
+  `getLength`, `isLengthFinal`).
 - **More rows.** When a control asks the binding for contexts past the
-  rows it holds, it sends a window request for whole windows - `count` =
-  the rows needed, rounded up to a multiple of `SIZE`, at most `TOTAL` -
-  once per need, without the busy indicator, and kept (queue-last) when a
-  roundtrip is in flight ([WM] `getContexts`, `_z2ui5Ensure`; [SL]
-  `createViewModel`: `eB(['___ZZZ_WIN', false, false, false, true,
-  <noBusy>], path, count)`).
+  rows it holds, it sends `MORE` with `skip` the rows it holds and `top`
+  whole windows - the rows needed rounded up to a multiple of `SIZE`, at
+  most `TOTAL`, less the rows held - once per need (until the next model
+  push), without the busy indicator ([WM] `getContexts`, `_z2ui5Ensure`,
+  `update`). A growing `sap.m.Table` with a `growingThreshold` of `SIZE`
+  asks for the second window with `["/T_ROWS", "ROWS", "MORE", "4", "4"]`.
 - **Sort and filter.** `sort( )` and `filter( )` on the binding - the
   column menu of `sap.ui.table.Table` (`sortProperty`, `filterProperty`),
   the follow-up action `BINDING_CALL` - do not sort or filter in the
-  browser: each sends a window request for one window that names its own
-  part and nothing else, `[path, SIZE, sort]` or `[path, SIZE, "",
-  filter]` ([WM] `sort`, `filter`, `_z2ui5Restart`, `_z2ui5Send`). The
-  filter sent is the binding's `Control` and `Application` filters
-  together ([WM] `filterGroups`): filters on one path ORed, the paths
-  ANDed, a multi-filter taken apart when it is an AND of conditions or of
-  ORs of them; a `Date` value travels as `yyyy-MM-dd`; a filter of another
-  shape, or one with a test function, is not sent and logged.
+  browser: each keeps the new sorters or filters on the binding and sends
+  `SORT` or `FILTER` with `skip` 0, `top` `SIZE`, and **both** parts - all
+  the binding's sorters and all its filter groups
+  ([WM] `sort`, `filter`, `_z2ui5Restart`, `_z2ui5Send`), so a filter
+  after a sort sends the sort along. The filter sent is the binding's
+  `Control` and `Application` filters together ([WM] `filterGroups`):
+  filters on one path ORed, the paths ANDed, a multi-filter taken apart
+  when it is an AND of conditions or of ORs of them; a `Date` value
+  travels as `yyyy-MM-dd` ([WM] `wireValue`); a filter of another shape,
+  or one with a test function, is not sent and logged.
 - **Not applied.** Sorters and filters written into the binding info of
-  the view are ignored for a windowed list - the rows arrive in the
-  backend's order ([WM] `WindowListBinding`, the constructor).
+  the view are ignored for a windowed list - the rows arrive in the app's
+  order ([WM] `WindowListBinding`, the constructor).
+- **Two requests, one roundtrip.** A window request that comes while a
+  roundtrip runs is kept (queue-last) in a slot of its own and sent after
+  it ([V1] `_dispatchQueuedEvent`). Of two requests of the same table that
+  wait there the later one wins - except that a `MORE` does not replace a
+  waiting `SORT` or `FILTER`: the restart loads from the first row anyway,
+  and the `skip` of the `MORE` counts rows of the old order ([WM]
+  `keepRestart`, [SL] `createViewModel`). This is what the UI5 frontend
+  does; no check drives it.
 - A frontend implementing this profile MUST do the first three: views
   with growing lists and sortable columns over windowed tables are written
-  by every backend from abap2UI5 1.149.0 on. *Frontend checks:*
-  `ui5.window-growth`, `ui5.window-sort-filter`.
+  by every backend with windowed tables. *Frontend checks:*
+  `ui5.window-growth`, `ui5.window-sort-filter`, `ui5.window-no-event`.

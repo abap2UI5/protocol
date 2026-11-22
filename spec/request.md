@@ -102,8 +102,9 @@ nothing). *Checked by:* `event.roundtrip`, `event.unknown-event`.
 - **Reserved event names.** `___ZZZ_NAL` is the leave event: the backend
   does not run the app but leaves it ([navigation.md](navigation.md#the-reserved-leave-event)).
   An app MUST NOT use it for anything else. `___ZZZ_WIN` is the window
-  request of a windowed table: the backend does not run the app either and
-  answers the rows asked for ([windowed-tables.md](windowed-tables.md#the-window-request)).
+  request of a windowed table: the backend runs the app with the app's own
+  event the request names, the request in `get( )-r_event_data`
+  ([windowed-tables.md](windowed-tables.md#the-window-request)).
 
 ## Event arguments
 
@@ -189,16 +190,16 @@ Rules for the frontend:
   of the same attribute. *Frontend checks:* `model.scalar`,
   `model.number-and-boolean`, `model.structure-whole`, `model.table-cell`,
   `model.table-row-delta`, `model.nested-table`, `model.whole-beats-delta`.
-  A cell of a [windowed table](windowed-tables.md#edits) MUST travel as the
-  `__delta`, never as the whole table. *Frontend check:*
-  `window.edit-as-delta`.
+  A cell of a [windowed table](windowed-tables.md#edits) travels the same
+  way - the table is what the frontend shows - and never with the
+  `__WINDOW` key. *Frontend check:* `window.edit-row-shown`.
 - The `__delta` of a table behind a data reference MUST go on its `*`
   node - the attribute's client name is `/<attr>/*`, and that is where the
   backend looks for `__delta` ([MOD] `main_json_to_attri`; [LIB]
   `buildDeltaFromPaths` from abap2UI5 2cc0344, #3026, on). A frontend that
   sends such a table whole sends the whole attribute,
-  `{ "MR_TAB": { "*": [ ... ] } }`, which a windowed table refuses.
-  *Frontend check:* `window.edit-as-delta-reference`.
+  `{ "MR_TAB": { "*": [ ... ] } }`. *Frontend check:*
+  `window.edit-row-shown-reference`.
 - The delta is the edited model's: an event from a popup carries the
   popup's edits, not MAIN's ([V1] `_pickModelForRoundtrip`).
   *Frontend check:* `model.slot-model`.
@@ -227,25 +228,24 @@ The backend applies the delta **before** the app runs ([ACT]
   `whole_value_trace`), never fail the roundtrip: the attribute keeps its
   value and the rest of the delta is applied. *Checked by:*
   `model.unconvertible-scalar-skipped`.
-- On a **windowed table** the row keys of a `__delta` are positions in the
-  order the backend sent, and a whole table value is not written
+- A **windowed table** is no exception: the row keys of a `__delta` are
+  rows of the table, and a whole table value is written
   ([windowed-tables.md](windowed-tables.md#edits)). *Checked by:*
-  `window.delta-positions`, `window.whole-table-refused`.
+  `window.delta-rows`, `window.whole-table-written`.
 - **Implementation note.** An attribute bound with `_bind( json = abap_true )`
   is outbound only; a delta for it is skipped ([MOD] `main_json_to_attri`).
 - A table behind a data reference - an attribute `TYPE REF TO data`,
   bound dereferenced - is the model node `/<attr>/*`, and a backend MUST
   read its entry there: a `__delta` on the `*` node changes exactly the
-  named cells, as on any table, and on a windowed one names positions
+  named cells, as on any table, a windowed one included
   ([MOD] `main_json_to_attri` reads every entry at the attribute's client
   name, `/MR_TAB/*`). A backend that looks for the `__delta` at `/<attr>`
   only drops every edit of such a table without an error
   ([open-questions.md](open-questions.md#14-tables-behind-a-data-reference-in-the-backend-suite)).
   *Checked by:* `model.reference-delta`,
-  `window.delta-positions-reference`.
-- **Implementation note.** A whole value at `/MR_TAB/*` replaces the table
-  behind the reference, unless it is windowed ([MOD]
-  `main_json_to_attri`).
+  `window.delta-rows-reference`.
+- A whole value at `/MR_TAB/*` replaces the table behind the reference,
+  a windowed one included ([MOD] `main_json_to_attri`).
 
 ## CONFIG: the session block
 

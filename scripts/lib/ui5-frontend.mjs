@@ -1,6 +1,6 @@
 /*
  * The UI5 frontend's own request code, run in Node against a live backend:
- * app/webapp/core/Server.js, core/Session.js and core/Lib.js of an abap2UI5
+ * bundle/webapp/core/Server.js (app/webapp up to 1.149.0), core/Session.js and core/Lib.js of an abap2UI5
  * checkout, loaded by stubbing sap.ui.define (the way abap2UI5's own
  * node/tests/loadModule.js loads them), with the real fetch. Nothing is
  * rendered - the MAIN controller is a stub that keeps the response record -
@@ -15,8 +15,10 @@ import path from "node:path";
 import vm from "node:vm";
 
 export function locateWebapp(home) {
-  const dir = path.join(home, "app", "webapp");
-  return fs.existsSync(path.join(dir, "core", "Server.js")) ? dir : null;
+  for (const dir of [path.join(home, "bundle", "webapp"), path.join(home, "app", "webapp")]) {
+    if (fs.existsSync(path.join(dir, "core", "Server.js"))) return dir;
+  }
+  return null;
 }
 
 function loader(webapp, sandbox) {
@@ -111,8 +113,12 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
   function JSONListBinding(oModel, sPath) {
     this.oModel = oModel;
     this.sPath = sPath;
-    this.aIndices = (oModel.getProperty(sPath) || []).map((_row, i) => i);
   }
+  // the rows at its path in the model as it is now - UI5's binding
+  // refreshes them in update( ), which every model push calls
+  Object.defineProperty(JSONListBinding.prototype, "aIndices", {
+    get() { return (this.oModel.getProperty(this.sPath) || []).map((_row, i) => i); },
+  });
   Object.assign(JSONListBinding.prototype, { getContexts() { return []; }, getLength() { return this.aIndices.length; }, update() {}, sort() { return this; }, filter() { return this; }, applyFilter() {}, applySort() {} });
   JSONListBinding.extend = extend(JSONListBinding);
   function JSONModel() {}
@@ -130,6 +136,11 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
     alive: true,
     state: Object.assign(AppState.createState(), {
       url,
+      // the backend's own page: the component fills it and owns the hash
+      // (Component.js ownsPage, ownsHash before it) - core/Server.js sends
+      // S_FRONT.HASH only then
+      ownsPage: true,
+      ownsHash: true,
       oConfig: {
         S_UI5: { VERSION: "1.136.0", BUILDTIMESTAMP: "202509010000", GAV: "com.sap.openui5.dist:sdk:1.136.0", THEME: "sap_horizon" },
       },
@@ -185,7 +196,11 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
       model._z2ui5WindowSend = (args, noBusy) => {
         const entry = { args: JSON.parse(JSON.stringify(args)) };
         sent.push(entry);
-        chain = chain.then(async () => { entry.response = await this.fire([WindowModel.EVENT, false, false, false, true, Boolean(noBusy)], args); });
+        chain = chain.then(async () => {
+          entry.response = await this.fire([WindowModel.EVENT, false, false, false, true, Boolean(noBusy)], args);
+          // the model push: UI5 updates every binding of the model
+          binding.update();
+        });
       };
       const binding = model.bindList(listPath);
       return { binding, sent, idle: () => chain, event: WindowModel.EVENT };

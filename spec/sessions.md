@@ -40,9 +40,10 @@ not consume it.
 - A backend MUST accept any draft id it issued to the same user until the
   draft expires, and continue from **that** snapshot - also when later
   drafts of the same app exist. *Checked by:* `session.id-reuse`.
-- The order and the window of a
-  [windowed table](windowed-tables.md#the-order-is-the-backends) are part
-  of the snapshot. *Checked by:* `window.order-with-the-draft`.
+- The rows an app loaded into a
+  [windowed table](windowed-tables.md#the-app-owns-the-order), and what it
+  keeps to load more, are part of the snapshot like every attribute.
+  *Checked by:* `window.order-with-the-draft`.
 - This is what makes a frontend's **retry** safe (a network failure after
   the backend processed the request: the re-sent body continues the old id
   once more, [SRV] `readHttp` `onRetry`) and what browser history uses to
