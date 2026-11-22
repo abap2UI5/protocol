@@ -38,13 +38,13 @@ export default [
   },
   {
     id: "ui5.wire-queue-last",
-    title: "A queue-last wire keeps its last firing during a roundtrip and sends it afterwards",
+    title: "A wire with the options { queueLast, noBusy } keeps its last firing during a roundtrip and sends it afterwards",
     level: "MUST",
     profile: "ui5",
     needs: ["wires", "concurrent"],
     spec: `${U}#event-wires`,
     async run(t) {
-      const wire = ".eB(['LIVE', false, false, false, true, true], ${$parameters>/value})";
+      const wire = ".eB(['LIVE',{queueLast:true,noBusy:true}], ${$parameters>/value})";
       await startApp(t, `<Input id="live" value="{/Q}" liveChange="${attr(wire)}"/>`, { model: { Q: "" } });
       const held = t.mock.replyHeld(answer({}));
       t.mock.reply(answer({}));

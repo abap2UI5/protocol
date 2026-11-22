@@ -16,6 +16,15 @@ scripted responses here are the real backend's, from
 purpose (another `PROTOCOL`, an unknown follow-up action, a CSRF token
 layer, a 500 with markup in it, a model push from another app).
 
+The suite speaks **protocol 3**: every scripted response declares it and
+carries its views, its navigation intent and its follow-up actions as the
+sections `VIEWS`, `NAV` and `ACTIONS`
+([../../spec/response.md](../../spec/response.md#sections)). A frontend
+written for protocol 2 refuses such a response on its number, as
+[../../spec/versioning.md](../../spec/versioning.md#the-protocol-number)
+asks of it - it is not measured by this suite until it follows
+([../RESULTS.md](../RESULTS.md#frontend-suite)).
+
 ## Run it
 
 ```bash
@@ -66,7 +75,7 @@ frontend cannot perform throws `Unsupported`.
 
 | Adapter | Frontend | Profiles | Driven by |
 |---|---|---|---|
-| `ui5` | the official UI5 SPA, abap2UI5 `app/webapp` | core, portable, ui5 | Chromium via Playwright: the page is the UI5 profile's boot page ([adapters/ui5-page.mjs](adapters/ui5-page.mjs)) at the run's endpoint, UI5 comes from the `@openui5/*` npm packages (no CDN), the frontend from the checkout's webapp folder. Interactions type into real `Input`s and click real `Button`s |
+| `ui5` | the official UI5 SPA, abap2UI5 `bundle/webapp` (`app/webapp` up to 1.149.0) | core, portable, ui5 | Chromium via Playwright: the page is the UI5 profile's boot page ([adapters/ui5-page.mjs](adapters/ui5-page.mjs)) at the run's endpoint, UI5 comes from the `@openui5/*` npm packages (no CDN), the frontend from the checkout's webapp folder. Interactions type into real `Input`s and click real `Button`s |
 | `agent` | abap2UI5/mcp-server `lib/appclient.mjs` | core, semantic | in process: `start` / `act`, the snapshot is the state. Vendored at the commit [adapters/vendor/mcp-server/source.json](adapters/vendor/mcp-server/source.json) names (`npm run vendor:agent` re-vendors; `MCP_SERVER_HOME` runs a checkout instead) |
 | `webcomponent` | abap2UI5-addons/embed-webcomponent `dist/abap2ui5-wc.js` | core, portable | Chromium: `<abap2ui5-app standalone>` on its standalone page; needs a built checkout (`WC_FRONTEND_HOME`, else `../embed-webcomponent` or `../frontend-webcomponent`) |
 | `adaptive-cards` | the Adaptive Cards renderer prototype of this repository ([../../renderers/adaptive-cards/](../../renderers/adaptive-cards/README.md)) | core, portable | in process: its card host speaks HTTP to the scripted backend, every answer is rendered into an Adaptive Card 1.5 and the state is read from the card (a `Container` per slot, inputs with binding paths as ids). `fill` types into a card input, `press` submits what a card host submits for the action - its data and every input value |
@@ -130,7 +139,7 @@ check requires.
 |---|---|---|---|---|---|
 | `request.envelope` | MUST | core | - | Every roundtrip POST is wrapped in the { value: ... } envelope | [transport.md#the-envelope](../../spec/transport.md#the-envelope) |
 | `request.content-type` | MUST | core | - | Every roundtrip POST is sent with Content-Type: application/json | [transport.md#the-roundtrip-post](../../spec/transport.md#the-roundtrip-post) |
-| `request.app-start` | MUST | core | - | The first request starts the app: no ID, ?app_start=<CLASS> in SEARCH | [request.md#app-start-shaped-requests](../../spec/request.md#app-start-shaped-requests) |
+| `request.app-start` | MUST | core | - | The first request starts the app: no ID, the class in SEARCH (?app_start=<CLASS>) or in ROUTE | [request.md#app-start-shaped-requests](../../spec/request.md#app-start-shaped-requests) |
 | `request.app-start-location` | SHOULD | core | - | The app start carries the endpoint's ORIGIN and PATHNAME | [request.md#app-start-shaped-requests](../../spec/request.md#app-start-shaped-requests) |
 | `request.event` | MUST | core | - | A user event sends EVENT as the wire names it and the ID of the last response | [request.md#event-requests](../../spec/request.md#event-requests) |
 | `request.id-continuation` | MUST | core | - | Every event continues the ID of the response adopted last - also an ID seen before | [sessions.md#draft-ids](../../spec/sessions.md#draft-ids) |
@@ -139,7 +148,7 @@ check requires.
 | `request.event-no-arguments` | SHOULD | core | - | An event whose wire has no arguments sends no T_EVENT_ARG | [request.md#shape](../../spec/request.md#shape) |
 | `request.leave-event` | MUST | core | - | The leave wire (navButtonPress .eB(['___ZZZ_NAL'])) sends the reserved event ___ZZZ_NAL | [navigation.md#the-reserved-leave-event](../../spec/navigation.md#the-reserved-leave-event) |
 | `request.client-prev` | MUST | core | - | MS_CLIENT_PREV, when sent, is a non-negative integer and never on the first request | [request.md#s_front](../../spec/request.md#s_front) |
-| `request.no-empty-keys` | SHOULD | core | - | Empty values are left out (T_EVENT_ARG, SEARCH, HASH, MODEL, CONFIG) | [request.md#shape](../../spec/request.md#shape) |
+| `request.no-empty-keys` | SHOULD | core | - | Empty values are left out (T_EVENT_ARG, SEARCH, HASH, ROUTE, MODEL, CONFIG) | [request.md#shape](../../spec/request.md#shape) |
 | `request.config-cadence` | SHOULD | core | - | The static session block travels with the app start, not with every event | [request.md#config-the-session-block](../../spec/request.md#config-the-session-block) |
 | `transport.contextid-accept` | SHOULD | core | - | Every roundtrip POST asks for the session id in a header (sap-contextid-accept: header) | [transport.md#request-headers](../../spec/transport.md#request-headers) |
 | `transport.contextid-only-when-held` | MUST | core | - | sap-contextid is not sent before the backend handed one out, and never empty | [transport.md#request-headers](../../spec/transport.md#request-headers) |
@@ -172,19 +181,20 @@ check requires.
 | `response.protocol-mismatch` | MUST | core | - | A response with another PROTOCOL is an error; its view is not shown | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |
 | `response.protocol-mismatch-message` | SHOULD | core | - | The protocol error names both protocol numbers | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |
 | `response.protocol-absent` | SHOULD | core | - | A response without PROTOCOL is let through | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |
-| `response.unknown-keys` | MUST | core | - | Unknown keys (S_FRONT, root, slot and ROUTER options) are ignored | [versioning.md#compatible-changes-within-protocol-2](../../spec/versioning.md#compatible-changes-within-protocol-2) |
-| `response.no-actions` | MUST | core | - | A response without S_ACTION and MODEL changes nothing on screen | [response.md#s_front](../../spec/response.md#s_front) |
+| `response.unknown-keys` | MUST | core | - | Unknown keys (S_FRONT, root, a slot entry, display and NAV options) are ignored | [versioning.md#compatible-changes-within-protocol-3](../../spec/versioning.md#compatible-changes-within-protocol-3) |
+| `response.no-actions` | MUST | core | - | A response without VIEWS, NAV, ACTIONS and MODEL changes nothing on screen | [response.md#s_front](../../spec/response.md#s_front) |
 | `response.not-json` | MUST | core | - | A 2xx answer that is not JSON is an error | [errors.md#what-a-frontend-does-with-it](../../spec/errors.md#what-a-frontend-does-with-it) |
 | `response.no-s-front` | MUST | core | - | A 2xx JSON answer without S_FRONT is an error | [errors.md#what-a-frontend-does-with-it](../../spec/errors.md#what-a-frontend-does-with-it) |
 | `slots.main` | MUST | core | - | A MAIN display is rendered as the screen | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `slots.popup` | MUST | core | - | A POPUP display opens over MAIN; a POPUP destroy closes it | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `slots.popover` | MUST | core | - | A POPOVER display opens by its anchor; a POPOVER destroy closes it | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `slots.main-tears-down` | MUST | core | - | A MAIN display takes the popup down; a popup displayed with it opens after it | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `slots.app-change` | MUST | core | - | A response of another APP takes POPUP and POPOVER down | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `slots.main-tears-down` | MUST | core | - | A MAIN display takes the popup down, unasked; a popup displayed with it opens after it | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `slots.order` | MUST | core | - | The entries of VIEWS are applied in slot order - MAIN before POPUP - whatever order the keys are in | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `slots.app-change` | MUST | core | - | A response of another APP takes down what its VIEWS names, and nothing because the name changed | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `slots.nest-processed` | MUST | core | - | A NEST / NEST2 display is processed without failing the roundtrip | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `slots.frontend-close` | MUST | core | - | The wired popup close (.eF VIEW_SLOTS destroy POPUP) closes it without a roundtrip | [actions.md#wired-frontend-actions](../../spec/actions.md#wired-frontend-actions) |
 | `slots.popover-over-main` | MUST | core | - | A popover leaves MAIN on screen | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `action.order` | MUST | core | - | Follow-up actions run in the order of T_CUSTOM | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
+| `action.order` | MUST | core | - | Follow-up actions run in the order of S_FRONT.ACTIONS | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.after-render` | MUST | core | focus | Follow-up actions run after the views of the same response are built (SET_FOCUS finds its control) | [response.md#processing-order](../../spec/response.md#processing-order) |
 | `action.unknown-skipped` | MUST | core | - | An unknown follow-up action is skipped; the ones after it run, the screen stays | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.unknown-reported` | SHOULD | core | - | An unknown follow-up action is reported (logged / listed as unsupported) | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
@@ -192,10 +202,14 @@ check requires.
 | `message.box` | MUST | core | - | MESSAGE_BOX error is shown as a box with its text | [actions.md#messages](../../spec/actions.md#messages) |
 | `message.box-close-event` | MUST | core | boxClose | Closing a box with onClose raises that event with the pressed action as first argument | [actions.md#messages](../../spec/actions.md#messages) |
 | `message.details-sanitized` | MUST | core | dom | The HTML details of a message box are sanitized before rendering | [actions.md#messages](../../spec/actions.md#messages) |
-| `router.keep` | MUST | core | url | Under KEEP routing the hash is #/app/<APP>/<ID> of the last response | [navigation.md#the-router-action](../../spec/navigation.md#the-router-action) |
+| `router.keep` | MUST | core | url | Under KEEP routing the hash is #/app/<APP>/<ID> of the last response | [navigation.md#the-nav-section](../../spec/navigation.md#the-nav-section) |
 | `router.hash-sent` | SHOULD | core | url | Requests carry the non-empty hash as HASH | [navigation.md#routes](../../spec/navigation.md#routes) |
 | `router.back-restores` | MUST | core | url | Browser Back after a routed nav_app_call sends an app-start-shaped request with the caller's route | [navigation.md#routes](../../spec/navigation.md#routes) |
 | `router.app-state` | MUST | core | url | setAppStateActive writes #/z2ui5-xapp-state=<ID>; a response without it clears it | [navigation.md#the-app-state-hash](../../spec/navigation.md#the-app-state-hash) |
+| `router.start-route` | MUST | core | url | An app start carries what the hash names parsed, as ROUTE { APP, DRAFT } - inside a launchpad hash the app part only | [request.md#route](../../spec/request.md#route) |
+| `router.start-app-state` | MUST | core | url | An app start on an app-state link carries its draft as ROUTE { APP_STATE } | [request.md#route](../../spec/request.md#route) |
+| `router.no-route-on-events` | MUST | core | url | ROUTE travels with a request that names no draft only - never with an event | [request.md#route](../../spec/request.md#route) |
+| `router.hash-write-owner` | MUST | core | url | setPushState is written to the URL only for an app that owns the hash - a listener registered (setHashEvent), routing off | [navigation.md#the-app-owned-hash](../../spec/navigation.md#the-app-owned-hash) |
 | `error.shown` | MUST | core | - | A 500 answer is shown to the user (the backend's real error body) | [errors.md#what-a-frontend-does-with-it](../../spec/errors.md#what-a-frontend-does-with-it) |
 | `error.as-text` | MUST | core | - | An error body is shown as text, verbatim - never interpreted as markup | [errors.md#what-a-frontend-does-with-it](../../spec/errors.md#what-a-frontend-does-with-it) |
 | `error.empty-body` | MUST | core | - | An error without body is shown with its status (HTTP <status>) | [errors.md#what-a-frontend-does-with-it](../../spec/errors.md#what-a-frontend-does-with-it) |
@@ -207,10 +221,10 @@ check requires.
 | `portable.box-details` | MUST | portable | - | The details of a message box are shown | [portable.md#6-frontend-actions](../../profiles/portable.md#6-frontend-actions) |
 | `portable.timer` | MUST | portable | timers | START_TIMER fires its event as an ordinary roundtrip after the delay | [actions.md#vocabulary](../../spec/actions.md#vocabulary) |
 | `portable.set-title` | MUST | portable | title | SET_TITLE sets the document title | [portable.md#6-frontend-actions](../../profiles/portable.md#6-frontend-actions) |
-| `portable.view-replaced` | MUST | portable | - | A second MAIN display replaces the first | [response.md#view_slots-display](../../spec/response.md#view_slots-display) |
+| `portable.view-replaced` | MUST | portable | - | A second MAIN display replaces the first | [response.md#views](../../spec/response.md#views) |
 | `ui5.wire-ebp` | MUST | ui5 | wires | A .eBP($event, true, ['EVENT'], arg) wire roundtrips like .eB | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
 | `ui5.wire-source-argument` | MUST | ui5 | wires | A ${$source>/prop} argument is resolved from the firing control | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
-| `ui5.wire-queue-last` | MUST | ui5 | wires, concurrent | A queue-last wire keeps its last firing during a roundtrip and sends it afterwards | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
+| `ui5.wire-queue-last` | MUST | ui5 | wires, concurrent | A wire with the options { queueLast, noBusy } keeps its last firing during a roundtrip and sends it afterwards | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
 | `ui5.nest` | MUST | ui5 | nest | A NEST view is inserted into its anchor inside MAIN and destroyed again | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `semantic.snapshot-schema` | MUST | semantic | snapshot | Every snapshot matches schema/snapshot.schema.json | [semantic.md#snapshot-v1](../../profiles/semantic.md#snapshot-v1) |
 | `semantic.recorded-snapshots` | SHOULD | semantic | snapshot | Replayed recorded traffic gives the recorded snapshots (traffic/node-runtime/agent-client.json) | [semantic.md#snapshot-v1](../../profiles/semantic.md#snapshot-v1) |

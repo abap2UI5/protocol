@@ -13,7 +13,7 @@
   `@abap2ui5/node-runtime` ([NR]); cap2UI5, a CAP plugin hosting that
   runtime with drafts in a CDS entity ([CAP]).
 - A **frontend** renders what the backend answers and sends the user's
-  events back. Implementations: the UI5 SPA (abap2UI5 `app/webapp`, [SRV],
+  events back. Implementations: the UI5 SPA (abap2UI5 `bundle/webapp`, [SRV],
   [V1]); the agent client of abap2UI5/mcp-server, which renders nothing and
   describes the screen as a snapshot instead ([AC]); the ABAP frontend
   simulator, which calls the handler in-process ([HF]).
@@ -32,10 +32,10 @@ frontend                                         backend
    |------------------------------------------------->|  apply MODEL (delta)
    |                                                  |  main( client ), nav hops
    |<--- 200 { S_FRONT: { ID, APP, PROTOCOL,          |  save new draft
-   |              S_ACTION: { T_SYSTEM, T_CUSTOM } }, |
+   |              VIEWS?, NAV?, ACTIONS? },           |
    |           MODEL? }                               |
-   |  run T_SYSTEM (views, router), push MODEL,       |
-   |  run T_CUSTOM (follow-up actions)                |
+   |  apply VIEWS (the slots), push MODEL, sync the   |
+   |  URL (NAV), run ACTIONS (follow-up actions)      |
    | POST (next event, S_FRONT.ID = the new ID) ----->|  ...
 ```
 
@@ -53,7 +53,7 @@ The **core protocol** is mandatory for every frontend and every backend:
 |---|---|
 | Transport over HTTP | [transport.md](transport.md) |
 | Request body | [request.md](request.md) |
-| Response body, action queues, view slots, model | [response.md](response.md) |
+| Response body, its sections, view slots, model | [response.md](response.md) |
 | Follow-up actions | [actions.md](actions.md) |
 | Windowed tables | [windowed-tables.md](windowed-tables.md) |
 | Sessions and drafts | [sessions.md](sessions.md) |
@@ -62,8 +62,9 @@ The **core protocol** is mandatory for every frontend and every backend:
 | Versioning | [versioning.md](versioning.md) |
 
 What the core protocol does **not** fix is the language of the views: a
-`VIEW_SLOTS display` action carries the view as a string. That is the
-business of a **view profile** ([../profiles/](../profiles/README.md)):
+display in `VIEWS` carries the view as a string
+([response.md](response.md#views)). That is the business of a **view
+profile** ([../profiles/](../profiles/README.md)):
 
 - the **UI5 profile** - full UI5 XML views, the abap2UI5 wire forms
   (`.eB(...)`, `.eF(...)`) inside them, the page that boots the UI5
@@ -87,8 +88,11 @@ the portable profile is a property of the app, not of the backend.
 | event | a named user interaction a view wires to the backend (`EVENT`) |
 | wire | the handler expression in a view attribute that fires an event (UI5 profile: `.eB(['SAVE'])`) |
 | slot | one of the five places a view can be shown: `MAIN`, `NEST`, `NEST2`, `POPUP`, `POPOVER` |
-| system action | an entry of `T_SYSTEM`: a view-lifecycle or router call the frontend runs first |
-| follow-up action | an entry of `T_CUSTOM`: something the app asked the frontend to do after rendering |
+| section | one of the three optional parts of `S_FRONT` in a response: `VIEWS` (what becomes of the slots), `NAV` (what the URL has to reflect), `ACTIONS` (the follow-up actions) |
+| display, teardown | the two things `VIEWS` says about a slot: build this view into it, or take it down |
+| standalone slot | `POPUP` and `POPOVER`: outside MAIN's control tree, taken down by a new MAIN view and by an app switch |
+| follow-up action | an entry of `ACTIONS`: something the app asked the frontend to do after rendering |
+| route | what the page's hash asks an app start to restore, sent parsed as `S_FRONT.ROUTE` |
 | model | the JSON object a view binds to; it holds the app's **bound** attributes, upper case |
 | model delta | the part of the model the user changed, sent with the next event |
 | windowed table | a bound table the app loads a window of rows at a time; its state is at `/__WINDOW/<path>` of the model |

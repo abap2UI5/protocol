@@ -203,13 +203,13 @@ export default [
     async run(t) {
       await startApp(t, `<Text text="{/NAME}"/>${nextButton}`, { app: "Z2UI5_CL_CONF_FE_A", model: { NAME: "alpha-main" } });
       // a popup app called by A: its own dialog over A's page
-      t.mock.reply(answer({ app: "Z2UI5_CL_CONF_FE_B", system: [display("POPUP", popupView('<Text text="{/NAME}"/>', { buttons: button("Push", "PUSH") + button("Close", "CLOSE") }))], model: { NAME: "beta-popup" } }));
+      t.mock.reply(answer({ app: "Z2UI5_CL_CONF_FE_B", views: { POPUP: display(popupView('<Text text="{/NAME}"/>', { buttons: button("Push", "PUSH") + button("Close", "CLOSE") })) }, model: { NAME: "beta-popup" } }));
       await t.press(NEXT);
       t.mock.reply(answer({ app: "Z2UI5_CL_CONF_FE_B", model: { NAME: "beta-pushed" } }));
       await t.press({ text: "Push", event: "PUSH", slot: "POPUP" });
       const s = await t.state();
       t.ok(s.slots.POPUP.text.includes("beta-pushed"), `the popup does not show the push: ${s.slots.POPUP.text}`);
-      t.mock.reply(answer({ app: "Z2UI5_CL_CONF_FE_B", system: [destroy("POPUP")] }));
+      t.mock.reply(answer({ app: "Z2UI5_CL_CONF_FE_B", views: { POPUP: destroy() } }));
       await t.press({ text: "Close", event: "CLOSE", slot: "POPUP" });
       const after = await t.state();
       t.ok(after.slots.MAIN.text.includes("alpha-main"), `A's page lost its model to B's push: ${after.slots.MAIN.text}`);

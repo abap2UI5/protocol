@@ -11,8 +11,8 @@
 export { runBackendSuite, DEFAULT_APPS, PROFILES, canonical } from "./lib/runner.mjs";
 export { ALL_CHECKS } from "./lib/checks/index.mjs";
 export {
-  ProtocolClient, ROUNDTRIP_HEADERS, sFront, systemActions, customActions, displays, displayOf,
-  destroys, routerOptions, hasModel, model,
+  ProtocolClient, ROUNDTRIP_HEADERS, SLOTS, sFront, views, actions, nav, displays, displayOf,
+  destroys, hasModel, model,
 } from "./lib/client.mjs";
 export { validate, compile, loadSchema, formatErrors, SCHEMA_DIR } from "./lib/schema.mjs";
 export { formatResult, formatSummary } from "./lib/report.mjs";

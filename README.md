@@ -6,11 +6,13 @@ with JSON Schemas and conformance suites, so either side can be swapped.**
 abap2UI5 is server-driven UI ("UI5 over the wire"): the browser frontend
 sends one JSON roundtrip per user event - the event, the model delta, the
 draft id - and the backend runs the app's `main( )` and answers with views,
-the model, messages and frontend actions. That protocol is spoken today by
+the model, messages and frontend actions. That protocol is spoken by
 three backends (abap2UI5 on an ABAP system, the same framework transpiled to
 Node as `@abap2ui5/node-runtime`, cap2UI5 on CAP) and three frontends (the
 UI5 SPA, the MCP server's agent client, the ABAP frontend simulator). This
-repository writes it down.
+repository writes it down - as **protocol 3**, which abap2UI5 speaks on its
+`DEV` branch; the released implementations still speak protocol 2
+([Status](#status)).
 
 ## The layers
 
@@ -22,13 +24,13 @@ repository writes it down.
  ---------------------------------------------------------------------------------
  spec/       the core protocol - mandatory for every frontend and backend
    transport  one endpoint, GET page / POST roundtrip, headers, CSRF, HEAD, sap-contextid
-   request    S_FRONT, events and their arguments, the model delta (__delta), CONFIG
-   response   S_FRONT, T_SYSTEM / T_CUSTOM, the five view slots, MODEL, processing order
+   request    S_FRONT, ROUTE, events and their arguments, the model delta (__delta), CONFIG
+   response   S_FRONT, VIEWS / NAV / ACTIONS, the five view slots, MODEL, processing order
    actions    follow-up actions, messages
    sessions   drafts, draft ids as snapshots, expiry, failed roundtrips
-   navigation app start resolution, app stack, routes, app-state hash, ROUTER action
+   navigation app start resolution, app stack, routes, app-state hash, the NAV section
    errors     the 500 text body and what a frontend does with it
-   versioning PROTOCOL 2, compatible changes
+   versioning PROTOCOL 3, what it broke, compatible changes
  schema/     JSON Schemas (2020-12): request, response, snapshot, portable profile
  conformance/
    backend    the backend suite - plays the frontend over HTTP     (implemented)
@@ -44,7 +46,7 @@ repository writes it down.
    terminal   an abap2UI5 app in a terminal: keys in, text screen out,
               the CLI abap2ui5-tui (node runtime, cap2UI5, SAP systems)
    common     what both renderers share: view helpers, payload -> request
- traffic/    real traffic of both reference backends and three frontends
+ traffic/    real traffic of the node runtime, the UI5 frontend and the agent client
 ```
 
 Start with [spec/core.md](spec/core.md). Every normative statement cites the
@@ -52,38 +54,46 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 
 ## Status
 
-- **Protocol 2**, specification revision 0.5, derived from abap2UI5 1.149.0
-  (its release commit `6f55b04`), the windowed tables from the app-driven
-  window abap2UI5 merged to main after 1.150.0 (`694fb262`, #3032), which
-  replaced the one of 1.149.0 and 1.150.0
-  ([spec/windowed-tables.md](spec/windowed-tables.md)); the maintainer
-  decided ten open questions in revision 0.3, question 14 is resolved,
-  four are open ([spec/open-questions.md](spec/open-questions.md)).
-- **Backend suite: 88 checks** (71 MUST, 17 SHOULD; 81 core, 7 UI5 profile).
-  `node-runtime` on a runtime built from abap2UI5 main `694fb262` - what
-  `traffic/` is recorded against - passes 88/88; on the released
-  `@abap2ui5/node-runtime` 1.150.0 (`package.json`, CI) and on `cap2ui5`
-  (`@cap2ui5/cds-plugin` 0.7.0, on the runtime 1.149.0) the app WINDOW
-  does not start, and its eight MUST checks are pinned with the place of
-  the fix, the next abap2UI5 release; everything else passes, but
-  cap2UI5's SHOULD warning `error.details`
-  ([conformance/RESULTS.md](conformance/RESULTS.md)).
-- **Schemas** validate all 408 recorded requests, 383 responses and 22 agent
-  snapshots, checked by the shipped validator and by ajv (the agent
-  client's three window requests of 1.149.0 and 1.150.0 as invalid).
+- **Protocol 3**, specification revision 0.6, derived from abap2UI5
+  branch `DEV` at `1445078` (after 1.150.0). It breaks protocol 2: the
+  response carries its views, its navigation intent and its follow-up
+  actions as the sections `VIEWS`, `NAV` and `ACTIONS`, an app start
+  carries the route parsed as `ROUTE`, the flags of an event wire are one
+  options object ([spec/versioning.md](spec/versioning.md#what-protocol-3-broke)).
+  A response looks like this:
+
+  ```json
+  { "S_FRONT": { "ID": "982BD4B2BEBE4DEE93371A4671461244", "APP": "Z2UI5_CL_CONF_SLOTS", "PROTOCOL": 3,
+      "VIEWS": { "MAIN": { "XML": "<mvc:View ...>...</mvc:View>" },
+                 "POPUP": { "DESTROY": true } },
+      "NAV": { "setNavRouting": "KEEP" },
+      "ACTIONS": [["MESSAGE_TOAST", "show", "Saved"]] },
+    "MODEL": { "NAME": "Ada" } }
+  ```
+
+  The maintainer decided ten open questions in revision 0.3, question 14
+  is resolved, question 15 was decided with protocol 3, three are open
+  ([spec/open-questions.md](spec/open-questions.md)).
+- **Who speaks protocol 3:** abap2UI5 `DEV` - the backend, the UI5 SPA
+  and the node runtime packed from it - and the two renderers of this
+  repository. **Who still speaks protocol 2:** every release -
+  `@abap2ui5/node-runtime` 1.150.0 (`package.json`), abap2UI5 1.150.0 -
+  cap2UI5 (`@cap2ui5/cds-plugin` 0.7.0 hosts that runtime) and the agent
+  client of abap2UI5/mcp-server (`332a0b0`, vendored here). A protocol-2
+  frontend refuses a protocol-3 response on its number, and the suites
+  of this revision do not measure a protocol-2 implementation; what is
+  pinned for each is in [conformance/RESULTS.md](conformance/RESULTS.md).
+- **Backend suite** ([the check list](conformance/backend/README.md#checks)):
+  the node runtime packed from abap2UI5 `DEV` passes every check - that
+  is what `traffic/` is recorded against.
+- **Schemas** validate every recorded request and response, checked by
+  the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
-- **Frontend suite: 87 checks** (72 MUST, 15 SHOULD; 69 core, 8 portable,
-  7 UI5, 3 semantic), scripted from the recorded traffic. The UI5 SPA of
-  abap2UI5 main `694fb262` passes every check that applies (83, 4
-  skipped); the release 1.150.0 that CI pins fails the UI5-profile window
-  checks (UI5_REL_FAILS, pinned); the Adaptive Cards renderer and the
-  terminal renderer pass every check that applies to them (69 and 75 - the
-  terminal's include the router checks); the agent client (mcp-server
-  `332a0b0`) passes 63 and fails `semantic.recorded-snapshots` - it sends
-  the window request of 1.149.0 and 1.150.0, pinned as a finding; the Web
-  Components frontend passed 68 of 68 of the 81 checks of 2026-10-03, with
-  one intermittent failure, and was not run again
+- **Frontend suite** ([the check list](conformance/frontend/README.md#checks)),
+  scripted from the recorded traffic: the UI5 SPA of abap2UI5 `DEV`, the
+  Adaptive Cards renderer and the terminal renderer pass every check that
+  applies to them
   ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
 - **Adaptive Cards renderer** (prototype, [renderers/adaptive-cards/](renderers/adaptive-cards/README.md)):
   all 65 portable controls mapped onto Adaptive Cards 1.5, the way back from
@@ -107,8 +117,14 @@ npx abap2ui5-conformance backend --url http://localhost:3000/ --profile ui5
 # against the reference backends
 npm run conformance:node-runtime        # transpiles the framework with the ABAP apps, serves, runs
 npm ci --prefix conformance/hosts/cap2ui5
-npm run conformance:cap2ui5
+npm run conformance:cap2ui5             # protocol 2 until cap2UI5 hosts a protocol-3 runtime
 ```
+
+The released `@abap2ui5/node-runtime` of `package.json` speaks protocol 2.
+Until a release speaks protocol 3, install a runtime packed from an
+abap2UI5 checkout over it (`npm run pack:node-runtime -- --out <dir>`
+there, then `npm install --no-save <dir>/abap2ui5-node-runtime-*.tgz`
+here).
 
 To test your backend: deploy the [conformance apps](conformance/apps/README.md)
 (abapGit for ABAP; the JS twins for cap2UI5), point `--url` at the endpoint.
@@ -145,7 +161,7 @@ npm test                 # schemas, traffic, docs, portable profile, CLI, both b
                          # renderer; UI5 SPA with a checkout + Chromium), the golden
                          # cards and screens, the terminal against the node runtime
                          # (PROTOCOL_SKIP_BACKENDS=1 / PROTOCOL_SKIP_BROWSER=1 skip the slow parts)
-npm run record           # re-record traffic/ from both backends
+npm run record           # re-record traffic/ (the node runtime; cap2UI5 once it speaks protocol 3)
 npm run lint:abap        # abaplint over the ABAP conformance apps
 npm run generate         # regenerate the check lists, the portable-profile sections and
                          # the Adaptive Cards and terminal mapping tables

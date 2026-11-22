@@ -23,14 +23,15 @@
  */
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import { applyResponse, emptyState, getAt, setAt } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { emptyState, getAt, setAt } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { applyResponse, destroySlot } from "../common/response.mjs";
 import { renderCard, modelKeyOf, walk } from "./render.mjs";
 import { submitToRequest, startRequest, eventRequest } from "./submit.mjs";
 
-export const PROTOCOL = 2;
+export const PROTOCOL = 3;
 
 const PROFILE = JSON.parse(fs.readFileSync(fileURLToPath(new URL("../../profiles/portable-v1.json", import.meta.url)), "utf8"));
-/** What a portable renderer receives as T_CUSTOM / .eF (portable-v1.json actions.wire). */
+/** What a portable renderer receives in ACTIONS / as .eF (portable-v1.json actions.wire). */
 const WIRE = PROFILE.actions.wire;
 
 const validContextId = (v) => typeof v === "string" && v.trim() !== "" && v !== "undefined" && v !== "null";
@@ -107,15 +108,8 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
     }
     error = null;
     settle(sent);
-    // a response of another app takes popup and popover down (spec/response.md#view-slots)
-    if (json.S_FRONT.APP && state.app && json.S_FRONT.APP !== state.app) {
-      state = { ...state, slots: { ...state.slots }, models: { ...state.models } };
-      for (const s of ["POPUP", "POPOVER"]) {
-        delete state.slots[s];
-        delete state.models[s];
-        pending[s].clear();
-      }
-    }
+    // what is torn down is what VIEWS names - an app hop's popup and popover
+    // too, the backend sends their teardown (spec/response.md#view-slots)
     state = applyResponse(state, json);
     // edits not sent yet survive a model push
     for (const [key, map] of Object.entries(pending)) {
@@ -154,7 +148,7 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
       later(String(method), Number(rest[0]) || 0);
       return;
     }
-    if (WIRE.custom.includes(name) || (WIRE.customGlobals[name] || []).includes(method)) {
+    if (WIRE.actions.includes(name) || (WIRE.actionGlobals[name] || []).includes(method)) {
       log.push(`noop: ${name}${raw[0] === "CONTROL_GLOBAL" ? ` ${method}` : ""} - no counterpart in a card`);
       return;
     }
@@ -176,7 +170,7 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
   function client(action) {
     const a = action[0] === "CONTROL_GLOBAL" ? action.slice(1) : action;
     if (a[0] === "VIEW_SLOTS" && a[1] === "destroy") {
-      state = applyResponse(state, { S_FRONT: { S_ACTION: { T_CUSTOM: [["VIEW_SLOTS", "destroy", a[2]]] } } });
+      state = destroySlot(state, a[2]);
       if (pending[a[2]]) pending[a[2]].clear();
       return;
     }

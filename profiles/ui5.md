@@ -1,8 +1,8 @@
 # UI5 profile
 
-**Status: normative for protocol 2.** The views are UI5 XML, as the
+**Status: normative for protocol 3.** The views are UI5 XML, as the
 `z2ui5_cl_ui5_view_builder` writes them ([IC] `view_display`), and the
-frontend is the abap2UI5 UI5 SPA (`app/webapp`). Only that frontend
+frontend is the abap2UI5 UI5 SPA (`bundle/webapp`). Only that frontend
 implements this profile fully; every backend serves it. Source
 abbreviations: [../spec/README.md](../spec/README.md#sources).
 
@@ -41,14 +41,14 @@ abbreviations: [../spec/README.md](../spec/README.md#sources).
   ([IC] `popup_display`, `popover_display`). *Checked by:* `ui5.view-roots`.
 - Any UI5 control, property, aggregation and namespace may appear - the
   builder maps UI5 XML one to one. Custom controls of the framework live in
-  `z2ui5.cc` (abap2UI5 `app/webapp/cc/`), custom-control addons under the
+  `z2ui5.cc` (abap2UI5 `bundle/webapp/cc/`), custom-control addons under the
   reserved resource roots `z2ui5_cci` and `z2ui5_ccc`.
 - **Implementation note.** The set of `z2ui5.cc` controls belongs to the
   frontend release, not to the protocol. abap2UI5 1.149.0 removed the eight
   invisible ones - `z2ui5.cc.Timer`, `Focus`, `Scrolling`, `Title`,
   `LPTitle`, `Favicon`, `History` and `Info` - whose work the follow-up
   actions `START_TIMER`, `SET_FOCUS`, `SCROLL_TO` / `SCROLL_INTO_VIEW`,
-  `SET_TITLE`, `SET_TITLE_LAUNCHPAD`, `SET_FAVICON`, the router options
+  `SET_TITLE`, `SET_TITLE_LAUNCHPAD`, `SET_FAVICON`, the options of `NAV`
   and the session block do; a view that still names one fails to load
   there, like any view with a control the frontend cannot load
   ([../spec/errors.md](../spec/errors.md#what-a-frontend-does-with-it)).
@@ -79,11 +79,16 @@ arguments when the event fires, and the controller methods `eB`, `eBP` and
 | Wire | Written by | Effect |
 |---|---|---|
 | `.eB(['EVENT'], arg...)` | `client->_event( val t_arg )` | a roundtrip with `EVENT` and `T_EVENT_ARG` = the arguments |
-| `.eB(['EVENT', false, false, false, <queueLast>, <noBusy>], ...)` | `_event( s_ctrl = ... )` | the event array read by position: [1], [2] reserved, [3] use the MAIN model from a popup (custom JS only), [4] keep the last firing while a roundtrip runs, [5] no busy indicator |
+| `.eB(['EVENT', { queueLast: true, noBusy: true }], arg...)` | `_event( s_ctrl = ... )` with `check_queue_last` / `check_no_busy` | the same roundtrip with the wire's flags: one options object in position [1] of the event array, read by key ([below](#the-options-of-a-wire)) |
 | `.eBP($event, <condition>, ['EVENT'], arg...)` | `s_ctrl-check_prevent_default` / `prevent_default_expr` | cancel the control's default when the condition holds, then roundtrip |
 | `.eB(['___ZZZ_NAL'])` | `client->_event_nav_app_leave( )` | the reserved leave event ([../spec/navigation.md](../spec/navigation.md#the-reserved-leave-event)) |
 | `.eF('ACTION', arg...)` | `client->_event_client( )`, a wired `follow_up_action( )` | a frontend action on the event, no roundtrip ([../spec/actions.md](../spec/actions.md#wired-frontend-actions)) |
 
+- **The event array** is `['EVENT']` or `['EVENT', { <options> }]` - the
+  name, and behind it the flags of the wire as one object. A backend MUST
+  write a flag as a key of that object, only the flags that are set, and
+  no object at all for a wire without one ([EV] `get_event`).
+  *Checked by:* `ui5.event-wire-options`.
 - Arguments are single-quoted string literals (backslash, quote and line
   breaks escaped, [EV] `get_t_arg`), or raw when they start with `$`
   or `{` (a binding or expression: `${ID}`, `${$source>/text}`,
@@ -98,9 +103,26 @@ arguments when the event fires, and the controller methods `eB`, `eBP` and
   data before it is sent ([LIB] `normalizeEventArgs`,
   [../spec/request.md](../spec/request.md#event-arguments)).
 - A frontend implementing this profile MUST implement exactly these wire
-  forms: they are written by every deployed backend. *Frontend checks:*
-  `ui5.wire-ebp`, `ui5.wire-source-argument`, `ui5.wire-queue-last`,
-  `request.event-arguments`, `request.leave-event`, `slots.frontend-close`.
+  forms: they are written by every backend of protocol 3.
+  *Frontend checks:* `ui5.wire-ebp`, `ui5.wire-source-argument`,
+  `ui5.wire-queue-last`, `request.event-arguments`, `request.leave-event`,
+  `slots.frontend-close`.
+
+### The options of a wire
+
+| Key | Written for | Meaning |
+|---|---|---|
+| `queueLast` | `s_ctrl-check_queue_last` | while a roundtrip runs, keep the **last** firing of this wire and send it after the response, instead of dropping it ([V1] `eB`, `_dispatchQueuedEvent`) - a live search loses no keystroke |
+| `noBusy` | `s_ctrl-check_no_busy` | no busy indicator for this roundtrip; the frontend is busy all the same, and a second event is kept or dropped as ever ([V1] `eB`) |
+| `useMainModel` | - (no backend writes it; views written by hand) | the event from a popup ships MAIN's model delta instead of the popup's ([V1] `_pickModelForRoundtrip`) |
+
+The frontend reads the object by key and takes an absent key as `false`
+([LIB] `eventOptions`). **Implementation note.** Up to protocol 2 the
+flags were positions of the event array - `['EVENT', false, false,
+false, <queueLast>, <noBusy>]`, [1] and [2] reserved, [3] the MAIN-model
+flag. The UI5 frontend no longer reads them: a wire of that shape - a
+view written by hand against the old form - fires as a wire without
+flags, and the frontend logs it ([LIB] `eventOptions`).
 
 ## Frontend actions
 
@@ -110,12 +132,16 @@ ones: `CONTROL_BY_ID` (a whitelisted method on a control resolved by id,
 [CC] `evControlCallById`), the whitelisted globals of `CONTROL_GLOBAL`
 ([CC] `GLOBAL_TARGETS`: `MESSAGE_TOAST`, `MESSAGE_BOX`, `VIEW_SLOTS`, `ROUTER`,
 `BUSY_INDICATOR`, `ICON_POOL`, `THEMING`, `POPUP`, `INVISIBLE_MESSAGE`,
-`FORMATTING`), `BINDING_CALL`, `BIND_ELEMENT`, `SET_ODATA_MODEL`, the variant
-and launchpad actions (`CROSS_APP_NAV_TO_EXT`, `CROSS_APP_NAV_TO_PREV_APP`,
-`CROSS_APP_NAV_GET_LINKS`, `SET_TITLE_LAUNCHPAD`, `SET_APP_FULL_WIDTH`,
-[LP]) and the experimental `OFFLINE_QUEUE` ([OFF]). The whitelist is the safety boundary: an action
-name, target or method outside it is not called ([FA] `execute`,
-`Object.create(null)` dispatch).
+`FORMATTING`), `BINDING_CALL`, `BIND_ELEMENT`, `SET_ODATA_MODEL` and the
+variant and launchpad actions (`CROSS_APP_NAV_TO_EXT`,
+`CROSS_APP_NAV_TO_PREV_APP`, `CROSS_APP_NAV_GET_LINKS`,
+`SET_TITLE_LAUNCHPAD`, `SET_APP_FULL_WIDTH`, [LP]). The whitelist is the
+safety boundary: an action name, target or method outside it is not
+called ([FA] `execute`, `Object.create(null)` dispatch). The targets
+`VIEW_SLOTS` and `ROUTER` are what a view's own close wire and an action
+reach; a response says its views and its URL intent in `VIEWS` and `NAV`
+([../spec/response.md](../spec/response.md#sections)), which the frontend
+applies itself ([V1] `_applyViews`, [RT] `sync`).
 
 ## Windowed tables
 
@@ -129,9 +155,9 @@ binding. Every request it sends is the app's event `EVENT` of the window
 state behind `___ZZZ_WIN`
 ([../spec/windowed-tables.md](../spec/windowed-tables.md#the-window-request)),
 through the slot's `eB` so that it carries the slot's model delta ([SL]
-`createViewModel`: `eB(['___ZZZ_WIN', false, false, false, true,
-<noBusy>], path, event, reason, skip, top, ...)`); without an `EVENT` it
-sends nothing and logs it ([WM] `_z2ui5Send`).
+`createViewModel`: `eB(['___ZZZ_WIN', { noBusy: <noBusy> }], path, event,
+reason, skip, top, ...)`); without an `EVENT` it sends nothing and logs
+it ([WM] `_z2ui5Send`).
 
 - **Length.** The binding answers its length with `TOTAL` (at least the
   rows it holds), as final: a growing `sap.m.Table` or `List` shows
@@ -161,13 +187,17 @@ sends nothing and logs it ([WM] `_z2ui5Send`).
   the view are ignored for a windowed list - the rows arrive in the app's
   order ([WM] `WindowListBinding`, the constructor).
 - **Two requests, one roundtrip.** A window request that comes while a
-  roundtrip runs is kept (queue-last) in a slot of its own and sent after
-  it ([V1] `_dispatchQueuedEvent`). Of two requests of the same table that
-  wait there the later one wins - except that a `MORE` does not replace a
+  roundtrip runs is kept and sent after it - per table, by the model that
+  asked, so the lists of one page do not replace each other's requests,
+  and one the frontend is idle for goes out with each landed roundtrip
+  ([SL] `keepWindowRequest`, `dispatchQueuedWindows`; [V1]
+  `_dispatchQueuedEvent`). Of two requests of the same table that wait
+  there the later one wins - except that a `MORE` does not replace a
   waiting `SORT` or `FILTER`: the restart loads from the first row anyway,
   and the `skip` of the `MORE` counts rows of the old order ([WM]
-  `keepRestart`, [SL] `createViewModel`). This is what the UI5 frontend
-  does; no check drives it.
+  `keepRestart`). A kept request whose table is gone - the popup closed,
+  the view replaced - is dropped. This is what the UI5 frontend does; no
+  check drives it.
 - A frontend implementing this profile MUST do the first three: views
   with growing lists and sortable columns over windowed tables are written
   by every backend with windowed tables. *Frontend checks:*

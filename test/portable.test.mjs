@@ -50,13 +50,13 @@ test("actions.api is the client API, actions.wire what a renderer receives (open
   const { api, wire } = profile.actions;
   // the list of revision 0.2 stays for its consumers
   assert.deepEqual(profile.frontendActions.allowed, api);
-  assert.deepEqual(profile.frontendActions.allowedGlobals, wire.customGlobals);
-  // every api name arrives either under its own name or as a ROUTER option - never both
+  assert.deepEqual(profile.frontendActions.allowedGlobals, wire.actionGlobals);
+  // every api name arrives either under its own name or as a NAV option - never both
   for (const a of api) {
-    const folded = Object.prototype.hasOwnProperty.call(wire.foldedIntoRouter, a);
-    assert.notEqual(folded, wire.custom.includes(a), a);
-    if (folded) assert.ok(wire.routerOptions.includes(wire.foldedIntoRouter[a]), `${a} -> ${wire.foldedIntoRouter[a]}`);
+    const folded = Object.prototype.hasOwnProperty.call(wire.foldedIntoNav, a);
+    assert.notEqual(folded, wire.actions.includes(a), a);
+    if (folded) assert.ok(wire.navOptions.includes(wire.foldedIntoNav[a]), `${a} -> ${wire.foldedIntoNav[a]}`);
   }
-  assert.deepEqual(wire.custom.filter((a) => !api.includes(a)), []);
-  assert.deepEqual(Object.keys(wire.system).sort(), ["ROUTER", "VIEW_SLOTS"]);
+  assert.deepEqual(wire.actions.filter((a) => !api.includes(a)), []);
+  assert.deepEqual(wire.views, ["display", "destroy"]);
 });

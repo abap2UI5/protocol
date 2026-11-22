@@ -64,7 +64,12 @@ CLASS z2ui5_cl_conf_echo IMPLEMENTATION.
                     )->a( n = `press` v = client->_event( `PUSH` )
                 )->tag( `Button`
                     )->a( n = `text`  v = `Render`
-                    )->a( n = `press` v = client->_event( `RERENDER` ) ).
+                    )->a( n = `press` v = client->_event( `RERENDER` )
+                )->tag( `Button`
+                    )->a( n = `text`  v = `Live`
+                    )->a( n = `press` v = client->_event( val    = `LIVE`
+                                                         s_ctrl = VALUE #( check_queue_last = abap_true
+                                                                           check_no_busy    = abap_true ) ) ).
 
     client->view_display( view->stringify( ) ).
 

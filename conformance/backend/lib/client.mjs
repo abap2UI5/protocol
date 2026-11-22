@@ -75,10 +75,16 @@ export class ProtocolClient {
     return s;
   }
 
-  /** App start: no ID, ?app_start=<app> in SEARCH (or a route in HASH). */
-  start(app, { hash, search, label } = {}) {
+  /**
+   * App start: no ID, ?app_start=<app> in SEARCH - and, when the page's hash
+   * names what to restore, that hash in HASH and the frontend's parse of it
+   * in ROUTE (core/Router.js startRoute): { APP, DRAFT? } or { APP_STATE }.
+   */
+  start(app, { hash, search, route, label } = {}) {
     const s = search !== undefined ? search : (app ? `?app_start=${app}` : "");
-    return this.post({ S_FRONT: this.location({ search: s, hash }) }, { label: label || `start ${app || hash || ""}` });
+    const front = this.location({ search: s, hash });
+    if (route) front.ROUTE = route;
+    return this.post({ S_FRONT: front }, { label: label || `start ${app || hash || ""}` });
   }
 
   /** An event roundtrip continuing draft `id`. */
@@ -93,20 +99,25 @@ export class ProtocolClient {
 
 // ------------------------------------------------------------ reading ----
 
-export const sFront = (r) => (r && r.json && r.json.S_FRONT) || {};
-export const systemActions = (r) => (sFront(r).S_ACTION && sFront(r).S_ACTION.T_SYSTEM) || [];
-export const customActions = (r) => (sFront(r).S_ACTION && sFront(r).S_ACTION.T_CUSTOM) || [];
+/** The slots, in the order a frontend builds them (spec/response.md#views). */
+export const SLOTS = Object.freeze(["MAIN", "NEST", "NEST2", "POPUP", "POPOVER"]);
 
-/** The VIEW_SLOTS display actions of a response, in order. */
-export const displays = (r) => systemActions(r).filter((a) => Array.isArray(a) && a[0] === "VIEW_SLOTS" && a[1] === "display");
-/** The display of `slot`, or undefined. */
-export const displayOf = (r, slot) => displays(r).find((a) => a[2] === slot);
-/** Whether the response tears `slot` down. */
-export const destroys = (r, slot) => systemActions(r).some((a) => Array.isArray(a) && a[0] === "VIEW_SLOTS" && a[1] === "destroy" && a[2] === slot);
-/** The ROUTER/sync options of a response, or undefined. */
-export const routerOptions = (r) => {
-  const a = systemActions(r).find((x) => Array.isArray(x) && x[0] === "ROUTER" && x[1] === "sync");
-  return a ? a[2] : undefined;
+export const sFront = (r) => (r && r.json && r.json.S_FRONT) || {};
+/** S_FRONT.VIEWS - what the response says about the slots; {} when absent. */
+export const views = (r) => sFront(r).VIEWS || {};
+/** The follow-up actions the app queued (S_FRONT.ACTIONS), in order. */
+export const actions = (r) => sFront(r).ACTIONS || [];
+/** S_FRONT.NAV - the navigation options of a response, or undefined. */
+export const nav = (r) => sFront(r).NAV;
+
+/** The display of `slot` - { XML, OPT? } - or undefined. */
+export const displayOf = (r, slot) => {
+  const v = views(r)[slot];
+  return v && typeof v.XML === "string" ? v : undefined;
 };
+/** The slots a response displays, in slot order. */
+export const displays = (r) => SLOTS.filter((slot) => displayOf(r, slot));
+/** Whether the response tears `slot` down. */
+export const destroys = (r, slot) => Boolean(views(r)[slot] && views(r)[slot].DESTROY === true);
 export const hasModel = (r) => Boolean(r && r.json && Object.prototype.hasOwnProperty.call(r.json, "MODEL"));
 export const model = (r) => (r && r.json && r.json.MODEL) || undefined;

@@ -2,7 +2,8 @@
 
 ## Follow-up actions
 
-A follow-up action is an entry of `S_FRONT.S_ACTION.T_CUSTOM`: a JSON array
+A follow-up action is an entry of `S_FRONT.ACTIONS`
+([response.md](response.md#actions)): a JSON array
 `["<ACTION>", <arg>...]`. The arguments are strings, except that an
 argument the app wrote as a JSON object or array travels as that JSON value
 ([EV] `get_event_client_ajson`); an action that takes an option object has
@@ -88,7 +89,7 @@ prefix ([FE] `msg_toast`, `msg_box`):
 | `CLIPBOARD_COPY`, `DOWNLOAD_B64_FILE`, `OPEN_NEW_TAB`, `URLHELPER`, `LOCATION_RELOAD`, `SYSTEM_LOGOUT`, `STORE_DATA`, `KEYBOARD_SHORTCUT`, `PLAY_AUDIO` | per [IC] `follow_up_action` | portable (MAY be a no-op where the platform lacks it) |
 | `MESSAGE_TOAST`, `MESSAGE_BOX` | above | portable |
 | `BUSY_INDICATOR`, `INVISIBLE_MESSAGE`, `THEMING` | method, args | portable (via `CONTROL_GLOBAL`) |
-| `VIEW_SLOTS` | `destroy`, slot | core (system action; as follow-up only from a wired `popup_close`) |
+| `VIEW_SLOTS` | `destroy`, slot | core - only as a wired frontend action, from `popup_close` / `popover_close` ([below](#wired-frontend-actions)); a backend says a teardown in `VIEWS`, never as a follow-up action |
 | `SET_SIZE_LIMIT` | size | portable, MAY be a no-op |
 | `CONTROL_BY_ID` | id, view, method, args... | UI5 profile - calls a whitelisted UI5 control method |
 | `CONTROL_GLOBAL` | target, method, args..., options? | UI5 profile for the targets beyond the ones above (`ICON_POOL`, `POPUP`, `FORMATTING`) |
@@ -96,40 +97,29 @@ prefix ([FE] `msg_toast`, `msg_box`):
 | `CROSS_APP_NAV_TO_EXT`, `CROSS_APP_NAV_TO_PREV_APP`, `SET_TITLE_LAUNCHPAD` | per [IC] | UI5 profile, inside a launchpad |
 | `SET_APP_FULL_WIDTH` | `X` for the launchpad's full width; no argument for its letterbox again | UI5 profile, inside a launchpad; silently nothing outside ([LP] `evSetAppFullWidth`; from abap2UI5 1.149.0) |
 | `CROSS_APP_NAV_GET_LINKS` | target (`{ "semanticObject", "action"? }`), intent parameters, backend event | UI5 profile, inside a launchpad: the event is raised once the launchpad answered, its first argument the **text** of a JSON array of `{ intent, text, subTitle, semanticObject, action, params }`; outside a launchpad nothing is raised ([LP] `evCrossAppNavGetLinks`; from 1.149.0) |
-| `OFFLINE_QUEUE` | toast text (`&1` = how many wait), backend event names...; no event name switches it off | UI5 profile, experimental ([IC]): [below](#the-offline-queue) (from 1.149.0) |
 
 The navigation family (`SET_NAV_ROUTING`, `SET_PUSH_STATE`, `HASH_REPLACE`,
 `HASH_ATTACH_CHANGED`, `SET_APP_STATE_ACTIVE`) does **not** travel as
-follow-up actions: the backend folds it into the one `ROUTER` system action
-([CL] `follow_up_action`, [navigation.md](navigation.md#the-router-action)).
+follow-up actions: the backend folds it into the options of `NAV`
+([CL] `follow_up_action`, [navigation.md](navigation.md#the-nav-section)).
 `HASH_BACK` is a follow-up action.
 
 ## The offline queue
 
-`OFFLINE_QUEUE` names events of the app that the UI5 frontend keeps when
-their roundtrip fails for want of a network, instead of showing the error
-([OFF], [SRV] `_keepOffline`, `replayOffline`; experimental, [IC]
-`cs_event-offline_queue`). It changes nothing in the messages, only when
-they are sent:
+abap2UI5 1.149.0 and 1.150.0 carried an experimental follow-up action
+`OFFLINE_QUEUE`: it named events of the app that the UI5 frontend kept
+when their roundtrip failed for want of a network and sent again, in
+order, once the network was back. It was withdrawn after 1.150.0 (main
+`694fb262`, #3032) and is no part of protocol 3: no backend of protocol 3
+queues it, and an event that cannot reach the backend ends as every other
+failed roundtrip does ([errors.md](errors.md#what-a-frontend-does-with-it)).
+A frontend that is sent the action by an older backend skips it like any
+action it does not know ([above](#follow-up-actions)).
 
-- A kept request is the body as it was built - event, arguments, model
-  delta - stored in the browser under the endpoint. When the network is
-  back the frontend sends the kept requests **in order**, each with
-  `S_FRONT.ID` replaced by the `ID` the previous answer named, and adopts
-  and renders only the last answer.
-- The backend sees ordinary event requests that arrive late. Nothing marks
-  a replayed request, and no rule of this specification is relaxed for
-  one: each continues the draft the one before left
-  ([sessions.md](sessions.md#draft-ids)).
-- An event the app did not name fails as before
-  ([errors.md](errors.md#what-a-frontend-does-with-it)).
-
-No other frontend implements it; an unknown action is skipped
-([above](#follow-up-actions)). **Implementation note.** From abap2UI5
-1.149.0 on the UI5 frontend no longer refuses to send an event while the
-browser reports itself offline (`navigator.onLine`): a host reachable
-only through a VPN or an intranet reports offline while the backend
-answers ([V1] `eB`).
+**Implementation note.** The UI5 frontend does not refuse to send an event
+while the browser reports itself offline (`navigator.onLine`): a host
+reachable only through a VPN or an intranet reports offline while the
+backend answers ([V1] `eB`).
 
 ## Wired frontend actions
 

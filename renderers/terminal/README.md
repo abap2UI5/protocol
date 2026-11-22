@@ -164,9 +164,11 @@ it could not render.
 - **Routing.** The session keeps the hash a browser would show and its
   history, synchronised once per response like the UI5 router (KEEP /
   FRESH routes, the caller's entry repointed on a `nav_app_call`, the
-  app-state hash); every request carries it as `HASH`; Back restores the
-  route it lands on with an app-start-shaped request
-  ([spec/navigation.md](../../spec/navigation.md#the-router-action)).
+  app-state hash); every request carries it as `HASH`, and one that names
+  no draft carries what it asks to restore parsed, as `ROUTE`; Back
+  restores the route it lands on with such an app-start-shaped request; a
+  hash of the app's own is written only for an app that owns the hash
+  ([spec/navigation.md](../../spec/navigation.md#the-nav-section)).
 - **Transport** ([spec/transport.md](../../spec/transport.md)):
   `sap-contextid-accept: header` on every POST, the last valid
   `sap-contextid` kept and sent back, the CSRF token handshake of a token

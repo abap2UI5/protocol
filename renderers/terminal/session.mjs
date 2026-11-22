@@ -34,19 +34,26 @@
  * HASH; `back()` steps the history and restores the route it lands on with
  * an app-start-shaped request, as the browser's Back does.
  */
-import { applyResponse, emptyState, getAt, setAt } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { emptyState, getAt, setAt } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { applyResponse, destroySlot } from "../common/response.mjs";
 import { modelKeyOf, liveSlots, PROFILE } from "../common/view.mjs";
 import { submitToRequest, startRequest, eventRequest } from "../common/request.mjs";
 
-export const PROTOCOL = 2;
+export const PROTOCOL = 3;
 
-/** What a portable renderer receives as T_CUSTOM / .eF (portable-v1.json actions.wire). */
+/** What a portable renderer receives in ACTIONS / as .eF (portable-v1.json actions.wire). */
 const WIRE = PROFILE.actions.wire;
 
 const validContextId = (v) => typeof v === "string" && v.trim() !== "" && v !== "undefined" && v !== "null";
 
-/** The app part of a hash, normalised: no `#`, no leading slashes. */
-const appHash = (h) => String(h || "").replace(/^#/, "").replace(/^\/+/, "");
+/** The app part of a hash, normalised: no `#`, no launchpad shell part
+ *  (`#<shell>&/<app part>`, spec/navigation.md#launchpad-hashes), no leading
+ *  slashes. */
+const appHash = (h) => {
+  const raw = String(h || "").replace(/^#/, "");
+  const i = raw.startsWith("/") ? -1 : raw.indexOf("&/");
+  return (i < 0 ? raw : raw.slice(i + 2)).replace(/^\/+/, "");
+};
 /** The hash as location.hash shows it after a HashChanger write. */
 const fullHash = (h) => (appHash(h) ? `#/${appHash(h)}` : "");
 
@@ -71,6 +78,20 @@ export function parseRoute(h) {
 }
 
 const route = (app, draft) => `app/${app}${draft ? `/${draft}` : ""}`;
+
+const APP_STATE = "z2ui5-xapp-state=";
+/** What a hash asks an app start to restore - S_FRONT.ROUTE
+ *  (spec/request.md#route): the class and the draft of a route, or the
+ *  draft of an app-state link; null when it names neither. */
+export function startRoute(h) {
+  const r = parseRoute(h);
+  if (r) return r.draft ? { APP: r.app, DRAFT: r.draft } : { APP: r.app };
+  const app = appHash(h);
+  const query = app.includes("?") ? app.slice(app.indexOf("?") + 1) : app;
+  const part = query.split("&").find((x) => x.toLowerCase().startsWith(APP_STATE));
+  const draft = part ? part.slice(APP_STATE.length) : "";
+  return draft ? { APP_STATE: draft } : null;
+}
 
 /** Whether a Set-Cookie deletes its cookie: Max-Age zero or less, or an
  *  Expires in the past - how a system ends a session or a logon ticket. */
@@ -211,8 +232,8 @@ export function createSession({
 
   const hash = () => router.trail[router.pos];
 
-  /** The ROUTER sync of one response ([RT] sync): the options when present,
-   *  the response's ID either way. */
+  /** The sync of one response with its NAV options ([RT] sync): the options
+   *  when present, the response's ID either way. */
   function sync(opts, id, app) {
     if (opts.setNavRouting) {
       const mode = String(opts.setNavRouting).toUpperCase();
@@ -224,8 +245,13 @@ export function createSession({
       router.hashEvent = String(opts.setHashEvent).trim() || null;
       router.appHash = appHash(hash());
     }
+    // a hash of the app's own is written only for an app that owns the
+    // hash: a listener registered, routing off
+    // (spec/navigation.md#the-app-owned-hash)
     const appWrite = opts.setPushState || opts.setHashReplace;
     const push = Boolean(opts.setPushState);
+    const owner = !router.navRouting && Boolean(router.hashEvent);
+    if (appWrite && !owner) note(`the app asked for the hash ${appWrite} without owning it (no hash listener${router.navRouting ? ", hash routing is on" : ""}) - not written`);
     if (router.navRouting) {
       if (app) {
         const draft = router.navMode === "FRESH" ? null : id;
@@ -234,7 +260,7 @@ export function createSession({
         if (router.navFromHash) {
           // the history already stands on this entry - rewriting it would drop the forward entries
           router.navFromHash = false;
-        } else if (!appWrite) {
+        } else {
           const r = route(app, draft);
           if (opts.checkNavAppCall) {
             // the caller's entry first points at the draft saved at the call
@@ -245,14 +271,10 @@ export function createSession({
           }
         }
       }
-      if (!appWrite) return;
-      if (router.currentDraftId) {
-        write(route(router.currentApp, router.currentDraftId) + appWrite, !push);
-        return;
-      }
+      return;
     }
-    if (appWrite) {
-      if (router.hashEvent) router.appHash = appHash(appWrite);
+    if (appWrite && owner) {
+      router.appHash = appHash(appWrite);
       write(appWrite, !push);
       return;
     }
@@ -306,15 +328,8 @@ export function createSession({
     }
     error = null;
     settle(sent);
-    // a response of another app takes popup and popover down (spec/response.md#view-slots)
-    if (json.S_FRONT.APP && state.app && json.S_FRONT.APP !== state.app) {
-      state = { ...state, slots: { ...state.slots }, models: { ...state.models } };
-      for (const s of ["POPUP", "POPOVER"]) {
-        delete state.slots[s];
-        delete state.models[s];
-        pending[s].clear();
-      }
-    }
+    // what is torn down is what VIEWS names - an app hop's popup and popover
+    // too, the backend sends their teardown (spec/response.md#view-slots)
     state = applyResponse(state, json);
     roundtrips += 1;
     // edits not sent yet survive a model push
@@ -327,9 +342,8 @@ export function createSession({
       for (const [path, v] of map) setAt(m.data, path, v);
     }
     messages = messages.filter((m) => m.kind === "box");
-    const system = (json.S_FRONT.S_ACTION && json.S_FRONT.S_ACTION.T_SYSTEM) || [];
-    const routerAction = system.find((a) => Array.isArray(a) && a[0] === "ROUTER");
-    sync((routerAction && routerAction[2] && typeof routerAction[2] === "object") ? routerAction[2] : {}, json.S_FRONT.ID, json.S_FRONT.APP || state.app);
+    const nav = json.S_FRONT.NAV;
+    sync((nav && typeof nav === "object" && !Array.isArray(nav)) ? nav : {}, json.S_FRONT.ID, json.S_FRONT.APP || state.app);
     for (const a of state.custom) followUp(a);
   }
 
@@ -396,7 +410,7 @@ export function createSession({
         return;
       default:
     }
-    if (WIRE.custom.includes(name) || (WIRE.customGlobals[name] || []).includes(method)) {
+    if (WIRE.actions.includes(name) || (WIRE.actionGlobals[name] || []).includes(method)) {
       log.push(`noop: ${name}${global ? ` ${method}` : ""} - no counterpart in a terminal`);
       return;
     }
@@ -418,7 +432,7 @@ export function createSession({
   function client(action) {
     const a = action[0] === "CONTROL_GLOBAL" ? action.slice(1) : action;
     if (a[0] === "VIEW_SLOTS" && a[1] === "destroy") {
-      state = applyResponse(state, { S_FRONT: { S_ACTION: { T_CUSTOM: [["VIEW_SLOTS", "destroy", a[2]]] } } });
+      state = destroySlot(state, a[2]);
       if (pending[a[2]]) pending[a[2]].clear();
       return;
     }
@@ -426,8 +440,14 @@ export function createSession({
   }
 
   async function roundtrip(body, sent) {
-    // the non-empty hash goes with every request (spec/request.md#s_front)
+    // the non-empty hash goes with every request (spec/request.md#s_front),
+    // and with one that names no draft what the hash asks it to restore,
+    // parsed (spec/request.md#route)
     if (hash()) body.S_FRONT.HASH = hash();
+    if (!body.S_FRONT.ID) {
+      const r = startRoute(hash());
+      if (r) body.S_FRONT.ROUTE = r;
+    }
     let r;
     try {
       r = await post(body);
@@ -531,10 +551,16 @@ export function createSession({
     get history() { return { entries: router.trail.slice(), position: router.pos }; },
     url,
 
-    /** Start an app: the app-start request (no ID, ?app_start=<CLASS>). */
-    start(app, { search } = {}) {
+    /** Start an app: the app-start request (no ID, ?app_start=<CLASS>).
+     *  `hash` is the hash the page is opened with - a route, an app-state
+     *  link - as a browser would have it in its URL. */
+    start(app, { search, hash: opened } = {}) {
       const loc = where(app);
       started = { ...loc, ...(search !== undefined ? { search } : {}) };
+      if (opened !== undefined) {
+        router.trail = [String(opened || "")];
+        router.pos = 0;
+      }
       return enqueue({ start: startRequest(started) });
     },
 

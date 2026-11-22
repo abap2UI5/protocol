@@ -7,13 +7,13 @@ const A = "spec/actions.md";
 export default [
   {
     id: "action.order",
-    title: "Follow-up actions run in the order of T_CUSTOM",
+    title: "Follow-up actions run in the order of S_FRONT.ACTIONS",
     level: "MUST",
     profile: "core",
     spec: `${A}#follow-up-actions`,
     async run(t) {
       await startApp(t, nextButton);
-      t.mock.reply(answer({ custom: [["MESSAGE_TOAST", "show", "first"], ["MESSAGE_TOAST", "show", "second"], ["MESSAGE_TOAST", "show", "third"]] }));
+      t.mock.reply(answer({ actions: [["MESSAGE_TOAST", "show", "first"], ["MESSAGE_TOAST", "show", "second"], ["MESSAGE_TOAST", "show", "third"]] }));
       await t.press(NEXT);
       const s = await t.state();
       const toasts = s.messages.filter((m) => m.kind === "toast").map((m) => m.text);
@@ -29,7 +29,7 @@ export default [
     spec: "spec/response.md#processing-order",
     async run(t) {
       await startApp(t, nextButton);
-      t.mock.reply(answer({ system: [display("MAIN", mainView('<Input id="fresh" value="{/V}"/>'))], model: { V: "" }, custom: [["SET_FOCUS", "fresh"]] }));
+      t.mock.reply(answer({ views: { MAIN: display(mainView('<Input id="fresh" value="{/V}"/>')) }, model: { V: "" }, actions: [["SET_FOCUS", "fresh"]] }));
       await t.press(NEXT);
       await t.wait(200);
       const s = await t.state();
@@ -44,7 +44,7 @@ export default [
     spec: `${A}#follow-up-actions`,
     async run(t) {
       await startApp(t, `<Text text="still here"/>${nextButton}`);
-      const r = answer({ custom: [["X_CONFORMANCE_UNKNOWN_ACTION", "arg", { opt: 1 }], ["MESSAGE_TOAST", "show", "after the unknown action"]] });
+      const r = answer({ actions: [["X_CONFORMANCE_UNKNOWN_ACTION", "arg", { opt: 1 }], ["MESSAGE_TOAST", "show", "after the unknown action"]] });
       t.mock.reply(r);
       await t.press(NEXT);
       const s = await t.state();
@@ -65,7 +65,7 @@ export default [
     spec: `${A}#follow-up-actions`,
     async run(t) {
       await startApp(t, nextButton);
-      t.mock.reply(answer({ custom: [["X_CONFORMANCE_UNKNOWN_ACTION", "arg"]] }));
+      t.mock.reply(answer({ actions: [["X_CONFORMANCE_UNKNOWN_ACTION", "arg"]] }));
       await t.press(NEXT);
       const s = await t.state();
       t.ok(s.log.some((l) => l.includes("X_CONFORMANCE_UNKNOWN_ACTION")), `nothing names the unknown action: ${JSON.stringify(s.log.slice(-5))}`);
@@ -134,7 +134,7 @@ export default [
     async run(t) {
       await startApp(t, nextButton);
       const details = '<p>detail text</p><img src="conformance-xss-probe" onerror="window.__confXss=1"><script>window.__confXss=1</script>';
-      t.mock.reply(answer({ custom: [["MESSAGE_BOX", "error", "box with details", { details }]] }));
+      t.mock.reply(answer({ actions: [["MESSAGE_BOX", "error", "box with details", { details }]] }));
       await t.press(NEXT);
       await t.wait(300);
       const s = await t.state();

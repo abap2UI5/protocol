@@ -5,7 +5,9 @@ to be tested **serves all of them under exactly these class names** (the
 CLI's `--app KEY=CLASS` maps a name when a backend cannot use it). Their
 behaviour is specified here, observable on the wire only: the view XML each
 app displays is the UI5 profile's (the suite reads it only in `ui5`-profile
-checks), the **model** and the **actions** are what the core checks compare.
+checks), the **model** and the sections of the response - `VIEWS`, `NAV`,
+`ACTIONS` ([../../spec/response.md](../../spec/response.md#sections)) - are
+what the core checks compare.
 
 Reference implementations - behaving identically, byte for byte on the wire
 (`test/traffic.test.mjs` compares the recorded traffic):
@@ -28,7 +30,15 @@ Conventions for every app:
   lower-case attributes.
 - "Pushes the model" means: the response carries `MODEL`, no display.
   "No MODEL" means the key is absent.
-- An event not listed is ignored (nothing changes, no MODEL, no action).
+- A "display" is an entry `{ "XML", "OPT"? }` of `VIEWS` under its slot, a
+  "teardown" the entry `{ "DESTROY": true }`; a follow-up action is an
+  entry of `ACTIONS`.
+- An event not listed is ignored (nothing changes: no MODEL, none of the
+  sections).
+- Every app start, and every response of another app than the request
+  continued, carries the teardown of POPUP and POPOVER - the backend's
+  rule, not the app's
+  ([../../spec/response.md](../../spec/response.md#view-slots)).
 
 ## Z2UI5_CL_CONF_ECHO
 
@@ -37,11 +47,12 @@ Event roundtrips and their arguments.
 | | |
 |---|---|
 | Model | `COUNT` (integer, 0), `LAST_EVENT` (string, ""), `LAST_ARGS` (string, "") |
-| View wires | `ECHO` with the arguments `'alpha'`, `'beta'`; `NOOP`; `PUSH`; `RERENDER` |
+| View wires | `ECHO` with the arguments `'alpha'`, `'beta'`; `NOOP`; `PUSH`; `RERENDER`; `LIVE` with the flags queue-last and no-busy (`_event( s_ctrl )` with `check_queue_last` and `check_no_busy` - `.eB(['LIVE',{queueLast:true,noBusy:true}])`) |
 | `ECHO` | `COUNT` + 1; `LAST_EVENT` = the event name; `LAST_ARGS` = the event's arguments as the app receives them, joined with `\|` |
 | `PUSH` | `COUNT` + 100 - pushes the model |
 | `RERENDER` | displays MAIN again (MAIN display + MODEL) |
-| `NOOP` | nothing - no MODEL, no action |
+| `NOOP` | nothing - no MODEL, none of the sections |
+| `LIVE` | not handled - ignored like every event not listed; the wire is what the suite reads |
 
 ## Z2UI5_CL_CONF_BIND
 
@@ -76,12 +87,12 @@ The slots besides MAIN.
 | View | Buttons `btn_popup`, `btn_popover` (ids), `Nest`, `Nest2`; VBoxes `nest_anchor`, `nest2_anchor` |
 | `POPUP_OPEN` | POPUP display: a `Dialog` titled "conformance popup" with an Input `{/POPUP_TEXT}`, a button wired to `POPUP_CLOSE` and one with the frontend close (`cs_event-popup_close`) |
 | `POPUP_REPLACE` | displays the popup twice in one roundtrip ("first", then "second") - one POPUP display, "second" |
-| `POPUP_CLOSE` | `["VIEW_SLOTS", "destroy", "POPUP"]` |
-| `MAIN_AND_POPUP` | calls `popup_display` ("with main") and then `view_display` - displays MAIN, then POPUP |
-| `POPOVER_OPEN` | POPOVER display: a `Popover` titled "conformance popover", options `{ "openById": "btn_popover" }` |
-| `POPOVER_CLOSE` | `["VIEW_SLOTS", "destroy", "POPOVER"]` |
-| `NEST_OPEN` / `NEST2_OPEN` | NEST / NEST2 display: a view with a VBox, text "conformance NEST" / "conformance NEST2", options `{ "id": "nest_anchor" \| "nest2_anchor", "methodInsert": "addItem", "methodDestroy": "removeAllItems" }` |
-| `NEST_CLOSE` / `NEST2_CLOSE` | destroy NEST / NEST2 |
+| `POPUP_CLOSE` | POPUP teardown: `VIEWS` = `{ "POPUP": { "DESTROY": true } }` |
+| `MAIN_AND_POPUP` | calls `popup_display` ("with main") and then `view_display` - a MAIN display and a POPUP display, each under its slot |
+| `POPOVER_OPEN` | POPOVER display: a `Popover` titled "conformance popover", `OPT` `{ "openById": "btn_popover" }` |
+| `POPOVER_CLOSE` | POPOVER teardown: `VIEWS` = `{ "POPOVER": { "DESTROY": true } }` |
+| `NEST_OPEN` / `NEST2_OPEN` | NEST / NEST2 display: a view with a VBox, text "conformance NEST" / "conformance NEST2", `OPT` `{ "id": "nest_anchor" \| "nest2_anchor", "methodInsert": "addItem", "methodDestroy": "removeAllItems" }` |
+| `NEST_CLOSE` / `NEST2_CLOSE` | NEST / NEST2 teardown |
 
 ## Z2UI5_CL_CONF_NAV and Z2UI5_CL_CONF_NAV_TGT
 
@@ -103,7 +114,7 @@ Hash routing.
 | | |
 |---|---|
 | Model | `COUNT` (integer, 0) |
-| first roundtrip | `follow_up_action( cs_event-hash_routing )` with `KEEP` |
+| first roundtrip | `follow_up_action( cs_event-hash_routing )` with `KEEP` - `NAV` = `{ "setNavRouting": "KEEP" }` |
 | `COUNT` | `COUNT` + 1 |
 | `CALL` | `nav_app_call` of a new `Z2UI5_CL_CONF_NAV_TGT` with `INPUT` = "from route" |
 

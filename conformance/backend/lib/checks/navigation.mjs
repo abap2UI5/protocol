@@ -1,6 +1,6 @@
 // spec/navigation.md - the app stack, routes and the app-state hash.
 const N = "spec/navigation.md";
-import { displayOf, routerOptions, customActions } from "../client.mjs";
+import { displayOf, nav, actions } from "../client.mjs";
 
 const FAKE_DRAFT = "0123456789ABCDEF0123456789ABCDEF";
 
@@ -57,19 +57,18 @@ export default [
     async run(t) {
       const r = await t.event(await t.event(await t.start("NAV"), "CALL"), "DONE");
       const d = displayOf(r, "MAIN");
-      t.equal(d && d[4] && d[4].navBack, true, "options.navBack of the MAIN display");
+      t.equal(d && d.OPT && d.OPT.navBack, true, "OPT.navBack of the MAIN display");
     },
   },
   {
     id: "route.mode",
-    title: "An app that switches hash routing on sends [\"ROUTER\", \"sync\", {setNavRouting}] last in T_SYSTEM",
+    title: "An app that switches hash routing on sends NAV { setNavRouting }",
     level: "MUST",
     profile: "core",
-    spec: `${N}#the-router-action`,
+    spec: `${N}#the-nav-section`,
     async run(t) {
       const r = await t.start("ROUTE");
-      const sys = r.json.S_FRONT.S_ACTION.T_SYSTEM;
-      t.deepEqual(sys[sys.length - 1], ["ROUTER", "sync", { setNavRouting: "KEEP" }], "last system action");
+      t.deepEqual(nav(r), { setNavRouting: "KEEP" }, "S_FRONT.NAV");
     },
   },
   {
@@ -77,10 +76,10 @@ export default [
     title: "A plain event of a routed app does not repeat the routing mode",
     level: "SHOULD",
     profile: "core",
-    spec: `${N}#the-router-action`,
+    spec: `${N}#the-nav-section`,
     async run(t) {
       const r = await t.event(await t.start("ROUTE"), "COUNT");
-      t.equal(routerOptions(r), undefined, "ROUTER action of a plain event");
+      t.equal(nav(r), undefined, "S_FRONT.NAV of a plain event");
     },
   },
   {
@@ -88,10 +87,10 @@ export default [
     title: "A nav_app_call under routing asks for a history push and names the caller's fresh draft",
     level: "MUST",
     profile: "core",
-    spec: `${N}#the-router-action`,
+    spec: `${N}#the-nav-section`,
     async run(t) {
       const r = await t.event(await t.start("ROUTE"), "CALL");
-      const o = routerOptions(r) || {};
+      const o = nav(r) || {};
       t.equal(r.json.S_FRONT.APP, t.apps.NAV_TGT, "S_FRONT.APP");
       t.equal(o.checkNavAppCall, true, "checkNavAppCall");
       t.equal(o.navAppCallPrevApp, t.apps.ROUTE, "navAppCallPrevApp");
@@ -101,36 +100,36 @@ export default [
   },
   {
     id: "route.start-by-class",
-    title: "A request without ID whose HASH is #/app/<CLASS> starts that class",
+    title: "A request without ID whose ROUTE names a class starts that class",
     level: "MUST",
     profile: "core",
     spec: `${N}#which-app-a-request-starts`,
     async run(t) {
-      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/app/${t.apps.ECHO}` }), "start by route");
+      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/app/${t.apps.ECHO}`, route: { APP: t.apps.ECHO } }), "start by route");
       t.equal(r.json.S_FRONT.APP, t.apps.ECHO, "S_FRONT.APP");
       t.equal(r.json.MODEL && r.json.MODEL.COUNT, 0, "MODEL.COUNT of a fresh app");
     },
   },
   {
     id: "route.precedence",
-    title: "A route in HASH wins over ?app_start= in SEARCH",
+    title: "ROUTE wins over ?app_start= in SEARCH",
     level: "MUST",
     profile: "core",
     spec: `${N}#which-app-a-request-starts`,
     async run(t) {
-      const r = t.roundtrip(await t.client.start(t.apps.BIND, { hash: `#/app/${t.apps.ECHO}` }), "start with both");
+      const r = t.roundtrip(await t.client.start(t.apps.BIND, { hash: `#/app/${t.apps.ECHO}`, route: { APP: t.apps.ECHO } }), "start with both");
       t.equal(r.json.S_FRONT.APP, t.apps.ECHO, "S_FRONT.APP");
     },
   },
   {
     id: "route.restore-draft",
-    title: "#/app/<CLASS>/<DRAFT> restores that draft and displays it",
+    title: "ROUTE { APP, DRAFT } restores that draft and displays it",
     level: "MUST",
     profile: "core",
     spec: `${N}#routes`,
     async run(t) {
       const counted = await t.event(await t.start("ROUTE"), "COUNT");
-      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/app/${t.apps.ROUTE}/${counted.json.S_FRONT.ID}` }), "route restore");
+      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/app/${t.apps.ROUTE}/${counted.json.S_FRONT.ID}`, route: { APP: t.apps.ROUTE, DRAFT: counted.json.S_FRONT.ID } }), "route restore");
       t.equal(r.json.S_FRONT.APP, t.apps.ROUTE, "S_FRONT.APP");
       t.ok(displayOf(r, "MAIN"), "the restored app displays MAIN");
       t.equal(r.json.MODEL && r.json.MODEL.COUNT, 1, "MODEL.COUNT of the restored draft");
@@ -144,54 +143,57 @@ export default [
     profile: "core",
     spec: `${N}#routes`,
     async run(t) {
-      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/app/${t.apps.ECHO}/${FAKE_DRAFT}` }), "route to a missing draft");
+      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/app/${t.apps.ECHO}/${FAKE_DRAFT}`, route: { APP: t.apps.ECHO, DRAFT: FAKE_DRAFT } }), "route to a missing draft");
       t.equal(r.json.S_FRONT.APP, t.apps.ECHO, "S_FRONT.APP");
       t.equal(r.json.MODEL && r.json.MODEL.COUNT, 0, "MODEL.COUNT of a fresh app");
-      const toast = customActions(r).find((a) => a[0] === "MESSAGE_TOAST");
+      const toast = actions(r).find((a) => a[0] === "MESSAGE_TOAST");
       t.ok(toast, "a MESSAGE_TOAST tells the user the state is gone (SHOULD, checked here as part of the fallback)");
     },
   },
   {
-    id: "route.launchpad-shell-hash",
-    title: "Inside a launchpad hash (#<shell>&/app/<CLASS>) only the app part is a route",
+    id: "route.hash-not-read",
+    title: "HASH is not what an app start is resolved from: a route in HASH without ROUTE starts what SEARCH names",
     level: "MUST",
     profile: "core",
-    spec: `${N}#launchpad-hashes`,
+    spec: `${N}#which-app-a-request-starts`,
     async run(t) {
-      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#Conformance-display&/app/${t.apps.ECHO}` }), "start by launchpad route");
-      t.equal(r.json.S_FRONT.APP, t.apps.ECHO, "S_FRONT.APP");
+      const r = t.roundtrip(await t.client.start(t.apps.BIND, { hash: `#/app/${t.apps.ECHO}` }), "start with a route in HASH only");
+      t.equal(r.json.S_FRONT.APP, t.apps.BIND, "S_FRONT.APP");
+      const state = await t.event(await t.start("ECHO"), "ECHO", { args: ["kept"] });
+      const fresh = t.roundtrip(await t.client.start(t.apps.ECHO, { hash: `#/z2ui5-xapp-state=${state.json.S_FRONT.ID}` }), "start with an app-state hash in HASH only");
+      t.equal(fresh.json.MODEL && fresh.json.MODEL.LAST_ARGS, "", "MODEL.LAST_ARGS (a fresh app, the draft HASH names is not restored)");
     },
   },
   {
     id: "route.app-state",
-    title: "#/z2ui5-xapp-state=<DRAFT> restores the draft and keeps the app-state hash on",
+    title: "ROUTE { APP_STATE } restores the draft and keeps the app-state hash on",
     level: "MUST",
     profile: "core",
     spec: `${N}#the-app-state-hash`,
     async run(t) {
       const echoed = await t.event(await t.start("ECHO"), "ECHO", { args: ["kept"] });
-      const r = t.roundtrip(await t.client.start(t.apps.ECHO, { hash: `#/z2ui5-xapp-state=${echoed.json.S_FRONT.ID}` }), "app-state restore");
+      const r = t.roundtrip(await t.client.start(t.apps.ECHO, { hash: `#/z2ui5-xapp-state=${echoed.json.S_FRONT.ID}`, route: { APP_STATE: echoed.json.S_FRONT.ID } }), "app-state restore");
       t.equal(r.json.MODEL && r.json.MODEL.LAST_ARGS, "kept", "MODEL.LAST_ARGS of the restored draft");
-      t.equal((routerOptions(r) || {}).setAppStateActive, true, "ROUTER options.setAppStateActive");
+      t.equal((nav(r) || {}).setAppStateActive, true, "NAV.setAppStateActive");
       const next = await t.event(r, "NOOP");
-      t.equal((routerOptions(next) || {}).setAppStateActive, true, "setAppStateActive is re-asserted on the next response");
+      t.equal((nav(next) || {}).setAppStateActive, true, "setAppStateActive is re-asserted on the next response");
     },
   },
   {
     id: "route.app-state-names-no-app",
-    title: "#/z2ui5-xapp-state=<DRAFT> restores the draft when the request names no app; a draft that is gone ends on the start app, with a toast",
+    title: "ROUTE { APP_STATE } restores the draft when the request names no app; a draft that is gone ends on the start app, with a toast",
     level: "SHOULD",
     profile: "core",
     spec: `${N}#the-app-state-hash`,
     async run(t) {
       const echoed = await t.event(await t.start("ECHO"), "ECHO", { args: ["kept"] });
-      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/z2ui5-xapp-state=${echoed.json.S_FRONT.ID}` }), "app-state restore without ?app_start=");
+      const r = t.roundtrip(await t.client.start("", { search: "", hash: `#/z2ui5-xapp-state=${echoed.json.S_FRONT.ID}`, route: { APP_STATE: echoed.json.S_FRONT.ID } }), "app-state restore without ?app_start=");
       t.equal(r.json.S_FRONT.APP, t.apps.ECHO, "S_FRONT.APP of the restored draft");
       t.equal(r.json.MODEL && r.json.MODEL.LAST_ARGS, "kept", "MODEL.LAST_ARGS of the restored draft");
-      t.equal((routerOptions(r) || {}).setAppStateActive, true, "ROUTER options.setAppStateActive");
-      const gone = t.roundtrip(await t.client.start("", { search: "", hash: `#/z2ui5-xapp-state=${FAKE_DRAFT}` }), "app-state hash of a missing draft, no app named");
+      t.equal((nav(r) || {}).setAppStateActive, true, "NAV.setAppStateActive");
+      const gone = t.roundtrip(await t.client.start("", { search: "", hash: `#/z2ui5-xapp-state=${FAKE_DRAFT}`, route: { APP_STATE: FAKE_DRAFT } }), "app-state hash of a missing draft, no app named");
       t.ok(displayOf(gone, "MAIN"), "a MAIN display of the start app");
-      t.ok(customActions(gone).find((a) => a[0] === "MESSAGE_TOAST"), "a MESSAGE_TOAST tells the user the state is gone");
+      t.ok(actions(gone).find((a) => a[0] === "MESSAGE_TOAST"), "a MESSAGE_TOAST tells the user the state is gone");
     },
   },
   {

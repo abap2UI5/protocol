@@ -8,15 +8,14 @@ Schema: [../schema/response.schema.json](../schema/response.schema.json).
 { "S_FRONT": {
     "ID": "982BD4B2BEBE4DEE93371A4671461244",
     "APP": "Z2UI5_CL_CONF_SLOTS",
-    "PROTOCOL": 2,
-    "S_ACTION": {
-      "T_SYSTEM": [
-        ["VIEW_SLOTS", "display", "MAIN", "<mvc:View ...>...</mvc:View>"],
-        ["VIEW_SLOTS", "display", "POPOVER", "<core:FragmentDefinition ...>", { "openById": "btn_popover" }],
-        ["ROUTER", "sync", { "setNavRouting": "KEEP" }]
-      ],
-      "T_CUSTOM": [["MESSAGE_TOAST", "show", "Saved"]]
-    } },
+    "PROTOCOL": 3,
+    "VIEWS": {
+      "MAIN": { "XML": "<mvc:View ...>...</mvc:View>" },
+      "POPOVER": { "XML": "<core:FragmentDefinition ...>", "OPT": { "openById": "btn_popover" } },
+      "POPUP": { "DESTROY": true }
+    },
+    "NAV": { "setNavRouting": "KEEP" },
+    "ACTIONS": [["MESSAGE_TOAST", "show", "Saved"]] },
   "MODEL": { "NAME": "Ada", "T_ITEMS": [{ "ID": 1, "TEXT": "one", "DONE": false }] } }
 ```
 
@@ -36,50 +35,53 @@ the handler escapes them as `\u00XX` in the finished text ([H]
 |---|---|---|
 | `ID` | non-empty string | the draft the **next** request continues ([sessions.md](sessions.md)). A frontend MUST send it as `S_FRONT.ID` of its next request |
 | `APP` | non-empty string | the class of the app that answered, upper case ([H] `main_end`). After a navigation it is the app navigated to |
-| `PROTOCOL` | integer `2` | the wire version ([versioning.md](versioning.md)) |
-| `S_ACTION` | object | the two action queues; absent when both are empty |
+| `PROTOCOL` | integer `3` | the wire version ([versioning.md](versioning.md)) |
+| `VIEWS` | object | what becomes of the view slots ([below](#views)); absent when the response changes none |
+| `NAV` | object | the browser-history intent of the response ([below](#nav)); absent when it has none |
+| `ACTIONS` | array | the follow-up actions the app queued ([below](#actions)); absent when there are none |
 
 - A backend MUST send `ID`, `APP` and `PROTOCOL` in every 2xx response
   ([H] `response_abap_to_json` stamps `PROTOCOL` on every response).
   *Checked by:* `response.id-and-app`, `response.protocol`.
-- A backend SHOULD leave out empty values (an empty queue, an absent
-  `S_ACTION`) - the reference filters empty values before it adds the
-  queues ([H] `response_abap_to_json`). A frontend MUST read an absent
-  queue as an empty one. *Frontend check:* `response.no-actions`.
+- A backend SHOULD leave out a section that says nothing - the reference
+  writes `VIEWS` and `NAV` only when they hold an entry and `ACTIONS` only
+  when the app queued one ([H] `response_abap_to_json`,
+  `actions_serialize`). A frontend MUST read an absent section as an empty
+  one: no slot changes, no navigation intent, no action. *Checked by:*
+  `response.model-absent-when-unchanged`. *Frontend check:*
+  `response.no-actions`.
 - A frontend MUST ignore keys it does not know (additive revisions,
   [versioning.md](versioning.md)) - in `S_FRONT`, at the root, in a slot's
-  and in the `ROUTER` options. *Frontend check:* `response.unknown-keys`.
+  entry and its `OPT`, and in `NAV`. *Frontend check:*
+  `response.unknown-keys`.
 
-## Action queues
+## Sections
 
-`S_ACTION` holds two arrays of actions. Every action is a **JSON array**
-whose first element names it ([FE] `build_global_call`, [EV]
-`get_event_client_ajson`):
+The three sections say three different things, and a frontend reads each
+at its own moment ([processing order](#processing-order)): `VIEWS` is what
+the screen **is** after this roundtrip, `NAV` what the URL has to reflect,
+`ACTIONS` what the frontend is asked to **do** once the screen stands. The
+first two are the framework's - an app reaches them only through the
+client API (`view_display( )`, `popup_destroy( )`, `nav_app_call( )`,
+`hash_set( )`, ...) - the third is the app's own list.
 
-- `T_SYSTEM` - **system actions**: the framework's view lifecycle
-  (`VIEW_SLOTS`) and browser history (`ROUTER`). The frontend runs them
-  first, in order, before anything the app queued, and waits for each view
-  to be built before the next one runs ([V1] `_runSystemActions`).
-- `T_CUSTOM` - **follow-up actions** the app queued: messages, focus,
-  timers, ... ([actions.md](actions.md)). The frontend runs them last, in
-  order, once the views are rendered ([V1] `_runPendingCustomJs`).
+### VIEWS
 
-The two queues share one format and one dispatcher ([FA]); only the phase
-differs. *Checked by:* every check that reads an action.
+An object with one key per slot the response changes - `MAIN`, `NEST`,
+`NEST2`, `POPUP`, `POPOVER` ([view slots](#view-slots)). A slot it does not
+name stays as it is. An entry is one of two things, never both ([FE]
+`slots_serialize`):
 
-**Implementation note.** The UI5 frontend also accepts an action given as a
-JSON *string* holding the array, so a skewed backend keeps working
-([FA] `runSystem`, `runCustom`). Protocol 2 backends send arrays; the
-schema requires them.
+- **A display** - `{ "XML": <view>, "OPT": <options>? }` builds `<view>`
+  into the slot, replacing whatever the slot holds ([FE] `slot_display`,
+  [SL] `action`, `displayMain`, `displayStandalone`). The view is a string
+  in the language of a view profile
+  ([../profiles/](../profiles/README.md)); an empty string is still a
+  display - the key `XML` says so ([FE] `slots_serialize`).
+- **A teardown** - `{ "DESTROY": true }` takes the slot down ([FE]
+  `slot_destroy`).
 
-## System actions
-
-### VIEW_SLOTS display
-
-`["VIEW_SLOTS", "display", <slot>, <view>, <options>?]` builds `<view>` into
-`<slot>`, replacing whatever the slot holds ([FE] `slot_display`, [SL]
-`display`). The view is a string in the language of a view profile
-([../profiles/](../profiles/README.md)); the options are:
+The options of a display:
 
 | Option | Slot | Meaning |
 |---|---|---|
@@ -92,17 +94,30 @@ schema requires them.
 | `navBack` | MAIN | this view is reached by going back - a return to a stacked app ([navigation.md](navigation.md#the-app-stack)) |
 | `appInstance` | MAIN | an opaque id of the app instance the view belongs to - tells a page change from a re-display |
 
-An option the app did not set is absent, never an empty value
-([FE] `set_opt_string`).
+An option the app did not set is absent, never an empty value, and `OPT`
+is left out when no option is set ([FE] `set_opt_string`,
+`slots_serialize`).
 
-### VIEW_SLOTS destroy
+### NAV
 
-`["VIEW_SLOTS", "destroy", <slot>]` tears the slot down ([FE] `slot_destroy`).
+The browser-history intent of this response, as one options object - the
+routing mode, a history push for a `nav_app_call`, an app-owned hash to
+write, the app-state hash ([FE] `nav_serialize`). The options and their
+rules are in [navigation.md](navigation.md#the-nav-section).
 
-### ROUTER sync
+### ACTIONS
 
-`["ROUTER", "sync", <options>]` - the browser-history intent of this
-response; see [navigation.md](navigation.md#the-router-action).
+The **follow-up actions** the app queued - messages, focus, timers, ...
+([actions.md](actions.md)) - in the order it queued them. Every entry is a
+**JSON array** whose first element names the action ([FE]
+`build_global_call`, [EV] `get_event_client_ajson`, [H]
+`actions_serialize`). The frontend runs them last, in order, once the
+views are rendered ([V1] `_runPendingActions`, [FA] `runCustom`).
+*Checked by:* every check that reads an action.
+
+**Implementation note.** The UI5 frontend also accepts an action given as a
+JSON *string* holding the array, so a skewed backend keeps working
+([FA] `parseAction`). Backends send arrays; the schema requires them.
 
 ## View slots
 
@@ -114,35 +129,68 @@ response; see [navigation.md](navigation.md#the-router-action).
 | `POPUP` | `popup_display( )` | yes | a dialog over MAIN |
 | `POPOVER` | `popover_display( )` | yes | a popover anchored to a control |
 
-Rules for the backend ([FE] `slot_reset`, `slots_serialize`):
+POPUP and POPOVER are the **standalone** slots: they live outside MAIN's
+control tree and do not fall with it by themselves. Two rules take them
+down, and each has one owner - the side that can see the cause.
 
-- A response MUST carry at most **one** lifecycle action per slot: the last
-  call of the app decides (a second display replaces the first, a destroy
-  after a display voids it). *Checked by:* `slots.popup-replace`.
-- The actions MUST leave in **slot order** - MAIN, NEST, NEST2, POPUP,
-  POPOVER - whatever order the app called them in: a nested view is
-  inserted into MAIN, so MAIN has to be built first. *Checked by:*
-  `slots.order`.
-- A display needs no destroy before it: the frontend tears the slot down
-  itself.
-- With a MAIN display, a destroy of POPUP or POPOVER is dropped - the
-  frontend takes the standalone slots down with a new MAIN view anyway; a
-  *display* of them in the same response still opens.
+Rules for the backend ([FE] `slot_reset`, `slots_serialize`; [ACT]
+`prepare_app_stack`, `factory_first_start`):
+
+- `VIEWS` MUST say at most **one** thing per slot: the last call of the
+  app decides (a second display replaces the first, a teardown after a
+  display voids it, a display after a teardown replaces it). *Checked by:*
+  `slots.popup-replace`.
+- Views displayed into several slots in one roundtrip MUST travel each
+  under its slot, whatever order the app called them in. The backend
+  orders nothing - `VIEWS` is an object, and the order the slots are built
+  in is the frontend's (below). *Checked by:* `slots.several`.
+- A display needs no teardown before it: the frontend replaces what the
+  slot holds.
+- **An app switch takes the standalone slots down, and the backend says
+  so.** A response of another app instance than the one the request
+  continued - a `nav_app_call`, a `nav_app_leave`, the reserved leave
+  event - MUST carry the teardown of POPUP and of POPOVER, each unless
+  the app that takes the screen displays that slot in the same roundtrip
+  ([ACT] `prepare_app_stack`: queued before the called app runs, so its
+  own `popup_display( )` replaces the teardown through [FE]
+  `slot_reset`). So MUST the response to an app start that names a class
+  or a draft ([ACT] `factory_first_start`): on a page that already shows
+  an app - Back/Forward restoring a route, a hash edited by hand - it is
+  an app switch too, and on a page that has just loaded the teardowns
+  find nothing. The backend is the one side that knows a hop happened:
+  another instance of the **same** class looks like the same app from the
+  browser. A roundtrip that stays in the app MUST NOT carry a teardown
+  the app did not ask for. *Checked by:* `slots.hop-teardown`,
+  `slots.start-teardown`.
+- A teardown the app asks for next to a MAIN display travels like any
+  other; it finds the slot already closed by the frontend's rule below.
+- **Implementation note.** The reference's own start app, which answers
+  a request that names nothing
+  ([navigation.md](navigation.md#which-app-a-request-starts)), is created
+  without the two teardowns ([ACT] `factory_system_startup`).
 
 Rules for the frontend ([SL], [V1]):
 
-- A frontend MUST build a MAIN display as the new screen and tear down NEST,
-  NEST2, POPUP and POPOVER with it (a popup displayed in the same response
-  opens after MAIN).
-- A frontend MUST tear down POPUP and POPOVER when a response names
-  another `APP` than the one it rendered last; the backend queues the
-  destroys itself only for a hop between two instances of the **same**
-  class, which the frontend cannot see ([ACT] `prepare_app_stack`).
+- A frontend MUST apply the entries of `VIEWS` in **slot order** - MAIN,
+  NEST, NEST2, POPUP, POPOVER - whatever order the keys arrive in, and
+  one at a time: a nested view is inserted into MAIN, so MAIN has to be
+  built first, and a popup of the same response opens over the new screen
+  ([V1] `_applyViews`). *Frontend check:* `slots.order`.
+- **A new MAIN view takes the standalone slots down, and the frontend
+  does it.** A frontend MUST build a MAIN display as the new screen and
+  tear down NEST, NEST2, POPUP and POPOVER with it; a popup or popover
+  displayed in the same response opens after MAIN ([SL] `displayMain`).
+  The backend neither relies on this rule nor repeats it.
+- A frontend MUST leave a slot the response does not name as it is - also
+  when the response names another `APP` than the one it rendered last:
+  the teardown of an app switch is the backend's to say (above), not the
+  frontend's to infer from the class name ([V1] `_processAfterRendering`).
+  *Frontend check:* `slots.app-change`.
 - A frontend that cannot render a slot (a portable renderer without NEST,
   [../profiles/portable.md](../profiles/portable.md#2-documents-slots-and-namespaces))
-  MUST still process the action without failing the roundtrip.
+  MUST still process the entry without failing the roundtrip.
 - *Frontend checks:* `slots.main`, `slots.popup`, `slots.popover`,
-  `slots.popover-over-main`, `slots.main-tears-down`, `slots.app-change`,
+  `slots.popover-over-main`, `slots.main-tears-down`,
   `slots.nest-processed`, `ui5.nest`, `portable.view-replaced`.
 
 *Checked by:* `response.start-displays-main`, `response.rerender`,
@@ -188,9 +236,10 @@ A frontend:
 - MUST read an absent `MODEL` as "unchanged": keep its model, including
   what the user typed and has not sent.
 - MUST, when `MODEL` is present, give it to every open slot that owns a
-  model **and belongs to the app that answered**, after the system actions
-  ran - not to a slot that holds another app's view (the caller's page
-  behind a popup app keeps its model, [SL] `updateModelIfRequired`).
+  model **and belongs to the app that answered**, after the views of
+  `VIEWS` were applied - not to a slot that holds another app's view (the
+  caller's page behind a popup app keeps its model, [SL]
+  `updateModelIfRequired`).
 - SHOULD re-apply edits made while the roundtrip was in flight and not yet
   sent ([SRV] `_clearSentPaths`): only what the won request carried is
   done with.
@@ -204,21 +253,38 @@ What the UI5 frontend does with one adopted response ([SRV] `readHttp`,
 frontend SHOULD do:
 
 1. Check `PROTOCOL` ([versioning.md](versioning.md)); a mismatch ends here.
-2. Adopt `ID`, `APP` and `MODEL`; when `APP` changed, tear down POPUP and
-   POPOVER.
-3. Run `T_SYSTEM` in order, waiting for each view to be built.
+2. Adopt `ID`, `APP` and `MODEL`.
+3. Apply `VIEWS` in slot order, waiting for each view to be built
+   ([V1] `_applyViews`).
 4. Push `MODEL` into the open model-owning slots of the answering app.
-5. Synchronise the URL once - with the `ROUTER` options when the response
-   had them, with the response's `ID` either way
-   ([navigation.md](navigation.md#the-router-action)).
-6. Run `T_CUSTOM` in order, once the views are rendered (a focus needs its
-   control in the DOM); an action that returns a promise is awaited.
-7. Send the event a queue-last wire kept during the roundtrip, if any -
-   and then the window request of a windowed table kept meanwhile, which
-   has a slot of its own ([V1] `_dispatchQueuedEvent`; a request for more
+5. Synchronise the URL once - with the options of `NAV` when the response
+   has the section, with the response's `ID` either way
+   ([navigation.md](navigation.md#the-nav-section)).
+6. Run `ACTIONS` in order, once the views are rendered (a focus needs its
+   control in the DOM); an action that returns a promise is awaited
+   ([V1] `_runPendingActions`).
+7. Send what was kept while the roundtrip ran, one roundtrip at a time
+   ([V1] `_dispatchQueuedEvent`): the oldest event a control fired while
+   its view was being built, then the event a queue-last wire kept, then
+   the window requests of windowed tables, which are kept per table
+   ([SL] `keepWindowRequest`, `dispatchQueuedWindows`; a request for more
    rows does not replace a kept `SORT` or `FILTER` of the same table, [WM]
    `keepRestart`).
 
 A response that a newer request superseded is dropped whole; its own
 follow-up actions still run when its screen is still the one shown
-([V1] `_processAfterRendering`, the comment on the first roundtrip).
+([V1] `_processAfterRendering`).
+
+**Implementation note.** An event a control fires from its own rendering
+- a storage control answering with the value it found, an `afterRendering`
+an app wired - arrives while the response that builds its view is still
+being processed, and so while the frontend is busy. The UI5 frontend keeps
+such an event, whatever its wire's flags, and sends the kept ones after
+the response, one per landed roundtrip in the order they fired ([V1] `eB`,
+`_firedWhileBuilding`, `_dispatchQueuedEvent`). An app that answers a
+rendering event with a view that fires it again would loop: an unbroken
+run of 25 such events ends with a log line and the rest dropped ([V1]
+`RENDER_EVENT_CHAIN_MAX`). The first roundtrip of a page is busy like
+every other. With a response of another `APP` the kept events, the
+queue-last event and the kept window requests are dropped - they came
+from the leaving app's views ([V1] `_processAfterRendering`).

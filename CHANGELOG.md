@@ -2,6 +2,116 @@
 
 ## Unreleased
 
+- **BREAKING - protocol 3, specification revision 0.6** (2026-11-22),
+  derived from abap2UI5 branch `DEV` at `1445078` (after 1.150.0; no
+  release carries it yet). The maintainer broke the wire on purpose;
+  [spec/versioning.md](spec/versioning.md#what-protocol-3-broke) has the
+  table of what a protocol-2 implementation has to change.
+  - **Response: three sections replace the two action lists.**
+    `S_FRONT.S_ACTION.T_SYSTEM` and `T_CUSTOM` are gone. `S_FRONT.VIEWS`
+    says what becomes of the slots - one entry per slot, a display
+    `{ "XML", "OPT"? }` or a teardown `{ "DESTROY": true }`;
+    `S_FRONT.NAV` is the options object the `ROUTER` action carried;
+    `S_FRONT.ACTIONS` is the app's follow-up actions, entries and order
+    unchanged. A section that says nothing is absent ([H]
+    `response_abap_to_json`, [FE] `slots_serialize`, `nav_serialize`).
+    The backend orders nothing; the frontend applies `VIEWS` in slot
+    order ([V1] `_applyViews`). `spec/response.md` rewritten (*Sections*,
+    *View slots*, *Processing order*), `spec/core.md`, `spec/actions.md`
+    and `profiles/semantic.md` (how a response is folded) follow.
+  - **One owner per teardown rule.** The backend says the teardown of
+    POPUP and POPOVER for every app hop and every app start ([ACT]
+    `prepare_app_stack`, `factory_first_start`); the frontend no longer
+    takes them down because `S_FRONT.APP` changed. That a new MAIN view
+    takes the standalone slots down is the frontend's rule alone ([SL]
+    `displayMain`); the backend no longer drops a teardown next to a MAIN
+    display.
+  - **Request: `S_FRONT.ROUTE`.** A request without `ID` carries what the
+    page's hash asks it to restore, parsed by the frontend ([RT]
+    `startRoute`): `{ "APP", "DRAFT"? }` for a route, `{ "APP_STATE" }`
+    for an app-state link. The backend resolves an app start from `ROUTE`
+    and `SEARCH` and reads no hash structure any more ([H]
+    `request_json_to_abap`); `HASH` still travels, for the app. New
+    section [spec/request.md](spec/request.md#route); `spec/navigation.md`
+    (*Which app a request starts*, *Routes*, *Launchpad hashes*, *The
+    app-state hash*) follows - the launchpad split of a hash is the
+    frontend's rule now.
+  - **Navigation: "The NAV section"** replaces "The ROUTER action" in
+    `spec/navigation.md`. `setPushState` / `setHashReplace` are written
+    only for an app that owns the hash - a listener registered with
+    `setHashEvent`, routing off - and then as the whole app hash; the
+    suffix writes of the UI5 frontend are gone ([RT] `sync`).
+  - **UI5 profile: the flags of an event wire are one options object**
+    behind the event name - `.eB(['LIVE',{queueLast:true,noBusy:true}],
+    ...)` - where they were positions [3] to [5] of the event array
+    ([EV] `get_event`, [LIB] `eventOptions`). `profiles/ui5.md` (*Event
+    wires*, *The options of a wire*; the window request is
+    `eB(['___ZZZ_WIN', { noBusy }], ...)`).
+  - **Recorded, no wire change:** the UI5 frontend keeps an event a
+    control fires while its view is being built and sends it after the
+    response, the first roundtrip is busy like every other, window
+    requests are kept per table (`spec/response.md` *Processing order*,
+    `spec/transport.md`, `profiles/ui5.md`).
+  - **Open question 15 is decided: (b), protocol 3.** The app-driven
+    window, which had changed the meaning of `___ZZZ_WIN` under protocol
+    2, is part of protocol 3 from its first day.
+  - **The offline queue is withdrawn** from the specification
+    (`OFFLINE_QUEUE`, experimental in 1.149.0 and 1.150.0, removed from
+    abap2UI5 with main `694fb262`): `spec/actions.md` records it as
+    history, the source [OFF] is gone.
+  - Schemas: `response.schema.json` (`VIEWS`, `NAV`, `ACTIONS`,
+    `PROTOCOL` 3), `request.schema.json` (`ROUTE`).
+  - Backend checks: `slots.order` became `slots.several`, new
+    `slots.start-teardown`, `slots.hop-teardown`, `route.hash-not-read`
+    (for the removed `route.launchpad-shell-hash`) and
+    `ui5.event-wire-options`; the checks that read a response read the
+    sections, the route checks send `ROUTE`. Frontend checks:
+    `slots.app-change` is turned round (a response of another `APP` that
+    names no teardown leaves POPUP and POPOVER), new `slots.order`,
+    `router.start-route`, `router.start-app-state`,
+    `router.no-route-on-events` and `router.hash-write-owner`; the
+    scripted responses are of protocol 3 (`answer({ views, nav, actions })`
+    in `conformance/frontend/lib/responses.mjs`). The backend suite's
+    readers are `views( )`, `nav( )`, `actions( )`, `displayOf( )` and
+    `destroys( )`; `systemActions( )`, `customActions( )` and
+    `routerOptions( )` are gone from the package's exports. The check lists in
+    `conformance/backend/README.md` and `conformance/frontend/README.md`
+    are regenerated.
+  - Conformance apps: ECHO has one more wire, `LIVE` with the flags
+    queue-last and no-busy (`conformance/apps/README.md`, in the words of
+    the new sections).
+  - Portable profile: `actions.wire` of `profiles/portable-v1.json` names
+    the sections - `views`, `navOptions`, `foldedIntoNav`, `actions`,
+    `actionGlobals` (were `system`, `routerOptions`, `foldedIntoRouter`,
+    `custom`, `customGlobals`); `schema/portable-profile.schema.json` and
+    the generated table of `profiles/portable.md` follow.
+  - Renderers: Adaptive Cards and terminal read the sections through
+    `renderers/common/response.mjs` (the vendored snapshot module folds
+    protocol 2); the terminal sends `ROUTE` (`startRoute` is exported)
+    and writes an app's own hash only for an app that owns it.
+  - Traffic: `traffic/node-runtime/` recorded again on a runtime packed
+    from abap2UI5 `DEV`; `traffic/cap2ui5/` is removed until cap2UI5
+    speaks protocol 3; `traffic/node-runtime/agent-client.json` is kept
+    for its snapshots (`conformance/RESULTS.md`).
+  - Found on the way and fixed in abap2UI5 `1445078`: every response
+    carried `"O_NAV":null,"O_VIEWS":null` in `S_FRONT`.
+  - Tests: an implementation that still speaks protocol 2 is *behind* -
+    measured by one check, pinned (`test/lib/expected.mjs`): the released
+    `@abap2ui5/node-runtime`, cap2UI5, the vendored agent client, a UI5
+    checkout before protocol 3. `npm test` is green on the released
+    packages and on a runtime packed from `DEV`.
+  - **Who follows in this revision:** abap2UI5 `DEV` (backend, UI5
+    frontend), this repository's suites, schemas, and its two renderers,
+    Adaptive Cards and terminal. **Who does not, yet:** no
+    `@abap2ui5/node-runtime` release speaks protocol 3 - the suites run
+    against a runtime packed from abap2UI5 `DEV`; cap2UI5
+    (`@cap2ui5/cds-plugin` 0.7.0 hosts a protocol-2 runtime); the agent
+    client of abap2UI5/mcp-server (the copy vendored here, `332a0b0`,
+    speaks protocol 2 and refuses a protocol-3 response); the Web
+    Components frontend and the headless ABAP simulator were not run.
+    What is pinned for them is in `conformance/RESULTS.md` and
+    `test/lib/expected.mjs`.
+
 - **Windowed tables: the app-driven window of abap2UI5 main `694fb262`**
   (#3032, after 1.150.0; derived first from the DEV branch, `186f2c9b`),
   which replaced the window of 1.149.0 and 1.150.0. The app loads, sorts,

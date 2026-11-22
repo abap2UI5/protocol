@@ -37,7 +37,7 @@ export default [
   },
   {
     id: "request.app-start",
-    title: "The first request starts the app: no ID, ?app_start=<CLASS> in SEARCH",
+    title: "The first request starts the app: no ID, the class in SEARCH (?app_start=<CLASS>) or in ROUTE",
     level: "MUST",
     profile: "core",
     spec: `${R}#app-start-shaped-requests`,
@@ -46,8 +46,8 @@ export default [
       const f = t.front(0);
       t.ok(!f.ID, `the app start carries ID ${f.ID}`);
       t.ok(!f.EVENT, `the app start carries EVENT ${f.EVENT}`);
-      t.ok(/[?&]app_start=Z2UI5_CL_CONF_BIND(&|$)/i.test(f.SEARCH || "") || /^#\/*app\/Z2UI5_CL_CONF_BIND\b/i.test(f.HASH || ""),
-        `the app start names no class: SEARCH ${JSON.stringify(f.SEARCH)}, HASH ${JSON.stringify(f.HASH)}`);
+      t.ok(/[?&]app_start=Z2UI5_CL_CONF_BIND(&|$)/i.test(f.SEARCH || "") || /^Z2UI5_CL_CONF_BIND$/i.test((f.ROUTE && f.ROUTE.APP) || ""),
+        `the app start names no class: SEARCH ${JSON.stringify(f.SEARCH)}, ROUTE ${JSON.stringify(f.ROUTE)}`);
     },
   },
   {
@@ -176,7 +176,7 @@ export default [
   },
   {
     id: "request.no-empty-keys",
-    title: "Empty values are left out (T_EVENT_ARG, SEARCH, HASH, MODEL, CONFIG)",
+    title: "Empty values are left out (T_EVENT_ARG, SEARCH, HASH, ROUTE, MODEL, CONFIG)",
     level: "SHOULD",
     profile: "core",
     spec: `${R}#shape`,
@@ -190,7 +190,7 @@ export default [
         const p = (r.json && r.json.value) || {};
         const f = p.S_FRONT || {};
         const empty = (v) => v === "" || v === null || (Array.isArray(v) && !v.length) || (v && typeof v === "object" && !Array.isArray(v) && !Object.keys(v).length);
-        for (const k of ["T_EVENT_ARG", "SEARCH", "HASH", "CONFIG"]) t.ok(!(hasOwn(f, k) && empty(f[k])), `request #${i + 1}: S_FRONT.${k} is sent empty`);
+        for (const k of ["T_EVENT_ARG", "SEARCH", "HASH", "ROUTE", "CONFIG"]) t.ok(!(hasOwn(f, k) && empty(f[k])), `request #${i + 1}: S_FRONT.${k} is sent empty`);
         t.ok(!(hasOwn(p, "MODEL") && empty(p.MODEL)), `request #${i + 1}: MODEL is sent empty`);
       });
     },

@@ -40,11 +40,11 @@ export default [
     spec: `${U}#views`,
     async run(t) {
       const start = await t.start("SLOTS");
-      t.ok(/^<mvc:View\b/.test(displayOf(start, "MAIN")[3]), "MAIN view root");
+      t.ok(/^<mvc:View\b/.test(displayOf(start, "MAIN").XML), "MAIN view root");
       const popup = await t.event(start, "POPUP_OPEN");
-      t.ok(/^<core:FragmentDefinition\b/.test(displayOf(popup, "POPUP")[3]), "POPUP root");
+      t.ok(/^<core:FragmentDefinition\b/.test(displayOf(popup, "POPUP").XML), "POPUP root");
       const nest = await t.event(start, "NEST_OPEN");
-      t.ok(/^<mvc:View\b/.test(displayOf(nest, "NEST")[3]), "NEST view root");
+      t.ok(/^<mvc:View\b/.test(displayOf(nest, "NEST").XML), "NEST view root");
     },
   },
   {
@@ -54,7 +54,7 @@ export default [
     profile: "ui5",
     spec: `${U}#bindings`,
     async run(t) {
-      const xml = displayOf(await t.start("BIND"), "MAIN")[3];
+      const xml = displayOf(await t.start("BIND"), "MAIN").XML;
       for (const part of ['value="{/NAME}"', 'selected="{/FLAG}"', 'value="{/S_ADDR/CITY}"', 'items="{/T_ITEMS}"', 'value="{TEXT}"']) {
         t.ok(xml.includes(part), `the view should contain ${part}`);
       }
@@ -67,9 +67,20 @@ export default [
     profile: "ui5",
     spec: `${U}#event-wires`,
     async run(t) {
-      const xml = displayOf(await t.start("ECHO"), "MAIN")[3];
+      const xml = displayOf(await t.start("ECHO"), "MAIN").XML;
       t.ok(xml.includes(`press=".eB(['ECHO'], 'alpha', 'beta')"`), "the ECHO button's wire");
       t.ok(xml.includes(`press=".eB(['NOOP'])"`), "the NOOP button's wire");
+    },
+  },
+  {
+    id: "ui5.event-wire-options",
+    title: "The flags of a wire are one options object behind the event name: .eB(['<EVENT>',{queueLast:true,noBusy:true}])",
+    level: "MUST",
+    profile: "ui5",
+    spec: `${U}#event-wires`,
+    async run(t) {
+      const xml = displayOf(await t.start("ECHO"), "MAIN").XML;
+      t.ok(xml.includes(`press=".eB(['LIVE',{queueLast:true,noBusy:true}])"`), `the LIVE button's wire, in ${(xml.match(/press="[^"]*LIVE[^"]*"/) || ["no wire of LIVE"])[0]}`);
     },
   },
   {
@@ -80,7 +91,7 @@ export default [
     spec: `${U}#event-wires`,
     async run(t) {
       const called = await t.event(await t.start("NAV"), "CALL");
-      t.ok(displayOf(called, "MAIN")[3].includes(`navButtonPress=".eB(['___ZZZ_NAL'])"`), "the target's navButtonPress");
+      t.ok(displayOf(called, "MAIN").XML.includes(`navButtonPress=".eB(['___ZZZ_NAL'])"`), "the target's navButtonPress");
     },
   },
   {
@@ -90,10 +101,10 @@ export default [
     profile: "ui5",
     spec: `${U}#event-wires`,
     async run(t) {
-      const xml = displayOf(await t.start("ACTIONS"), "MAIN")[3];
+      const xml = displayOf(await t.start("ACTIONS"), "MAIN").XML;
       t.ok(xml.includes(`press=".eF('SET_TITLE', 'wired title')"`), "the wired SET_TITLE");
       const popup = await t.event(await t.start("SLOTS"), "POPUP_OPEN");
-      t.ok(displayOf(popup, "POPUP")[3].includes(`press=".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')"`), "the popup's frontend close");
+      t.ok(displayOf(popup, "POPUP").XML.includes(`press=".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')"`), "the popup's frontend close");
     },
   },
 ];

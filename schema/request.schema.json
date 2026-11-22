@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/abap2UI5/protocol/schema/request.schema.json",
-  "title": "abap2UI5 roundtrip request, protocol 2",
+  "title": "abap2UI5 roundtrip request, protocol 3",
   "description": "The JSON body of a roundtrip POST (spec/request.md). A frontend sends the payload wrapped as { \"value\": <payload> }; a backend also accepts the bare payload, because a launchpad shell or a gateway may strip the envelope (spec/transport.md).",
   "anyOf": [
     {
@@ -50,8 +50,11 @@
           "maxItems": 100
         },
         "HASH": {
-          "description": "window.location.hash, on every request that has one (not for an embedded component).",
+          "description": "window.location.hash, on every request that has one (not for an embedded component). For the app to read - a backend resolves no app start from it (spec/request.md#route).",
           "type": "string"
+        },
+        "ROUTE": {
+          "$ref": "#/$defs/route"
         },
         "ORIGIN": {
           "type": "string"
@@ -100,6 +103,49 @@
         }
       }
     },
+    "route": {
+      "description": "What the hash of the page asks an app start to restore, parsed by the frontend (spec/request.md#route): the class of a route #/app/<CLASS>, with the draft of #/app/<CLASS>/<DRAFT>, or the draft of an app-state link #/z2ui5-xapp-state=<DRAFT>. Only on a request without ID; absent when the hash names neither.",
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "APP": {
+          "description": "The class a route names.",
+          "type": "string",
+          "minLength": 1
+        },
+        "DRAFT": {
+          "description": "The draft a route names behind its class.",
+          "type": "string",
+          "minLength": 1
+        },
+        "APP_STATE": {
+          "description": "The draft an app-state link names.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "if": {
+        "required": [
+          "DRAFT"
+        ],
+        "properties": {
+          "DRAFT": {
+            "type": "string"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "APP"
+        ],
+        "properties": {
+          "APP": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "windowRequest": {
       "description": "The arguments of the reserved window event ___ZZZ_WIN (spec/windowed-tables.md#the-window-request): the model path of the windowed table, the app's event (EVENT of its window state), the reason, skip and top - and, for SORT and FILTER, the sorters and the filter groups, both, each as the text of a JSON array. The backend hands them to the app as its event with the request in get( )-r_event_data.",
       "type": "array",
@@ -118,7 +164,11 @@
         },
         {
           "description": "Why the frontend asks: MORE (more rows), SORT, FILTER (the first rows of a new order).",
-          "enum": ["MORE", "SORT", "FILTER"]
+          "enum": [
+            "MORE",
+            "SORT",
+            "FILTER"
+          ]
         },
         {
           "description": "skip: the rows the frontend holds - where MORE goes on; 0 for SORT and FILTER. The UI5 frontend sends it as a string.",
@@ -140,7 +190,16 @@
         }
       ],
       "if": {
-        "prefixItems": [true, true, { "enum": ["SORT", "FILTER"] }]
+        "prefixItems": [
+          true,
+          true,
+          {
+            "enum": [
+              "SORT",
+              "FILTER"
+            ]
+          }
+        ]
       },
       "then": {
         "minItems": 7

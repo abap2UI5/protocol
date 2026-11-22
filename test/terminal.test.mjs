@@ -46,7 +46,7 @@ const CASES = {
 function messagesOf(responses) {
   // what the session would show: the follow-up messages of the last response
   const last = responses.at(-1);
-  const custom = (last.S_FRONT.S_ACTION && last.S_FRONT.S_ACTION.T_CUSTOM) || [];
+  const custom = last.S_FRONT.ACTIONS || [];
   return custom.filter((a) => a[0] === "MESSAGE_BOX" || a[0] === "MESSAGE_TOAST").map((a) => (a[0] === "MESSAGE_TOAST"
     ? { kind: "toast", text: a[2] }
     : { kind: "box", type: a[1], text: a[2], ...(a[3] || {}) }));
@@ -169,7 +169,7 @@ test("keys: pick lists, toggles, a field's submit and the event arguments of a p
     // Enter in a field with a submit event: commit, then raise it
     await app.key("ctrl-u");
     await app.type("Grace");
-    run.reply({ body: { S_FRONT: { ID: "T".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 2 } } });
+    run.reply({ body: { S_FRONT: { ID: "T".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 3 } } });
     await app.key("enter");
     assert.deepEqual(run.posts()[1].json.value, { S_FRONT: { ID: first.S_FRONT.ID, EVENT: "SUBMIT" }, MODEL: { NAME: "Grace" } });
     // the Select: Right picks the next option, Enter opens the list, Down + Enter picks
@@ -199,7 +199,7 @@ test("keys: pick lists, toggles, a field's submit and the event arguments of a p
     await app.key("space");
     // the row action of the second row raises itemPress with the row's ID
     while (!(app.focused().kind === "row" && app.focused().label === "row 2")) await app.key("tab");
-    run.reply({ body: { S_FRONT: { ID: "U".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 2 } } });
+    run.reply({ body: { S_FRONT: { ID: "U".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 3 } } });
     await app.key("enter");
     assert.deepEqual(run.posts()[2].json.value, {
       S_FRONT: { ID: "T".repeat(32), EVENT: "ROW", T_EVENT_ARG: [2] },
@@ -207,11 +207,11 @@ test("keys: pick lists, toggles, a field's submit and the event arguments of a p
     });
     // Save in the footer: its ${/NAME} argument is read when it fires
     while (app.focused().label !== "Save") await app.key("tab");
-    run.reply({ body: { S_FRONT: { ID: "V".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 2 } } });
+    run.reply({ body: { S_FRONT: { ID: "V".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 3 } } });
     await app.key("enter");
     assert.deepEqual(run.posts()[3].json.value.S_FRONT, { ID: "U".repeat(32), EVENT: "SAVE", T_EVENT_ARG: ["Grace", "literal"] });
     // the back button is reached with Alt+Left when there is no history
-    run.reply({ body: { S_FRONT: { ID: "W".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 2 } } });
+    run.reply({ body: { S_FRONT: { ID: "W".repeat(32), APP: "Z2UI5_CL_CONF_X", PROTOCOL: 3 } } });
     await app.key("alt-left");
     assert.equal(run.posts()[4].json.value.S_FRONT.EVENT, "___ZZZ_NAL");
     // the status line names the control that could not be rendered
@@ -238,7 +238,7 @@ test("keys: a message box takes the focus; its button raises onClose with the ac
     run.reply({ body: recorded("message.box-close-event", 2)[0] });
     await app.key("right");
     await app.key("enter");
-    const onClose = box.S_FRONT.S_ACTION.T_CUSTOM.find((a) => a[0] === "MESSAGE_BOX")[3].onClose;
+    const onClose = box.S_FRONT.ACTIONS.find((a) => a[0] === "MESSAGE_BOX")[3].onClose;
     assert.deepEqual(run.posts()[2].json.value.S_FRONT, { ID: box.S_FRONT.ID, EVENT: onClose, T_EVENT_ARG: ["CANCEL"] });
     assert.ok(!session.messages.some((m) => m.kind === "box"));
   } finally {
@@ -345,7 +345,7 @@ test("width: text wraps, columns shrink with an ellipsis, wide characters take t
   const view = "<Text text=\"one two three four five six seven eight nine ten\"/>"
     + "<Table items=\"{/T}\"><columns><Column><Text text=\"Name\"/></Column><Column><Text text=\"Description of the program\"/></Column></columns>"
     + "<items><ColumnListItem><cells><Text text=\"{N}\"/><Text text=\"{D}\"/></cells></ColumnListItem></items></Table>";
-  const r = { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 2, S_ACTION: { T_SYSTEM: [["VIEW_SLOTS", "display", "MAIN", `<mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">${view}</mvc:View>`]] } },
+  const r = { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 3, VIEWS: { MAIN: { XML: `<mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">${view}</mvc:View>` } } },
     MODEL: { T: [{ N: "Ada Lovelace", D: "wrote the first program for a machine that did not exist yet" }] } };
   const text = printResponses([r], { width: 30 }).text;
   for (const l of text.split("\n")) assert.ok(strWidth(l) <= 30, l);

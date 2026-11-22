@@ -55,7 +55,7 @@ export default [
     spec: `${P}#6-frontend-actions`,
     async run(t) {
       await startApp(t, nextButton);
-      t.mock.reply(answer({ custom: [["CONTROL_BY_ID", "no_such_control", "MAIN", "setBusy", true], ["MESSAGE_TOAST", "show", "after the excluded action"]] }));
+      t.mock.reply(answer({ actions: [["CONTROL_BY_ID", "no_such_control", "MAIN", "setBusy", true], ["MESSAGE_TOAST", "show", "after the excluded action"]] }));
       await t.press(NEXT);
       const s = await t.state();
       t.ok(!s.error, `the response failed: ${s.error && s.error.text}`);
@@ -71,7 +71,7 @@ export default [
     spec: `${P}#6-frontend-actions`,
     async run(t) {
       await startApp(t, nextButton);
-      t.mock.reply(answer({ custom: [["MESSAGE_BOX", "error", "a box with details", { details: "<p>conformance detail text</p><ul><li>first item</li></ul>" }]] }));
+      t.mock.reply(answer({ actions: [["MESSAGE_BOX", "error", "a box with details", { details: "<p>conformance detail text</p><ul><li>first item</li></ul>" }]] }));
       await t.press(NEXT);
       await t.wait(300);
       const s = await t.state();
@@ -122,10 +122,10 @@ export default [
     title: "A second MAIN display replaces the first",
     level: "MUST",
     profile: "portable",
-    spec: "spec/response.md#view_slots-display",
+    spec: "spec/response.md#views",
     async run(t) {
       await startApp(t, `<Text text="the first view"/>${nextButton}`);
-      t.mock.reply(answer({ system: [display("MAIN", mainView('<Text text="the second view"/>'))] }));
+      t.mock.reply(answer({ views: { MAIN: display(mainView('<Text text="the second view"/>')) } }));
       await t.press(NEXT);
       const s = await t.state();
       t.includes(s.slots.MAIN.text, "the second view", "MAIN");

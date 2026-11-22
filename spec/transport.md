@@ -225,7 +225,10 @@ These are rules for frontends; they keep a session consistent.
 - **One roundtrip at a time.** While a roundtrip is in flight a frontend
   MUST NOT start another one for a user event; it either drops the event or
   - for a wire flagged queue-last - keeps the last one and sends it after
-  the response ([V1] `eB`, `_dispatchQueuedEvent`). A restore triggered by
+  the response ([V1] `eB`, `_dispatchQueuedEvent`). The UI5 frontend also
+  keeps what no user fired: an event a control raises while the response
+  is still building its view, and the window requests of windowed tables
+  ([response.md](response.md#processing-order)). A restore triggered by
   browser history MAY supersede the request in flight; the older response
   is then dropped ([SRV] `readHttp` `isStale`). A user event is whatever
   the frontend's user asks for - a click, or a call of a program driving

@@ -22,6 +22,7 @@ import {
 import { locateWebapp } from "../conformance/frontend/adapters/ui5.mjs";
 import { VENDOR_DIR, FILES, sha256 } from "../scripts/vendor-agent-client.mjs";
 import { ROOT } from "./lib/traffic.mjs";
+import { behind, SPEAKS, PROTOCOL, BEHIND_FRONTEND_CHECK, frontendProtocol } from "./lib/expected.mjs";
 
 const CLI = path.join(ROOT, "conformance/backend/bin/abap2ui5-conformance.mjs");
 
@@ -29,12 +30,12 @@ test("the mock answers scripted replies in order, records requests and refuses t
   const mock = await startMock();
   try {
     const run = mock.run();
-    run.reply({ body: { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 2 } } });
+    run.reply({ body: { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 3 } } });
     run.reply({ status: 500, body: "boom" });
     const post = (body) => fetch(run.url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     let r = await post({ value: { S_FRONT: {} } });
     assert.equal(r.status, 200);
-    assert.deepEqual(await r.json(), { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 2 } });
+    assert.deepEqual(await r.json(), { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 3 } });
     r = await post({ value: { S_FRONT: { ID: "A" } } });
     assert.equal(r.status, 500);
     assert.equal(await r.text(), "boom");
@@ -57,7 +58,7 @@ test("the mock plays a CSRF token layer and holds replies on request", async () 
   const mock = await startMock();
   try {
     const run = mock.run().requireCsrf("tok");
-    const held = run.replyHeld({ body: { S_FRONT: { ID: "B", APP: "X", PROTOCOL: 2 } } });
+    const held = run.replyHeld({ body: { S_FRONT: { ID: "B", APP: "X", PROTOCOL: 3 } } });
     let r = await fetch(run.url, { method: "POST", body: "{}" });
     assert.equal(r.status, 403);
     assert.equal(r.headers.get("x-csrf-token"), "Required");
@@ -91,7 +92,7 @@ function fakeAdapter({ start = async (run) => { await fetch(run.url, { method: "
 }
 
 test("the runner tells pass, fail, warn and skip apart, and fails bad traffic", async () => {
-  const ok = { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 2 } };
+  const ok = { S_FRONT: { ID: "A", APP: "X", PROTOCOL: 3 } };
   const checks = [
     { id: "x.pass", title: "", level: "MUST", profile: "core", spec: "", run: async (t) => { t.mock.reply({ body: ok }); await t.start("X"); t.equal(t.front(0).SEARCH, "?app_start=X", "SEARCH"); } },
     { id: "x.fail", title: "", level: "MUST", profile: "core", spec: "", run: async (t) => t.fail("broken") },
@@ -146,14 +147,14 @@ test("the vendored agent client is byte-equal to the commit source.json names", 
 });
 
 test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
-  const r = spawnSync(process.execPath, [CLI, "frontend", "--adapter", "agent", "--only", "request.envelope"], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [CLI, "frontend", "--adapter", "terminal", "--only", "request.envelope"], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /PASS\s+MUST\s+request\.envelope/);
-  assert.match(r.stdout, /CONFORMANT \(profile semantic\)/);
+  assert.match(r.stdout, /CONFORMANT \(profile portable\)/);
   assert.equal(spawnSync(process.execPath, [CLI, "frontend", "--adapter", "nope"]).status, 2);
   assert.equal(spawnSync(process.execPath, [CLI, "frontend", "--adapter", "headless"]).status, 2);
-  const json = JSON.parse(execFileSync(process.execPath, [CLI, "frontend", "--adapter", "agent", "--only", "request.app-start", "--json"], { encoding: "utf8" }));
-  assert.equal(json.adapter, "agent");
+  const json = JSON.parse(execFileSync(process.execPath, [CLI, "frontend", "--adapter", "terminal", "--only", "request.app-start", "--json"], { encoding: "utf8" }));
+  assert.equal(json.adapter, "terminal");
   assert.ok(json.results.every((x) => x.status === "pass"));
 });
 
@@ -169,6 +170,7 @@ const AGENT_SKIPS = [
   "model.nested-table", "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event",
   "action.after-render", "message.details-sanitized",
   "router.keep", "router.hash-sent", "router.back-restores", "router.app-state",
+  "router.start-route", "router.start-app-state", "router.no-route-on-events", "router.hash-write-owner",
   "portable.default-aggregation", "portable.unknown-property", "portable.unknown-control", "portable.excluded-action",
   "portable.box-details", "portable.timer", "portable.set-title", "portable.view-replaced",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
@@ -182,7 +184,25 @@ const AGENT_SKIPS = [
 // reason, skip, top, sorters, filter groups]), then re-vendored.
 const AGENT_KNOWN_FAILS = ["semantic.recorded-snapshots"];
 
-test("the agent client: the frontend suite's result is the one RESULTS.md records", { timeout: 120_000 }, async () => {
+// Protocol 3: the vendored client speaks protocol 2 and refuses every
+// response of this revision - it is BEHIND (test/lib/expected.mjs) and
+// measured by the one check that says so, pinned as its failure. What it sends is still a request of this revision
+// (the app start names its class in SEARCH; it has no URL, so no ROUTE).
+// The check-by-check pin above applies again with the first vendored copy
+// on protocol 3 (abap2UI5/mcp-server lib/appclient.mjs: read VIEWS, NAV and
+// ACTIONS, the options object of a wire; then npm run vendor:agent and
+// npm run record).
+test(`the agent client (protocol ${SPEAKS.agent})${behind("agent") ? ` is behind protocol ${PROTOCOL}: it refuses a response of this revision` : ": the frontend suite's result is the one RESULTS.md records"}`, { timeout: 120_000 }, async () => {
+  if (behind("agent")) {
+    // `only` filters by substring: the two checks by their exact ids
+    const exact = ["request.app-start", BEHIND_FRONTEND_CHECK];
+    const r = await runFrontendSuite({ adapter: "agent", only: exact });
+    r.results = r.results.filter((x) => exact.includes(x.id));
+    assert.deepEqual(r.results.map((x) => `${x.id} ${x.status}`), ["request.app-start pass", `${BEHIND_FRONTEND_CHECK} fail`]);
+    // nothing of the response was adopted
+    assert.match(r.results.find((x) => x.status === "fail").message, /MAIN is not open/);
+    return;
+  }
   const r = await runFrontendSuite({ adapter: "agent" });
   assert.equal(r.profile, "semantic");
   const bad = r.results.filter((x) => x.status === "fail" || x.status === "warn");
@@ -197,7 +217,8 @@ test("the agent client: the frontend suite's result is the one RESULTS.md record
 // the profiles it does not claim.
 const CARDS_SKIPS = [
   "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event", "action.after-render", "message.details-sanitized",
-  "router.keep", "router.hash-sent", "router.back-restores", "router.app-state", "portable.set-title",
+  "router.keep", "router.hash-sent", "router.back-restores", "router.app-state",
+  "router.start-route", "router.start-app-state", "router.no-route-on-events", "router.hash-write-owner", "portable.set-title",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
 ];
@@ -249,17 +270,31 @@ const appDrivenFrontend = (webapp) => {
   return !file || !fs.existsSync(file) || /\bREASON\b/.test(fs.readFileSync(file, "utf8"));
 };
 const UI5_KNOWN_FAILS = appDrivenFrontend(locateWebapp()) ? [] : WINDOW_UI5;
+// Protocol 3: a checkout before it - the release commit CI's frontend job
+// checks out - is BEHIND (test/lib/expected.mjs): it refuses every response
+// of this revision, and is measured by the one check that says so. The
+// whole suite runs against a checkout of abap2UI5 DEV, as abap2UI5's own CI
+// runs it (its job conformance_frontend).
+const ui5Speaks = frontendProtocol(locateWebapp());
+const ui5Behind = Boolean(locateWebapp()) && ui5Speaks !== PROTOCOL;
 
-test("the UI5 SPA in Chromium: every MUST but the recorded deviation holds", { skip: skipBrowser, timeout: 900_000 }, async (t) => {
+test(`the UI5 SPA in Chromium${ui5Behind ? ` (protocol ${ui5Speaks}) is behind protocol ${PROTOCOL}: it refuses a response of this revision` : ": every MUST but the recorded deviation holds"}`, { skip: skipBrowser, timeout: 900_000 }, async (t) => {
   if (!locateWebapp()) {
     if (process.env.PROTOCOL_REQUIRE_BROWSER) assert.fail("no abap2UI5 checkout with app/webapp (ABAP2UI5_HOME)");
     t.skip("no abap2UI5 checkout with app/webapp (ABAP2UI5_HOME, ../abap2UI5 or deps/abap2UI5)");
     return;
   }
-  const r = await runFrontendSuite({ adapter: "ui5" });
+  const r = await runFrontendSuite({ adapter: "ui5", ...(ui5Behind ? { only: [BEHIND_FRONTEND_CHECK] } : {}) });
   if (r.error) {
     if (process.env.PROTOCOL_REQUIRE_BROWSER) assert.fail(r.error);
     t.skip(r.error);
+    return;
+  }
+  if (ui5Behind) {
+    // `only` filters by substring: the check by its exact id
+    r.results = r.results.filter((x) => x.id === BEHIND_FRONTEND_CHECK);
+    assert.deepEqual(r.results.map((x) => `${x.id} ${x.status}`), [`${BEHIND_FRONTEND_CHECK} fail`]);
+    if (process.env.PROTOCOL_FRONTEND_REPORT) fs.writeFileSync(process.env.PROTOCOL_FRONTEND_REPORT, `${JSON.stringify(r, null, 2)}\n`);
     return;
   }
   const failed = r.results.filter((x) => x.status === "fail");

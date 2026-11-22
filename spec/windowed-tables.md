@@ -14,9 +14,10 @@ This is the windowed table of abap2UI5 main `694fb262` (#3032, after the
 release 1.150.0), which replaced the one the releases 1.149.0 and 1.150.0
 ship - a window the backend cut from the whole table, sorted and filtered
 itself and kept with the draft - a few days after 1.149.0 brought it. The
-two wires do not
-understand each other; why the protocol number stays 2 regardless is
-[open question 15](open-questions.md#15-the-app-driven-window-and-the-protocol-number).
+two wires do not understand each other. The app-driven window is the one
+of protocol 3; a frontend of 1.149.0 or 1.150.0 refuses a protocol-3
+response on its number ([versioning.md](versioning.md#what-protocol-3-broke),
+[open question 15](open-questions.md#15-the-app-driven-window-and-the-protocol-number)).
 
 Three things travel for it, all inside the messages of
 [request.md](request.md) and [response.md](response.md):
@@ -36,7 +37,7 @@ window state for its path ([WM] `bindList`).
 ## The window state
 
 ```json
-{ "S_FRONT": { "ID": "5290E847062342FC9E654EF8A355FCF7", "APP": "Z2UI5_CL_CONF_WINDOW", "PROTOCOL": 2 },
+{ "S_FRONT": { "ID": "5290E847062342FC9E654EF8A355FCF7", "APP": "Z2UI5_CL_CONF_WINDOW", "PROTOCOL": 3 },
   "MODEL": {
     "T_ROWS": [ { "ID": 1, "NAME": "item 01", "QTY": 5, "DONE": false }, { "ID": 2, "NAME": "item 02", "QTY": 10, "DONE": false },
                 { "ID": 3, "NAME": "item 03", "QTY": 2, "DONE": false }, { "ID": 4, "NAME": "item 04", "QTY": 7, "DONE": false } ],

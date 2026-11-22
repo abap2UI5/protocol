@@ -7,6 +7,8 @@
 // REQUEST the request it found in get( )-r_event_data
 // (path reason skip top, S:<path>:<A|D> per sorter,
 // F<group>:<path>:<operator>:<value1>:<value2> per condition).
+import { displays } from "../client.mjs";
+
 const W = "spec/windowed-tables.md";
 const EVENT = "___ZZZ_WIN";
 const PATH = "/T_ROWS";
@@ -35,10 +37,7 @@ function expectHanded(t, r, last, request, what) {
   t.equal(r.json.MODEL.REQUEST, request, `${what}: MODEL.REQUEST (get( )-r_event_data)`);
 }
 
-const noView = (r) => {
-  const system = (r.json.S_FRONT.S_ACTION && r.json.S_FRONT.S_ACTION.T_SYSTEM) || [];
-  return !system.some((a) => a[0] === "VIEW_SLOTS" && a[1] === "display");
-};
+const noView = (r) => displays(r).length === 0;
 
 export default [
   {
@@ -67,7 +66,7 @@ export default [
       t.equal(grown.json.MODEL.MAINS, start.json.MODEL.MAINS + 1, "MODEL.MAINS (main( ) runs once for a window request)");
       t.equal(grown.json.S_FRONT.APP, start.json.S_FRONT.APP, "S_FRONT.APP");
       t.ok(grown.json.S_FRONT.ID && grown.json.S_FRONT.ID !== start.json.S_FRONT.ID, "the window request is answered with a draft id of its own");
-      t.ok(noView(grown), `a window request answered with a view the app did not display: ${JSON.stringify(grown.json.S_FRONT.S_ACTION)}`);
+      t.ok(noView(grown), `a window request answered with a view the app did not display: ${JSON.stringify(grown.json.S_FRONT.VIEWS)}`);
       const all = await more(t, grown, 8, 4);
       expectWindow(t, all, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 12, "MORE 8 4");
       // the path is handed over as it was sent: which table asks is the app's to read

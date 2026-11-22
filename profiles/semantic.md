@@ -44,7 +44,7 @@ follow this page, not the original contract text.
 
 ## How it works
 
-The browser frontend (abap2UI5 `app/webapp/core/Server.js`,
+The browser frontend (abap2UI5 `bundle/webapp/core/Server.js`,
 `controller/View1.controller.js`, `core/actions/Slots.js`) does three things
 per roundtrip, and so does every implementation:
 
@@ -55,21 +55,24 @@ per roundtrip, and so does every implementation:
      from: a scalar or structure edit ships the whole top-level attribute, a
      table cell ships `{ "T_TAB": { "__delta": { "<row>": { "COL": value } } } }`
      (nested tables recursively; `buildDeltaFromPaths` in `core/Lib.js`).
-2. **Receive** `{ "S_FRONT": { "ID", "APP", "PROTOCOL": 2, "S_ACTION": { "T_SYSTEM": [...], "T_CUSTOM": [...] } }, "MODEL"? }`.
+2. **Receive** `{ "S_FRONT": { "ID", "APP", "PROTOCOL": 3, "VIEWS"?: {...}, "NAV"?: {...}, "ACTIONS"?: [...] }, "MODEL"? }`.
    `MODEL`, when present, is the full model of the app that answered; absent
    means "nothing bound changed" — the client keeps its model, including
    what the user typed.
 3. **Fold** the answer into the screen state:
-   - `T_SYSTEM` `["VIEW_SLOTS","display",<slot>,<xml>,<options>]` fills one of
-     five slots — `MAIN`, `NEST`, `NEST2` (nested views, part of the page),
-     `POPUP`, `POPOVER`; `["VIEW_SLOTS","destroy",<slot>]` empties one. A MAIN
-     display also drops the nested views, the popup and the popover.
+   - `VIEWS` says what becomes of the five slots — `MAIN`, `NEST`, `NEST2`
+     (nested views, part of the page), `POPUP`, `POPOVER`: an entry
+     `{ "XML": <xml>, "OPT": <options> }` fills its slot, `{ "DESTROY": true }`
+     empties it, read in that slot order whatever order the keys are in. A
+     MAIN display also drops the nested views, the popup and the popover;
+     the popup and the popover of an app that left are emptied by their own
+     entries, not by the changed `APP`.
    - `MAIN`/`NEST`/`NEST2` share one model; `POPUP` and `POPOVER` own a copy.
      A slot displayed by this response takes this response's `MODEL`; a
      `MODEL` is pushed into an open slot only when the slot belongs to the app
      that answered — a popup app (`nav_app_call` of a `z2ui5_cl_pop_*`) never
      overwrites the caller's page behind it.
-   - `T_CUSTOM` is client work: toasts, message boxes, timers, focus, ….
+   - `ACTIONS` is client work: toasts, message boxes, timers, focus, ….
 
 The snapshot is derived from the folded state: the view XML of every open slot
 plus its model. Bindings in the current protocol are plain model paths
@@ -187,7 +190,7 @@ table (an element binding), or to a formatter/composite (listed in
 ### actions
 
 One per abap2UI5 event wire in a visible control's attribute —
-`.eB(['EVENT', flags…], arg…)` and `.eBP($event, cond, ['EVENT', …], arg…)`:
+`.eB(['EVENT', { flags }?], arg…)` and `.eBP($event, cond, ['EVENT', …], arg…)`:
 
 | Key | Derivation |
 | --- | --- |
@@ -219,7 +222,7 @@ client at act time, or passed explicitly in `args`):
 | `$expr:<raw>` | any other expression (`${QTY} * 10`, an object literal, a formatter call) | for a row event, the [call shapes](#row-event-parameters) on a row-valued parameter; else must be passed in `args` |
 | `$action` | the pressed action of a message box with `onClose` | `args`, default: its first choice |
 
-**Actions that are not view wires** (from the last response's `T_CUSTOM`):
+**Actions that are not view wires** (from the last response's `ACTIONS`):
 a toast with `onClose` → `trigger: "close"`, `control: "sap.m.MessageToast"`;
 a message box with `onClose` → `args: ["$action"]`, the choices in the label
 (`close message box (YES | NO)`); `START_TIMER` → `trigger: "timer"`,
@@ -321,7 +324,7 @@ The title and table labels are not repeated. Each at most 200 characters.
 Free text, at most 30 entries, for what the snapshot saw and cannot
 describe: custom controls (any namespace outside `sap.*`, except
 `z2ui5.cc.MessageManager`), `sap.ui.core.HTML`, frontend actions (`.eF`
-wires other than the popup/popover close, `T_CUSTOM` entries other than
+wires other than the popup/popover close, `ACTIONS` entries other than
 messages, timers and benign ones such as `SET_FOCUS`), tables or fields
 bound to a named model, element-bound fields, cut choice lists, unreadable
 event handlers.
@@ -623,7 +626,7 @@ default:
 
 What differs from Contract B as first written, and why:
 
-- **No `/XX/` two-way prefix.** The current protocol (PROTOCOL 2) binds every
+- **No `/XX/` two-way prefix.** The protocol (since PROTOCOL 2) binds every
   attribute as `{/NAME}`, and the backend accepts a delta for every bound
   attribute (`z2ui5_cl_ui5_srv_model main_json_to_attri`); `_bind_edit` is an
   alias of `_bind`. Editability is decided by the control. A leading `XX`
@@ -654,7 +657,7 @@ What differs from Contract B as first written, and why:
 - **`source: "popover"` / `"messageview"`** with the optional `subtitle` and
   `description` — the message lists of sap.m (abap-cloud-gui collects every
   message of a run in a MessagePopover).
-- **Actions from `T_CUSTOM`** (toast/box `onClose`, `START_TIMER`) are
+- **Actions from `ACTIONS`** (toast/box `onClose`, `START_TIMER`) are
   actions with triggers `close` and `timer`.
 - **Windowed tables** carry `total` and `window`, `app_act` takes
   `window`, and a `BINDING_CALL` on one is `@BINDING_CALL` (revision 0.5,
@@ -682,7 +685,7 @@ What differs from Contract B as first written, and why:
   XML templating (`template:repeat`), element bindings (`bindElement`).
 - Custom controls (`z2ui5.cc.*` other than the MessageManager, any
   non-`sap.*` namespace) and `sap.ui.core.HTML` — listed, not described.
-- Frontend actions (`.eF` wires, `T_CUSTOM` entries such as `OPEN_NEW_TAB`,
+- Frontend actions (`.eF` wires, `ACTIONS` entries such as `OPEN_NEW_TAB`,
   `CLIPBOARD_COPY`, `STORE_DATA`) — listed, not performed; a timer is an
   action the agent fires, never fired by itself.
 - Nested tables and tree hierarchies below the first level, MultiInput

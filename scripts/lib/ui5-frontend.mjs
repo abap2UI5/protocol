@@ -7,7 +7,7 @@
  * but every request body, header and response parse is the shipped code's.
  *
  * Used by scripts/record-traffic.mjs to record what the real frontend sends
- * (the CONFIG block, HASH, MS_CLIENT_PREV ...), which the suite's own client
+ * (the CONFIG block, HASH and ROUTE, MS_CLIENT_PREV ...), which the suite's own client
  * does not. Not part of the published package.
  */
 import fs from "node:fs";
@@ -131,9 +131,20 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
     "z2ui5/core/Env": { ownClass: (Class) => Class },
   }) : null;
 
+  // core/Router.js is the one reader of the hash's structure (protocol 3):
+  // what a request without ID asks the backend to restore travels parsed, as
+  // S_FRONT.ROUTE (Router.startRoute, wired into ctx.router by Router.init on
+  // a page the component owns). Loaded for that function alone - nothing
+  // here navigates. A frontend before protocol 3 has no startRoute.
+  const Router = load("core/Router.js", {
+    "sap/ui/core/routing/HashChanger": { getInstance: () => ({}) },
+    "z2ui5/core/Lib": Lib,
+  });
+
   const ctx = {
     component: null,
     alive: true,
+    router: { startRoute: typeof Router.startRoute === "function" ? () => Router.startRoute(win.location.hash) : null },
     state: Object.assign(AppState.createState(), {
       url,
       // the backend's own page: the component fills it and owns the hash
@@ -184,7 +195,7 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
     /** The list binding of the windowed table at `listPath` over the model of the last
      *  response (core/WindowModel.js), or null when this frontend has no windowed tables.
      *  Each window request it makes is sent the way actions/Slots.js sends it - the MAIN
-     *  controller's eB([EVENT, false, false, false, true, noBusy], ...args) - and collected
+     *  controller's eB([EVENT, { noBusy }], ...args) - and collected
      *  in `sent` as { args, response }; `idle()` resolves once every one was answered. */
     windowBinding(listPath) {
       if (!WindowModel) return null;
@@ -197,7 +208,7 @@ export function createUi5Frontend({ webapp, url, location, record = () => {} }) 
         const entry = { args: JSON.parse(JSON.stringify(args)) };
         sent.push(entry);
         chain = chain.then(async () => {
-          entry.response = await this.fire([WindowModel.EVENT, false, false, false, true, Boolean(noBusy)], args);
+          entry.response = await this.fire([WindowModel.EVENT, { noBusy: Boolean(noBusy) }], args);
           // the model push: UI5 updates every binding of the model
           binding.update();
         });

@@ -8,13 +8,21 @@
 //                 (skipped unless `npm ci --prefix conformance/hosts/cap2ui5` ran)
 // PROTOCOL_SKIP_BACKENDS=1 skips both. The node-runtime host also serves the
 // terminal renderer's end-to-end run.
+//
+// Protocol 3 is in no release yet: a backend that still speaks protocol 2 -
+// the released @abap2ui5/node-runtime 1.150.0 that npm ci installs, the
+// runtime @cap2ui5/cds-plugin 0.7.0 hosts - is BEHIND (test/lib/expected.mjs)
+// and measured by the one check that says so, `response.protocol`, pinned as
+// its failure. The whole suite runs against a runtime on protocol 3: one
+// packed from abap2UI5 DEV and installed with npm install --no-save, as
+// abap2UI5's CI does (its jobs conformance_backend and conformance_frontend).
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { runBackendSuite } from "../conformance/backend/index.mjs";
 import { ROOT } from "./lib/traffic.mjs";
-import { expectedFailureIds, expectedWarningIds, NODE_RUNTIME_APP_DRIVEN } from "./lib/expected.mjs";
+import { expectedFailureIds, expectedWarningIds, NODE_RUNTIME_APP_DRIVEN, behind, backendFilter, BEHIND_BACKEND_CHECK, SPEAKS, PROTOCOL } from "./lib/expected.mjs";
 
 const skipAll = process.env.PROTOCOL_SKIP_BACKENDS ? "PROTOCOL_SKIP_BACKENDS is set" : false;
 const capInstalled = fs.existsSync(path.join(ROOT, "conformance/hosts/cap2ui5/node_modules/@cap2ui5/cds-plugin"));
@@ -22,7 +30,12 @@ const capInstalled = fs.existsSync(path.join(ROOT, "conformance/hosts/cap2ui5/no
 async function suite(name, start, profile, after) {
   const backend = await start();
   try {
-    const report = await runBackendSuite({ url: backend.url, profile });
+    const report = await runBackendSuite({ url: backend.url, profile, only: backendFilter(name) });
+    if (behind(name)) {
+      // the one check, failed for the one reason
+      assert.deepEqual(report.results.map((r) => `${r.id} ${r.status}`), [`${BEHIND_BACKEND_CHECK} fail`], `${name} speaks protocol ${SPEAKS[name]}`);
+      return report;
+    }
     const failed = report.results.filter((r) => r.status === "fail");
     assert.deepEqual(failed.map((r) => r.id), expectedFailureIds(name),
       `MUST checks failed against ${backend.url} other than the pinned ones:\n${failed.map((r) => `${r.id}: ${r.message}`).join("\n")}`);
@@ -34,10 +47,11 @@ async function suite(name, start, profile, after) {
   }
 }
 
-test("node-runtime passes every MUST but the pinned ones (the windowed tables, on a runtime without the app-driven window) and every SHOULD of the ui5 profile", { skip: skipAll, timeout: 600_000 }, async (t) => {
+test(`node-runtime (protocol ${SPEAKS["node-runtime"]}${behind("node-runtime") ? ` - behind protocol ${PROTOCOL}, measured by ${BEHIND_BACKEND_CHECK} alone` : ""}) passes every MUST but the pinned ones and every SHOULD of the ui5 profile`, { skip: skipAll, timeout: 600_000 }, async (t) => {
   const { startNodeRuntime } = await import("../conformance/hosts/node-runtime/serve.mjs");
   // the same host then serves the terminal renderer's end-to-end run
   await suite("node-runtime", () => startNodeRuntime({ build: true, allowedHosts: "*" }), "ui5", (backend) => t.test("the terminal renderer drives the conformance apps on it", () => terminalEndToEnd(backend.url)));
+  if (behind("node-runtime")) return;
   // pinned only on a runtime without the app-driven window (the released
   // 1.150.0): the checks of the windowed tables (test/lib/expected.mjs)
   const pinned = expectedFailureIds("node-runtime").concat(expectedWarningIds("node-runtime"));
@@ -111,8 +125,9 @@ async function terminalEndToEnd(url) {
   assert.equal(out, fs.readFileSync(path.join(ROOT, "renderers/terminal/golden/bind.txt"), "utf8"));
 }
 
-test("cap2ui5 passes every MUST of the ui5 profile but the pinned ones (the windowed tables); its warnings are the windowed tables' SHOULD and error.details", { skip: skipAll || (!capInstalled && "cap2UI5 host not installed - npm ci --prefix conformance/hosts/cap2ui5"), timeout: 600_000 }, async () => {
+test(`cap2ui5 (protocol ${SPEAKS.cap2ui5}${behind("cap2ui5") ? ` - behind protocol ${PROTOCOL}, measured by ${BEHIND_BACKEND_CHECK} alone` : ""}) passes every MUST of the ui5 profile but the pinned ones (the windowed tables); its warnings are the windowed tables' SHOULD and error.details`, { skip: skipAll || (!capInstalled && "cap2UI5 host not installed - npm ci --prefix conformance/hosts/cap2ui5"), timeout: 600_000 }, async () => {
   const { startCap2ui5 } = await import("../conformance/hosts/cap2ui5/serve.mjs");
   await suite("cap2ui5", () => startCap2ui5(), "ui5");
+  if (behind("cap2ui5")) return;
   assert.deepEqual(expectedWarningIds("cap2ui5"), ["window.request-bounds", "error.details"]);
 });

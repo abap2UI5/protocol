@@ -1,5 +1,5 @@
 {
-  "source": "app/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.150.0 (a2-main), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
+  "source": "bundle/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.150.0 (abap2UI5), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
   "backend": "@abap2ui5/node-runtime 1.150.0",
   "exchanges": [
     {
@@ -42,7 +42,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44611",
+              "ORIGIN": "http://127.0.0.1:33379",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
             }
@@ -59,17 +59,18 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "C2ABCB0277CB477AB5E740EE7E189712",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - bind\"><Input id=\"name\" value=\"{/NAME}\"/><StepInput id=\"qty\" value=\"{/QTY}\"/><CheckBox id=\"flag\" text=\"Flag\" selected=\"{/FLAG}\"/><Input id=\"city\" value=\"{/S_ADDR/CITY}\"/><Input id=\"zip\" value=\"{/S_ADDR/ZIP}\"/><Text id=\"summary\" text=\"{/SUMMARY}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Add row\" press=\".eB(['ADD_ROW'])\"/><Table id=\"items\" items=\"{/T_ITEMS}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Input value=\"{TEXT}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
-                ]
-              ]
+            "ID": "3BDD61A34E344E8385BC3EEDCD610B5B",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - bind\"><Input id=\"name\" value=\"{/NAME}\"/><StepInput id=\"qty\" value=\"{/QTY}\"/><CheckBox id=\"flag\" text=\"Flag\" selected=\"{/FLAG}\"/><Input id=\"city\" value=\"{/S_ADDR/CITY}\"/><Input id=\"zip\" value=\"{/S_ADDR/ZIP}\"/><Text id=\"summary\" text=\"{/SUMMARY}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Add row\" press=\".eB(['ADD_ROW'])\"/><Table id=\"items\" items=\"{/T_ITEMS}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Input value=\"{TEXT}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           },
           "MODEL": {
@@ -128,9 +129,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "C2ABCB0277CB477AB5E740EE7E189712",
+              "ID": "3BDD61A34E344E8385BC3EEDCD610B5B",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 17
+              "MS_CLIENT_PREV": 16
             }
           }
         }
@@ -145,8 +146,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "D8AE9BA5F31E415D9E79F76DFC6070B3",
-            "PROTOCOL": 2
+            "ID": "F3B770ECDE4B49A9802EF58D3831E8FD",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "FLAG": false,
@@ -189,9 +190,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "D8AE9BA5F31E415D9E79F76DFC6070B3",
+              "ID": "F3B770ECDE4B49A9802EF58D3831E8FD",
               "EVENT": "ADD_ROW",
-              "MS_CLIENT_PREV": 14
+              "MS_CLIENT_PREV": 9
             }
           }
         }
@@ -206,8 +207,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "3B7D6F000E6D43069854680307DA0648",
-            "PROTOCOL": 2
+            "ID": "687540BA47BF431C8B59E7D2364BC812",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "FLAG": false,
@@ -284,7 +285,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44611",
+              "ORIGIN": "http://127.0.0.1:33379",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -301,17 +302,18 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "CF4B553C86244D08843F8714AE3EF18D",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - echo\"><Text id=\"count\" text=\"{/COUNT}\"/><Text id=\"last_event\" text=\"{/LAST_EVENT}\"/><Text id=\"last_args\" text=\"{/LAST_ARGS}\"/><Button text=\"Echo\" press=\".eB(['ECHO'], 'alpha', 'beta')\"/><Button text=\"Nothing\" press=\".eB(['NOOP'])\"/><Button text=\"Push\" press=\".eB(['PUSH'])\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/></Page></mvc:View>"
-                ]
-              ]
+            "ID": "872AFD4D47314EFA9C5E1FEE71E1C704",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - echo\"><Text id=\"count\" text=\"{/COUNT}\"/><Text id=\"last_event\" text=\"{/LAST_EVENT}\"/><Text id=\"last_args\" text=\"{/LAST_ARGS}\"/><Button text=\"Echo\" press=\".eB(['ECHO'], 'alpha', 'beta')\"/><Button text=\"Nothing\" press=\".eB(['NOOP'])\"/><Button text=\"Push\" press=\".eB(['PUSH'])\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/><Button text=\"Live\" press=\".eB(['LIVE',{queueLast:true,noBusy:true}])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           },
           "MODEL": {
@@ -333,9 +335,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "CF4B553C86244D08843F8714AE3EF18D",
+              "ID": "872AFD4D47314EFA9C5E1FEE71E1C704",
               "EVENT": "ECHO",
-              "MS_CLIENT_PREV": 13,
+              "MS_CLIENT_PREV": 9,
               "T_EVENT_ARG": [
                 "alpha",
                 2,
@@ -358,8 +360,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "8D2E8AA96DFB44879586E954DB265A0F",
-            "PROTOCOL": 2
+            "ID": "BAB6B038DCE04DFAAE0284714630CF4E",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "COUNT": 1,
@@ -380,9 +382,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "8D2E8AA96DFB44879586E954DB265A0F",
+              "ID": "BAB6B038DCE04DFAAE0284714630CF4E",
               "EVENT": "NOOP",
-              "MS_CLIENT_PREV": 11
+              "MS_CLIENT_PREV": 6
             }
           }
         }
@@ -397,8 +399,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "54188F345D044E5CB3C250BD2D8DFFFF",
-            "PROTOCOL": 2
+            "ID": "FB549D5553F74A7C93A38B9568BBD86B",
+            "PROTOCOL": 3
           }
         }
       }
@@ -414,7 +416,10 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/z2ui5-xapp-state=8D2E8AA96DFB44879586E954DB265A0F",
+              "HASH": "#/z2ui5-xapp-state=BAB6B038DCE04DFAAE0284714630CF4E",
+              "ROUTE": {
+                "APP_STATE": "BAB6B038DCE04DFAAE0284714630CF4E"
+              },
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -444,8 +449,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 7,
-              "ORIGIN": "http://127.0.0.1:44611",
+              "MS_CLIENT_PREV": 6,
+              "ORIGIN": "http://127.0.0.1:33379",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -462,24 +467,21 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "C84B0B8581C94AA2A2B75A8ADFBA171C",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - echo\"><Text id=\"count\" text=\"{/COUNT}\"/><Text id=\"last_event\" text=\"{/LAST_EVENT}\"/><Text id=\"last_args\" text=\"{/LAST_ARGS}\"/><Button text=\"Echo\" press=\".eB(['ECHO'], 'alpha', 'beta')\"/><Button text=\"Nothing\" press=\".eB(['NOOP'])\"/><Button text=\"Push\" press=\".eB(['PUSH'])\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/></Page></mvc:View>"
-                ],
-                [
-                  "ROUTER",
-                  "sync",
-                  {
-                    "setAppStateActive": true
-                  }
-                ]
-              ]
+            "ID": "00B980A4A2054CCC95C16BC0BD2147ED",
+            "NAV": {
+              "setAppStateActive": true
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - echo\"><Text id=\"count\" text=\"{/COUNT}\"/><Text id=\"last_event\" text=\"{/LAST_EVENT}\"/><Text id=\"last_args\" text=\"{/LAST_ARGS}\"/><Button text=\"Echo\" press=\".eB(['ECHO'], 'alpha', 'beta')\"/><Button text=\"Nothing\" press=\".eB(['NOOP'])\"/><Button text=\"Push\" press=\".eB(['PUSH'])\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/><Button text=\"Live\" press=\".eB(['LIVE',{queueLast:true,noBusy:true}])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           },
           "MODEL": {
@@ -530,7 +532,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44611",
+              "ORIGIN": "http://127.0.0.1:33379",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -547,24 +549,21 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "F07A1AF88F8541D085E526DDB09F5DBE",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - route\"><Text id=\"count\" text=\"{/COUNT}\"/><Button text=\"Count\" press=\".eB(['COUNT'])\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
-                ],
-                [
-                  "ROUTER",
-                  "sync",
-                  {
-                    "setNavRouting": "KEEP"
-                  }
-                ]
-              ]
+            "ID": "D2F447AFDE4147FC828C36DED85A98CE",
+            "NAV": {
+              "setNavRouting": "KEEP"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - route\"><Text id=\"count\" text=\"{/COUNT}\"/><Button text=\"Count\" press=\".eB(['COUNT'])\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           },
           "MODEL": {
@@ -584,9 +583,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "F07A1AF88F8541D085E526DDB09F5DBE",
+              "ID": "D2F447AFDE4147FC828C36DED85A98CE",
               "EVENT": "COUNT",
-              "MS_CLIENT_PREV": 10
+              "MS_CLIENT_PREV": 7
             }
           }
         }
@@ -601,8 +600,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "F0C126542D9149DA8DA20AAB70D6F925",
-            "PROTOCOL": 2
+            "ID": "21C0C1FFED4547BC804F5F1B95A33973",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "COUNT": 1
@@ -621,7 +620,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "F0C126542D9149DA8DA20AAB70D6F925",
+              "ID": "21C0C1FFED4547BC804F5F1B95A33973",
               "EVENT": "CALL",
               "MS_CLIENT_PREV": 7
             }
@@ -638,27 +637,24 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV_TGT",
-            "ID": "A03DBC7824A64267A80B647ED41CDD1D",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav target\" showNavButton=\"true\" navButtonPress=\".eB(['___ZZZ_NAL'])\"><Text id=\"input\" text=\"{/INPUT}\"/><Text id=\"output\" text=\"{/OUTPUT}\"/><Button text=\"Done\" press=\".eB(['DONE'])\"/></Page></mvc:View>"
-                ],
-                [
-                  "ROUTER",
-                  "sync",
-                  {
-                    "checkNavAppCall": true,
-                    "navAppCallPrevApp": "Z2UI5_CL_CONF_ROUTE",
-                    "navAppCallPrevId": "328C701F48F44823A81FA91F3FBBAE66",
-                    "setNavRouting": "KEEP"
-                  }
-                ]
-              ]
+            "ID": "EAD2C046658F45718718FB163B0765BA",
+            "NAV": {
+              "checkNavAppCall": true,
+              "navAppCallPrevApp": "Z2UI5_CL_CONF_ROUTE",
+              "navAppCallPrevId": "3B4644928830484F9699ADEC984D634C",
+              "setNavRouting": "KEEP"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav target\" showNavButton=\"true\" navButtonPress=\".eB(['___ZZZ_NAL'])\"><Text id=\"input\" text=\"{/INPUT}\"/><Text id=\"output\" text=\"{/OUTPUT}\"/><Button text=\"Done\" press=\".eB(['DONE'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           },
           "MODEL": {
@@ -679,7 +675,11 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/F0C126542D9149DA8DA20AAB70D6F925",
+              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/21C0C1FFED4547BC804F5F1B95A33973",
+              "ROUTE": {
+                "APP": "Z2UI5_CL_CONF_ROUTE",
+                "DRAFT": "21C0C1FFED4547BC804F5F1B95A33973"
+              },
               "CONFIG": {
                 "S_UI5": {
                   "VERSION": "1.136.0",
@@ -709,8 +709,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 22,
-              "ORIGIN": "http://127.0.0.1:44611",
+              "MS_CLIENT_PREV": 9,
+              "ORIGIN": "http://127.0.0.1:33379",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -727,24 +727,21 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "9382EFFC5BD94E9188FA591BA7314813",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - route\"><Text id=\"count\" text=\"{/COUNT}\"/><Button text=\"Count\" press=\".eB(['COUNT'])\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
-                ],
-                [
-                  "ROUTER",
-                  "sync",
-                  {
-                    "setNavRouting": "KEEP"
-                  }
-                ]
-              ]
+            "ID": "F124884E222A4E18883465AFA100D2BB",
+            "NAV": {
+              "setNavRouting": "KEEP"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - route\"><Text id=\"count\" text=\"{/COUNT}\"/><Button text=\"Count\" press=\".eB(['COUNT'])\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           },
           "MODEL": {
@@ -793,7 +790,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44611",
+              "ORIGIN": "http://127.0.0.1:33379",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
             }
@@ -810,17 +807,18 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "E7D1C28394224158B9BBF9BDA357856C",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - slots\"><Button id=\"btn_popup\" text=\"Popup\" press=\".eB(['POPUP_OPEN'])\"/><Button id=\"btn_popover\" text=\"Popover\" press=\".eB(['POPOVER_OPEN'])\"/><Button text=\"Nest\" press=\".eB(['NEST_OPEN'])\"/><Button text=\"Nest2\" press=\".eB(['NEST2_OPEN'])\"/><VBox id=\"nest_anchor\"/><VBox id=\"nest2_anchor\"/></Page></mvc:View>"
-                ]
-              ]
+            "ID": "F275633A6E0049408A5CC2F9DDA63E55",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - slots\"><Button id=\"btn_popup\" text=\"Popup\" press=\".eB(['POPUP_OPEN'])\"/><Button id=\"btn_popover\" text=\"Popover\" press=\".eB(['POPOVER_OPEN'])\"/><Button text=\"Nest\" press=\".eB(['NEST_OPEN'])\"/><Button text=\"Nest2\" press=\".eB(['NEST2_OPEN'])\"/><VBox id=\"nest_anchor\"/><VBox id=\"nest2_anchor\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           }
         }
@@ -837,9 +835,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "E7D1C28394224158B9BBF9BDA357856C",
+              "ID": "F275633A6E0049408A5CC2F9DDA63E55",
               "EVENT": "POPUP_OPEN",
-              "MS_CLIENT_PREV": 17
+              "MS_CLIENT_PREV": 7
             }
           }
         }
@@ -854,17 +852,12 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "CBC36F7A76364ADC8DD05B62EE9BD595",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "POPUP",
-                  "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Dialog title=\"conformance popup\"><Input id=\"popup_text\" value=\"{/POPUP_TEXT}\"/><buttons><Button text=\"Close\" press=\".eB(['POPUP_CLOSE'])\"/><Button text=\"Close here\" press=\".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')\"/></buttons></Dialog></core:FragmentDefinition>"
-                ]
-              ]
+            "ID": "508D4B06A6854939A24DA1E11A5F68AA",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "POPUP": {
+                "XML": "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Dialog title=\"conformance popup\"><Input id=\"popup_text\" value=\"{/POPUP_TEXT}\"/><buttons><Button text=\"Close\" press=\".eB(['POPUP_CLOSE'])\"/><Button text=\"Close here\" press=\".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')\"/></buttons></Dialog></core:FragmentDefinition>"
+              }
             }
           },
           "MODEL": {
@@ -884,9 +877,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "CBC36F7A76364ADC8DD05B62EE9BD595",
+              "ID": "508D4B06A6854939A24DA1E11A5F68AA",
               "EVENT": "POPOVER_OPEN",
-              "MS_CLIENT_PREV": 12
+              "MS_CLIENT_PREV": 6
             }
           }
         }
@@ -901,20 +894,15 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "E7284310853E45309B482DF55FE1DB13",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "POPOVER",
-                  "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Popover title=\"conformance popover\"><Button text=\"Close\" press=\".eB(['POPOVER_CLOSE'])\"/></Popover></core:FragmentDefinition>",
-                  {
-                    "openById": "btn_popover"
-                  }
-                ]
-              ]
+            "ID": "22A86058515349DA88BE1AFA40D20430",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "POPOVER": {
+                "OPT": {
+                  "openById": "btn_popover"
+                },
+                "XML": "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Popover title=\"conformance popover\"><Button text=\"Close\" press=\".eB(['POPOVER_CLOSE'])\"/></Popover></core:FragmentDefinition>"
+              }
             }
           },
           "MODEL": {
@@ -963,7 +951,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:44611",
+              "ORIGIN": "http://127.0.0.1:33379",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_WINDOW"
             }
@@ -980,17 +968,18 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "AF05E88E34C14C2C9EB759DAF769327E",
-            "PROTOCOL": 2,
-            "S_ACTION": {
-              "T_SYSTEM": [
-                [
-                  "VIEW_SLOTS",
-                  "display",
-                  "MAIN",
-                  "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - window\"><Text id=\"summary\" text=\"{/SUMMARY}\"/><Text id=\"mains\" text=\"{/MAINS}\"/><Text id=\"last\" text=\"{/LAST}\"/><Text id=\"request\" text=\"{/REQUEST}\"/><Text id=\"win_done\" text=\"{/WIN_DONE}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Sort list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'sort', 'QTY', 'X')\"/><Button text=\"Filter list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'filter', 'NAME', 'Contains', '1')\"/><Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/T_ROWS}\"><columns><Column/><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{NAME}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table><Table id=\"win\" growing=\"true\" growingThreshold=\"4\" items=\"{/MR_WIN/*}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
-                ]
-              ]
+            "ID": "0BF3F89A4AC1417E90A8824E7C2495ED",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - window\"><Text id=\"summary\" text=\"{/SUMMARY}\"/><Text id=\"mains\" text=\"{/MAINS}\"/><Text id=\"last\" text=\"{/LAST}\"/><Text id=\"request\" text=\"{/REQUEST}\"/><Text id=\"win_done\" text=\"{/WIN_DONE}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Sort list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'sort', 'QTY', 'X')\"/><Button text=\"Filter list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'filter', 'NAME', 'Contains', '1')\"/><Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/T_ROWS}\"><columns><Column/><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{NAME}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table><Table id=\"win\" growing=\"true\" growingThreshold=\"4\" items=\"{/MR_WIN/*}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
             }
           },
           "MODEL": {
@@ -1080,9 +1069,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "AF05E88E34C14C2C9EB759DAF769327E",
+              "ID": "0BF3F89A4AC1417E90A8824E7C2495ED",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 37,
+              "MS_CLIENT_PREV": 19,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1104,8 +1093,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "5E5E8859EE7646A6A3C40249E54705AB",
-            "PROTOCOL": 2
+            "ID": "7DF08033850A403FA861820A52918DA2",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "LAST": "ROWS MORE 4 4",
@@ -1218,9 +1207,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "5E5E8859EE7646A6A3C40249E54705AB",
+              "ID": "7DF08033850A403FA861820A52918DA2",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 23,
+              "MS_CLIENT_PREV": 15,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1244,8 +1233,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "345BE65175154025AC90A48101A07EF0",
-            "PROTOCOL": 2
+            "ID": "2CCEBFEE4A904887B7CEFA073CD57EB2",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "LAST": "ROWS SORT 0 4",
@@ -1334,9 +1323,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "345BE65175154025AC90A48101A07EF0",
+              "ID": "2CCEBFEE4A904887B7CEFA073CD57EB2",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 29,
+              "MS_CLIENT_PREV": 13,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1360,8 +1349,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "A0C6F40B3DD649FC9F85DEA6E4AC0F99",
-            "PROTOCOL": 2
+            "ID": "FDC53ECAE1D949A3B1366553231A60E0",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "LAST": "ROWS FILTER 0 4",
@@ -1450,9 +1439,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "A0C6F40B3DD649FC9F85DEA6E4AC0F99",
+              "ID": "FDC53ECAE1D949A3B1366553231A60E0",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 25,
+              "MS_CLIENT_PREV": 16,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1474,8 +1463,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "85FE9B8B1CF240828B7D9ED1EDB0C528",
-            "PROTOCOL": 2
+            "ID": "9F83FDF7EB4947DFA290A15CD7A3394F",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "LAST": "ROWS MORE 4 2",
@@ -1588,9 +1577,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "85FE9B8B1CF240828B7D9ED1EDB0C528",
+              "ID": "9F83FDF7EB4947DFA290A15CD7A3394F",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 22
+              "MS_CLIENT_PREV": 15
             }
           }
         }
@@ -1605,8 +1594,8 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "ED5F2EB0683A4B0486F566E8415456C6",
-            "PROTOCOL": 2
+            "ID": "3CD3BB5310CE44939A2D19CABD2984EB",
+            "PROTOCOL": 3
           },
           "MODEL": {
             "LAST": "CHECK",
