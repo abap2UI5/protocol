@@ -94,7 +94,11 @@ jobs:
           if-no-files-found: ignore
 
   frontend:
-    runs-on: ubuntu-latest
+    # 24.04, not ubuntu-latest: the pinned playwright-core cannot install a
+    # Chromium on ubuntu 26.04 ("Playwright does not support chromium on
+    # ubuntu26.04-x64", 2026-11-19) - abap2UI5's conformance_frontend job,
+    # which runs this suite, pins the same image; move both together
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
