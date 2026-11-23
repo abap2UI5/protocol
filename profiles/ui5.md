@@ -31,6 +31,16 @@ abbreviations: [../spec/README.md](../spec/README.md#sources).
   page no longer carries them and loads them when they are first opened
   ([HTTP] `_http_get_devtools`; from abap2UI5 1.147.0 on). An app never
   needs it.
+- `GET <endpoint>?z2ui5-bundle=cc` answers the custom controls
+  (`z2ui5.cc.*`) as a JavaScript file of their own; the frontend loads it
+  once per page, before it builds the first view that names one
+  ([HTTP] `_http_get_cc`; abap2UI5 DEV `6299a78`, 2026-11-23 - until then
+  they were part of the frontend bundle). A view names a control by the
+  namespace `z2ui5.cc`.
+- **Implementation note.** The page names the frontend bundle in a
+  `<link rel="preload">` and `sap.m` on the bootstrap tag, so both load
+  while UI5 boots ([HTTP] `_http_get`, the same DEV). Nothing a frontend
+  or an app has to know.
 
 ## Views
 

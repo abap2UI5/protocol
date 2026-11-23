@@ -33,9 +33,10 @@ Implementations mount it where they like: an ICF node on an ABAP system
 only other frontends MAY answer a GET with anything, and a non-UI5 frontend
 MUST NOT need it. The reference also answers `GET <endpoint>?z2ui5-bundle`
 with the frontend as one JavaScript file for embedding hosts
-([HTTP] `_http_get_bundle`), and `GET <endpoint>?z2ui5-bundle=devtools`
-with the frontend's developer tools ([HTTP] `_http_get_devtools`) - UI5
-profile as well.
+([HTTP] `_http_get_bundle`), `GET <endpoint>?z2ui5-bundle=devtools`
+with the frontend's developer tools ([HTTP] `_http_get_devtools`) and
+`GET <endpoint>?z2ui5-bundle=cc` with its custom controls ([HTTP]
+`_http_get_cc`) - UI5 profile as well.
 
 ## The roundtrip POST
 
