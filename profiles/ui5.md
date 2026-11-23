@@ -130,18 +130,21 @@ The UI5 frontend implements every follow-up action of
 [../spec/actions.md](../spec/actions.md#vocabulary), including the UI5-only
 ones: `CONTROL_BY_ID` (a whitelisted method on a control resolved by id,
 [CC] `evControlCallById`), the whitelisted globals of `CONTROL_GLOBAL`
-([CC] `GLOBAL_TARGETS`: `MESSAGE_TOAST`, `MESSAGE_BOX`, `VIEW_SLOTS`, `ROUTER`,
+([CC] `GLOBAL_TARGETS`: `MESSAGE_TOAST`, `MESSAGE_BOX`, `VIEW_SLOTS`,
 `BUSY_INDICATOR`, `ICON_POOL`, `THEMING`, `POPUP`, `INVISIBLE_MESSAGE`,
 `FORMATTING`), `BINDING_CALL`, `BIND_ELEMENT`, `SET_ODATA_MODEL` and the
 variant and launchpad actions (`CROSS_APP_NAV_TO_EXT`,
 `CROSS_APP_NAV_TO_PREV_APP`, `CROSS_APP_NAV_GET_LINKS`,
 `SET_TITLE_LAUNCHPAD`, `SET_APP_FULL_WIDTH`, [LP]). The whitelist is the
 safety boundary: an action name, target or method outside it is not
-called ([FA] `execute`, `Object.create(null)` dispatch). The targets
-`VIEW_SLOTS` and `ROUTER` are what a view's own close wire and an action
-reach; a response says its views and its URL intent in `VIEWS` and `NAV`
+called ([FA] `execute`, `Object.create(null)` dispatch). The target
+`VIEW_SLOTS` has one method, `destroy` - a view's own close wire; a
+response says its views and its URL intent in `VIEWS` and `NAV`
 ([../spec/response.md](../spec/response.md#sections)), which the frontend
-applies itself ([V1] `_applyViews`, [RT] `sync`).
+applies itself ([V1] `_applyViews`, [RT] `sync`). Until abap2UI5 DEV
+`43d5f6a` (2026-11-23) the whitelist still held what protocol 2 had used
+for that - `VIEW_SLOTS` `display` / `updateModel` and a target `ROUTER`
+with `sync` - reachable from a view wire, written by nothing.
 
 ## Windowed tables
 
