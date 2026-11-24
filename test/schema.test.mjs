@@ -77,6 +77,7 @@ const INVALID = {
     { value: { MODEL: { MR_T: { "*": { __delta: { a: { X: 1 } } } } } } },
     { value: { MODEL: { MR_T: { "*": { __delta: { 0: { SUB: { __delta: [] } } } } } } } },
     { value: { S_FRONT: { MS_CLIENT_PREV: -1 } } },
+    { value: { S_FRONT: { ID: "X", EVENT: "TICK", TIMER: "X" } } },
     { value: { S_FRONT: { CONFIG: { S_DEVICE: { SYSTEM: "fridge" } } } } },
     { value: { S_FRONT: { ID: "X", EVENT: "___ZZZ_WIN" } } },
     { value: { S_FRONT: { EVENT: "___ZZZ_WIN", T_EVENT_ARG: ["/T_ROWS", "8"] } } },
@@ -116,6 +117,8 @@ const VALID = {
     { value: { S_FRONT: { ID: "X", EVENT: "CHECK" }, MODEL: { MR_T: { "*": { __delta: { 2: { DONE: true } } } } } } },
     { value: { S_FRONT: { ID: "X", EVENT: "CHECK" }, MODEL: { MR_T: { "*": { __delta: { 0: { SUB: { __delta: { 1: { V: "x" } } } } } } } } } },
     { value: { S_FRONT: { ID: "X", EVENT: "CHECK" }, MODEL: { MR_T: { "*": [{ DONE: true }] }, MR_S: { "*": { A: 1 } }, MR_V: { "*": "x" } } } },
+    // a START_TIMER tick (spec/request.md#the-timer-tick)
+    { value: { S_FRONT: { ID: "X", EVENT: "TICK", TIMER: true } } },
   ],
   snapshot: [],
 };

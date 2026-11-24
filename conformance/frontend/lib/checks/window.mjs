@@ -130,14 +130,16 @@ export default [
       await t.settle();
       t.includes((await t.state()).slots.MAIN.text, "item 05", "MAIN after the sort (the app's order, not sorted again in the browser)");
 
-      const grown = recorded("window.request-sort-filter", 2);
+      // the exchanges of the backend check: start, sort, three requests on the
+      // start, more rows inside the sort (#5), the filter (#6)
+      const grown = recorded("window.request-sort-filter", 5);
       t.mock.reply(grown);
       await t.press(MORE);
       await t.posted(3);
       t.deepEqual(t.front(2).T_EVENT_ARG, ["/T_ROWS", "ROWS", "MORE", "4", "4"], "T_EVENT_ARG of the request for more rows after the sort");
       await t.settle();
 
-      t.mock.reply(recorded("window.request-sort-filter", 3));
+      t.mock.reply(recorded("window.request-sort-filter", 6));
       await t.press({ text: "Filter list" });
       await t.posted(4);
       t.deepEqual(t.front(3).T_EVENT_ARG, ["/T_ROWS", "ROWS", "FILTER", "0", "4", QTY_DESC, JSON.stringify([[["NAME", "Contains", "1", null]]])], "T_EVENT_ARG of the filter (the sort sent along)");

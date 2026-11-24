@@ -125,6 +125,7 @@ arguments when the event fires, and the controller methods `eB`, `eBP` and
 | `queueLast` | `s_ctrl-check_queue_last` | while a roundtrip runs, keep the **last** firing of this wire and send it after the response, instead of dropping it ([V1] `eB`, `_dispatchQueuedEvent`) - a live search loses no keystroke |
 | `noBusy` | `s_ctrl-check_no_busy` | no busy indicator for this roundtrip; the frontend is busy all the same, and a second event is kept or dropped as ever ([V1] `eB`) |
 | `useMainModel` | - (no backend writes it; views written by hand) | the event from a popup ships MAIN's model delta instead of the popup's ([V1] `_pickModelForRoundtrip`) |
+| `timer` | - (no backend writes it; the frontend's own dispatch of a `START_TIMER` tick, [VO] `evStartTimer`) | the roundtrip is a timer tick: it is sent with `S_FRONT.TIMER: true` ([../spec/request.md](../spec/request.md#the-timer-tick)), and a user event that meets it is kept and sent after its response instead of dropped ([../spec/transport.md](../spec/transport.md#client-behaviour)) ([V1] `eB`) |
 
 The frontend reads the object by key and takes an absent key as `false`
 ([LIB] `eventOptions`). **Implementation note.** Up to protocol 2 the

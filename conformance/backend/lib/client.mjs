@@ -87,10 +87,12 @@ export class ProtocolClient {
     return this.post({ S_FRONT: front }, { label: label || `start ${app || hash || ""}` });
   }
 
-  /** An event roundtrip continuing draft `id`. */
-  event(id, event, { args, model, label } = {}) {
+  /** An event roundtrip continuing draft `id`; `timer` marks it as the
+   *  tick of a START_TIMER (S_FRONT.TIMER, spec/request.md#the-timer-tick). */
+  event(id, event, { args, model, label, timer } = {}) {
     const front = { ID: id, EVENT: event };
     if (args && args.length) front.T_EVENT_ARG = args;
+    if (timer) front.TIMER = true;
     const payload = { S_FRONT: front };
     if (model) payload.MODEL = model;
     return this.post(payload, { label: label || `event ${event}` });

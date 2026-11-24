@@ -73,6 +73,10 @@
         },
         "CONFIG": {
           "$ref": "#/$defs/config"
+        },
+        "TIMER": {
+          "description": "true on the event request of a START_TIMER tick, and on no other request (spec/request.md#the-timer-tick). A backend MAY answer a tick that left the app state unchanged with the ID it continued (spec/sessions.md#draft-ids).",
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

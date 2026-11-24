@@ -43,6 +43,7 @@ missing one initial).
 | `ORIGIN`, `PATHNAME`, `SEARCH` | string | every app-start-shaped request, and the first request of a page load ([SES] `location`) | `?app_start=`, the launchpad flag, URLs the backend composes; stored with the draft ([H] `session_merge`) |
 | `MS_CLIENT_PREV` | integer >= 0 | from the second roundtrip on: the previous roundtrip's duration as the browser measured it ([SRV] `readHttp`) | the roundtrip monitor only; an unreadable value is dropped, never the request ([H] `request_parse_body`) |
 | `CONFIG` | object | [the session block](#config-the-session-block) | device, UI5 version, focus, scroll, launchpad data |
+| `TIMER` | boolean, `true` | the event request of a `START_TIMER` tick - the event the timer raises when its delay ends - and no other request ([VO] `evStartTimer` marks the dispatch, [V1] `eB`, [SRV] `roundtrip` moves it into `S_FRONT`) | [the timer tick](#the-timer-tick): an unchanged tick may be answered with the id it continued |
 
 A frontend MUST NOT send other keys in `S_FRONT`; a backend MUST ignore
 keys it does not know.
@@ -165,6 +166,41 @@ nothing). *Checked by:* `event.roundtrip`, `event.unknown-event`.
   request of a windowed table: the backend runs the app with the app's own
   event the request names, the request in `get( )-r_event_data`
   ([windowed-tables.md](windowed-tables.md#the-window-request)).
+
+## The timer tick
+
+A `START_TIMER` follow-up action ([actions.md](actions.md#vocabulary))
+raises its event when the delay ends - a roundtrip nobody clicked for, and
+on a polling screen one that repeats every few seconds. The request of such
+a **tick** carries `S_FRONT.TIMER: true` (from abap2UI5 `880ff0a5`, branch
+`DEV`: [VO] `evStartTimer` dispatches the tick as `[<event>, { noBusy,
+timer: true }]`, [V1] `eB` sets `TIMER` on the body, [SRV] `roundtrip`
+moves it into `S_FRONT`).
+
+```json
+{ "value": { "S_FRONT": { "ID": "9EA726DF4B7244BC882F1552C9DE9D97", "EVENT": "TICK", "TIMER": true } } }
+```
+
+- A frontend MUST NOT send `TIMER` on any request but the tick of a
+  `START_TIMER` - not on a user event, not on an app start, not on a
+  window request - and sends it only as `true` ([V1] `eB`: `timer` is set
+  by no wire, only by [VO] `evStartTimer`). A frontend MAY leave it out
+  on a tick too: the tick is then an ordinary event, answered with a new
+  id. *Frontend check:* `request.timer-mark`.
+- The tick is otherwise an ordinary event request: it continues the id
+  adopted last, carries the model delta like any event, and its event is
+  the one the action named.
+- A backend that does not know `TIMER` ignores it (above). A backend that
+  knows it MAY answer a tick whose app state is unchanged with the id it
+  continued, and writes no draft then; for every other request - a tick
+  that changed the app state included - the rule of a new id holds
+  ([sessions.md](sessions.md#draft-ids)). *Checked by:*
+  `session.timer-tick`.
+- **Implementation note.** `timer` also rides in the options object the
+  UI5 frontend dispatches the tick with (`[<event>, { noBusy, timer: true
+  }]`, [LIB] `eventOptions`) - that is the frontend's own call, not a
+  wire: no view carries it, and a backend writes it into no wire
+  ([../profiles/ui5.md](../profiles/ui5.md#the-options-of-a-wire)).
 
 ## Event arguments
 

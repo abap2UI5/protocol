@@ -1,10 +1,12 @@
 # The abap2UI5 protocol - specification
 
-**Protocol 3, specification revision 0.6 (2026-11-22).** Derived from the
+**Protocol 3, specification revision 0.7 (2026-11-24).** Derived from the
 implementations, not designed ahead of them: abap2UI5 branch `DEV` at
-`1445078` - the framework after 1.150.0, with protocol 3 - for the backend
+`04ead8ec` - the framework after 1.150.0, with protocol 3 - for the backend
 and the UI5 frontend, and the node runtime packed from that commit; no
-release carries protocol 3 yet. The implementations outside that
+release carries protocol 3 yet. Revision 0.6 (2026-11-22, DEV `1445078`)
+introduced protocol 3; 0.7 adds the timer tick (`S_FRONT.TIMER`, the
+unchanged tick that keeps its draft id) and the retention of drafts. The implementations outside that
 repository still speak protocol 2 and are cited for what did not change:
 `@cap2ui5/cds-plugin` 0.7.0 (which hosts the released runtime),
 abap2UI5/mcp-server `332a0b0` and abap2UI5/headless-frontend `c1c24ba`
@@ -77,12 +79,14 @@ the repository named.
 | **[CL]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_client.clas.abap` - the client API implementation |
 | **[TY]** | abap2UI5 `src/01/02/z2ui5_if_ui5_types.intf.abap` - wire constants and types, `c_protocol` |
 | **[IC]** | abap2UI5 `src/02/z2ui5_if_client.intf.abap` - the public client API |
-| **[DR]** | abap2UI5 `src/01/01/z2ui5_cl_ui5_srv_draft.clas.abap` - the draft store |
+| **[DR]** | abap2UI5 `src/01/01/z2ui5_cl_ui5_srv_draft.clas.abap` - the draft store: `read`, `cleanup`, `touch`, `prune_chain` (`c_min_keep_per_chain`) |
+| **[CONT]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_app_cont.clas.abap` - the app container: `db_save` (asks the store to prune), `db_check_unchanged` (the unchanged tick), `mt_draft_keep` (the drafts a link or a restore protects) |
 | **[EXIT]** | abap2UI5 `src/02/z2ui5_if_ui5_exit.intf.abap`, `src/01/04/z2ui5_cl_ui5_user_exit.clas.abap` |
 | **[SRV]** | abap2UI5 `bundle/webapp/core/Server.js` (`app/webapp` up to 1.149.0, like every frontend file below) - request building, HTTP, response adoption, `PROTOCOL` |
 | **[SES]** | abap2UI5 `bundle/webapp/core/Session.js` - the session block and location cadence |
 | **[LIB]** | abap2UI5 `bundle/webapp/core/Lib.js` - `buildDeltaFromPaths`, `normalizeEventArgs`, `eventOptions`, `bindingPathOf`, `isValidContextId` |
 | **[V1]** | abap2UI5 `bundle/webapp/controller/View1.controller.js` - `eB`, `eBP`, `eF`, the processing phases (`_applyViews`, `_runPendingActions`, `_dispatchQueuedEvent`) |
+| **[VO]** | abap2UI5 `bundle/webapp/core/actions/ViewOps.js` - `evStartTimer` (the `START_TIMER` tick) |
 | **[FA]** | abap2UI5 `bundle/webapp/core/FrontendAction.js` - action dispatch |
 | **[CC]** | abap2UI5 `bundle/webapp/core/actions/ControlCall.js` - `CONTROL_GLOBAL`, `GLOBAL_TARGETS` |
 | **[SL]** | abap2UI5 `bundle/webapp/core/actions/Slots.js`, `bundle/webapp/core/ViewSlots.js` - the view slots |

@@ -229,4 +229,24 @@ export default [
       }
     },
   },
+  {
+    id: "request.timer-mark",
+    title: "S_FRONT.TIMER is sent only on the tick of a START_TIMER, and only as true",
+    level: "MUST",
+    profile: "core",
+    needs: ["timers"],
+    spec: `${R}#the-timer-tick`,
+    async run(t) {
+      t.mock.reply(recorded("action.timer", 0));
+      await t.start("Z2UI5_CL_CONF_ACTIONS");
+      t.mock.reply(recorded("action.timer", 1));
+      t.mock.reply(recorded("action.timer", 2));
+      await t.press({ text: "Timer", event: "TIMER" });
+      await t.posted(3, 5000);
+      t.ok(!("TIMER" in t.front(0)), `the app start carries TIMER ${JSON.stringify(t.front(0).TIMER)}`);
+      t.ok(!("TIMER" in t.front(1)), `the user event TIMER carries S_FRONT.TIMER ${JSON.stringify(t.front(1).TIMER)}`);
+      t.equal(t.front(2).EVENT, "TICK", "S_FRONT.EVENT of the tick");
+      t.ok(!("TIMER" in t.front(2)) || t.front(2).TIMER === true, `the tick carries S_FRONT.TIMER ${JSON.stringify(t.front(2).TIMER)} - true or nothing`);
+    },
+  },
 ];

@@ -2,6 +2,57 @@
 
 ## Unreleased
 
+- **Specification revision 0.7 - the timer tick and the pruned draft
+  chain** (2026-11-24), derived from abap2UI5 branch `DEV` at `04ead8ec`
+  (`880ff0a5`, `cdd2fb25`, `04ead8ec`; maintainer approved). Protocol 3
+  stays: a new optional request key and a guarantee of the backend, no
+  change to what a response looks like
+  ([spec/versioning.md](spec/versioning.md#compatible-changes-within-protocol-3)).
+  - **Request: `S_FRONT.TIMER`.** The event request of a `START_TIMER`
+    tick carries `TIMER: true`, and no other request does ([VO]
+    `evStartTimer`, [V1] `eB`, [SRV] `roundtrip`). New section
+    [spec/request.md](spec/request.md#the-timer-tick);
+    `schema/request.schema.json` admits the key (optional boolean) - the
+    UI5 SPA of DEV failed `portable.timer` on the schema before.
+    `profiles/ui5.md` lists `timer` among the options of the frontend's
+    dispatch (no wire carries it).
+  - **Draft ids: the unchanged tick.** A response to a tick whose app
+    state is unchanged MAY name the id it continued (no draft written);
+    every other 2xx response still names a new id
+    ([spec/sessions.md](spec/sessions.md#draft-ids), [H]
+    `main_end_reuse`, [CONT] `db_check_unchanged`). Open question 2 is
+    resolved with that exception - polling apps wrote a draft of their
+    whole state per tick.
+  - **Retention.** A backend MUST hold the newest draft of a chain and the
+    one before it (the retry of a lost response) and the protected ones -
+    the app stack, the draft of an app-state link, the draft a route or
+    app-state restore started from, every draft of an app whose app-state
+    hash is active - and MAY delete the others before they expire; until
+    revision 0.6 it had to hold every draft until its expiry. New section
+    [spec/sessions.md](spec/sessions.md#retention) (the reference's
+    `draft_keep_per_chain`, 2 by default, minimum 2: [CONT] `db_save`,
+    [DR] `prune_chain`); a note in `spec/navigation.md` (*Routes*) on why
+    the routes of the UI5 frontend's history survive.
+  - **Client behaviour: a click that meets a tick** is kept and sent after
+    the tick's response, with the id that response named (SHOULD,
+    [spec/transport.md](spec/transport.md#client-behaviour); [V1] `eB`,
+    `_dispatchQueuedEvent`).
+  - Sources: new [CONT] (`z2ui5_cl_ui5_app_cont`) and [VO] (`ViewOps.js`).
+  - Checks: backend `session.timer-tick` and `session.retention-protected`
+    (new; `session.id-reuse` renamed
+    in its title to what it continues - the draft before the newest);
+    four window checks (`window.app-event`, `window.request-sort-filter`,
+    `window.total-from-app`, `window.order-with-the-draft`) continue only
+    drafts a backend must hold - against a runtime of DEV `04ead8ec` they
+    failed on the pruned first draft. Frontend `request.timer-mark` and
+    `transport.tick-keeps-event` (new). The backend suite's client sends
+    `TIMER` with `event(..., { timer: true })`. Check lists regenerated.
+  - Traffic recorded again (`traffic/node-runtime/suite.json`,
+    `ui5-frontend.json`) on a runtime packed from DEV `04ead8ec`, which
+    names `@abaplint/transpiler-cli` 2.14.35 (`npm install --no-save`
+    next to it; `package.json` still pins 2.14.33 for the released
+    1.150.0). `conformance/RESULTS.md` has the run and the findings.
+
 - **BREAKING - protocol 3, specification revision 0.6** (2026-11-22),
   derived from abap2UI5 branch `DEV` at `1445078` (after 1.150.0; no
   release carries it yet). The maintainer broke the wire on purpose;

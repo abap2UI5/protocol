@@ -11,6 +11,8 @@ stay below it for the record. A new provisional decision is added here as
 "Current decision" until it is decided the same way - question 11
 (revision 0.4) and questions 12 and 13 (revision 0.5) are; question 14
 is resolved, and question 15 was decided with protocol 3 (revision 0.6).
+Question 2 was decided again in revision 0.7: the unchanged timer tick is
+an exception to the new id.
 
 The first five came out of the backend suite (revision 0.1,
 [../conformance/RESULTS.md](../conformance/RESULTS.md)); the others out of
@@ -19,7 +21,7 @@ the frontend suite (revision 0.2).
 | # | Question | Decided (0.3) |
 |---:|---|---|
 | 1 | NEST slots in portable renderers | (c) + (b): renderers tolerate them, portable apps must not use them |
-| 2 | a new draft id in every response | (c) as it was |
+| 2 | a new draft id in every response | (c) as it was; revision 0.7: resolved - an unchanged timer tick (`S_FRONT.TIMER`) MAY answer the id it continued, every other event keeps the rule - new check `session.timer-tick` |
 | 3 | the request URL in the error body | (a) a backend MUST NOT reflect unvalidated request data - new check `error.no-reflection` |
 | 4 | boolean event arguments for non-ABAP backends | (a) as it was |
 | 5 | the detail of an app's error | (c) as it was |
@@ -68,6 +70,35 @@ portable rule); `portable-v1.json` is unchanged (`slots.notInV1`,
 `clientApi.excluded` already said so).
 
 ## 2. A new draft id in every response
+
+**Resolved (revision 0.7): (c) with one exception - the unchanged timer
+tick.** A response to a request with `S_FRONT.TIMER: true`
+([request.md](request.md#the-timer-tick)) whose app state the roundtrip
+left unchanged MAY name the id the request continued, and the backend
+writes no draft; for every other request - a click, a keystroke, a window
+request, a tick that changed the app state - every 2xx response still
+names a new id ([sessions.md](sessions.md#draft-ids), backend checks
+`session.new-id`, `session.timer-tick`). abap2UI5 implements it on branch
+`DEV` (`cdd2fb25`, [H] `main_end_reuse`; the frontend marks the tick from
+`880ff0a5`); the maintainer approved it.
+
+*Rationale.* A polling app - `START_TIMER` every two seconds - wrote a
+draft of its whole state per tick and user: 1,800 rows an hour of a
+screen on which nothing happened, and a chain that grew without end.
+The tick is the one roundtrip the user did not ask for and the one that
+repeats; for it, what the rule of revision 0.3 protects - that a frontend
+sees whether *its user's* event changed anything - is not at stake, and
+what the rule relies on holds all the same: a draft is a snapshot, so the
+retry of a lost response, the browser history and an app-state link
+continue an id that still names the state it named. Alternative (b) for
+every event was rejected again: a click keeps its new id, so a frontend
+keeps telling an event that changed something from one that did not.
+Pruning the chain ([sessions.md](sessions.md#retention), revision 0.7) is
+the other half of the draft volume and independent of this exception.
+
+**Touches.** `spec/request.md` (`TIMER`, *The timer tick*),
+`spec/sessions.md` (*Draft ids*), `schema/request.schema.json`; backend
+check `session.timer-tick`, frontend check `request.timer-mark`.
 
 **Decided (revision 0.3): (c), as it was.** Every 2xx response MUST name a
 draft id different from the one its request continued

@@ -1,20 +1,21 @@
 # Results
 
-**Protocol 3** (spec revision 0.6, 2026-11-22). Backend suite, profile
-`ui5` (91 checks: 83 core, 8 UI5-profile; 74 MUST, 17 SHOULD), run
-2026-11-22 with `npm run conformance:node-runtime` against a runtime packed
-from abap2UI5's branch DEV. The traffic of this run is recorded in
+**Protocol 3** (spec revision 0.7, 2026-11-24). Backend suite, profile
+`ui5` (93 checks: 85 core, 8 UI5-profile; 76 MUST, 17 SHOULD), run
+2026-11-24 with `npm run conformance:node-runtime` against a runtime packed
+from abap2UI5's branch DEV `04ead8ec`. The traffic of this run is recorded in
 [`../traffic/`](../traffic/) - against what,
 [below](#what-the-traffic-is-recorded-against). What the move changed in
 the suites, what it found and who has not followed yet:
-[the move to protocol 3](#the-move-to-protocol-3). The sections further
+[the move to protocol 3](#the-move-to-protocol-3); what revision 0.7
+changed: [the timer tick and the pruned chain](#the-timer-tick-and-the-pruned-chain). The sections further
 down are the record of the revisions before it, as they were written -
 they speak of protocol 2, of `T_SYSTEM` and `T_CUSTOM`, and of results
 that the tables here replace.
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| `node-runtime` | `@abap2ui5/node-runtime` packed from abap2UI5 DEV `1445078` (it names itself 1.150.0; `npm install --no-save`) - **the recorded traffic** | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.33) | 91 | 0 | 0 | 0 | conformant (ui5) |
+| `node-runtime` | `@abap2ui5/node-runtime` packed from abap2UI5 DEV `04ead8ec` (it names itself 1.150.0; `npm install --no-save`) - **the recorded traffic** | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.35, the version the package names, installed with it `--no-save`) | 93 | 0 | 0 | 0 | conformant (ui5) |
 | `node-runtime` | `@abap2ui5/node-runtime` 1.150.0 (released, `package.json`, CI) | the same, the app WINDOW left out | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned |
 | `cap2ui5` | `@cap2ui5/cds-plugin` 0.7.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned; no traffic recorded |
 
@@ -31,7 +32,7 @@ Per area, node-runtime on the DEV runtime:
 | slots | 9 | 9 pass |
 | action | 3 | 3 pass |
 | nav / route | 15 | 15 pass |
-| session | 5 | 5 pass |
+| session | 7 | 7 pass |
 | error | 5 | 5 pass |
 | ui5 | 8 | 8 pass |
 
@@ -42,8 +43,8 @@ runtime is the same framework source.
 ## What the traffic is recorded against
 
 `traffic/node-runtime/` is recorded with the node-runtime host on a runtime
-**packed from abap2UI5 DEV `1445078`** - `npm run pack:node-runtime` in
-that checkout, `npm install --no-save` of the tgz here and
+**packed from abap2UI5 DEV `04ead8ec`** (`1445078` up to revision 0.6) -
+`npm run pack:node-runtime` in that checkout, `npm install --no-save` of the tgz here and
 `OPEN_ABAP_CORE_DIR` at the open-abap-core of the same checkout, as
 abap2UI5's own CI runs this suite - and the UI5 frontend's request code
 from the same commit's `bundle/webapp` (`ui5-frontend.json`). No release
@@ -80,6 +81,44 @@ Two recordings are not of this revision:
 
 Once a release carries protocol 3, `package.json` and CI move to it and
 the conditions above find it.
+
+## The timer tick and the pruned chain
+
+Revision 0.7 (2026-11-24) follows two changes on abap2UI5's branch DEV
+(maintainer approved): the UI5 frontend marks the request of a
+`START_TIMER` tick with `S_FRONT.TIMER: true` and keeps a click that meets
+a tick in flight (`880ff0a5`), and the backend answers an unchanged tick
+with the id it continued and prunes every draft chain to its last two
+drafts by default (`cdd2fb25`, `04ead8ec`). What they found here:
+
+- **The UI5 SPA of DEV failed `portable.timer`** before this revision:
+  its tick carried `TIMER`, which `schema/request.schema.json` refused
+  (`additionalProperties: false`, and `spec/request.md` allowed no other
+  key). *The spec was behind*: `TIMER` is a key of `S_FRONT` now
+  ([../spec/request.md](../spec/request.md#the-timer-tick)).
+- **Four window checks failed against a runtime of DEV `04ead8ec`** -
+  `window.app-event`, `window.request-sort-filter`,
+  `window.total-from-app`, `window.order-with-the-draft` - with
+  `NO_DRAFT_ENTRY_OF_PREVIOUS_REQUEST_FOUND`: they continued the app's
+  first draft after two later drafts of its chain were saved, and the
+  pruning had deleted it. That was a MUST of revision 0.6 ("any draft id
+  ... until the draft expires"), which the maintainer gave up for the
+  draft volume: a backend now has to hold the newest draft of a chain and
+  the one before it, and the protected ones
+  ([../spec/sessions.md](../spec/sessions.md#retention)). *The checks
+  relied on more than the spec now guarantees*: they continue only
+  drafts a backend must hold, in another order, and test the same.
+- New checks: backend `session.timer-tick` (a tick that changed the app
+  state answers a new id, an unchanged one may answer its own, state
+  carries over) and `session.retention-protected` (the draft a route
+  restored and the caller on the app stack survive three more roundtrips
+  - on DEV `04ead8ec` they are protected from the pruning); frontend `request.timer-mark` (`TIMER` only on a tick,
+  only `true`) and `transport.tick-keeps-event` (SHOULD: a click during a
+  tick goes out after the tick's response, with the id it named). The
+  node-runtime host never reuses an id - its own serializer makes the
+  reference's compare fail ([../spec/sessions.md](../spec/sessions.md#draft-ids)) -
+  so its traffic shows the new-id branch only. The UI5 SPA of DEV, the
+  Adaptive Cards and the terminal renderer pass both frontend checks.
 
 ## The move to protocol 3
 
@@ -547,10 +586,10 @@ records - as a rule, or as an implementation note:
 
 ## Frontend suite
 
-Frontend suite, 92 checks (77 MUST, 15 SHOULD; 74 core, 8 portable, 7 UI5,
-3 semantic), run 2026-11-22 for protocol 3 against the traffic recorded
-from a runtime packed from abap2UI5 DEV `1445078` - the UI5 SPA of that
-commit, the Adaptive Cards and the terminal renderer - with
+Frontend suite, 94 checks (78 MUST, 16 SHOULD; 76 core, 8 portable, 7 UI5,
+3 semantic), run 2026-11-24 for protocol 3 (revision 0.7) against the
+traffic recorded from a runtime packed from abap2UI5 DEV `04ead8ec` - the
+UI5 SPA of that commit, the Adaptive Cards and the terminal renderer - with
 `abap2ui5-conformance frontend --adapter <name>` (each frontend at its
 widest profile). The scripted backend answers from
 [`../traffic/node-runtime/`](../traffic/node-runtime/) plus synthetic edge
@@ -561,11 +600,11 @@ before protocol 3.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 DEV `1445078` `bundle/webapp` (protocol 3), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 88 | 0 | 0 | 4 | conformant (ui5) |
+| UI5 SPA (`ui5`) | abap2UI5 DEV `04ead8ec` `bundle/webapp` (protocol 3), OpenUI5 1.153.0 (npm), Chromium 156 | ui5 | 90 | 0 | 0 | 4 | conformant (ui5) |
 | UI5 SPA (`ui5`) | abap2UI5 1.150.0 `app/webapp` (release commit `af05dce`, which CI pins) | ui5 | - | - | - | - | **behind: protocol 2** - `slots.main` fails, pinned ([above](#the-move-to-protocol-3)) |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `332a0b0` (vendored - `adapters/vendor/mcp-server/source.json`) | semantic | - | - | - | - | **behind: protocol 2** - it refuses every response of this revision; `slots.main` fails, pinned. Its last result on protocol 2: 63 pass, 1 fail, 23 skip |
-| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 70 | 0 | 0 | 22 | every check it can be driven through holds |
-| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 80 | 0 | 0 | 12 | every check it can be driven through holds, the router checks included |
+| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 72 | 0 | 0 | 22 | every check it can be driven through holds |
+| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 82 | 0 | 0 | 12 | every check it can be driven through holds, the router checks included |
 | Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | protocol 2, not run for this revision; then conformant (portable) in 3 of 4 runs, `model.number-and-boolean` intermittent (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 

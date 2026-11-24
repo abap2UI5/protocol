@@ -132,4 +132,41 @@ export default [
       t.equal(during, 2, "POSTs while the first event was in flight (app start + that event)");
     },
   },
+  {
+    id: "transport.tick-keeps-event",
+    title: "A user event that meets a START_TIMER tick in flight is sent after the tick's response, with the id that response named",
+    level: "SHOULD",
+    profile: "core",
+    needs: ["timers", "concurrent"],
+    spec: `${T}#client-behaviour`,
+    allowUnexpected: true,
+    async run(t) {
+      t.mock.reply(recorded("action.timer", 0));
+      await t.start("Z2UI5_CL_CONF_ACTIONS");
+      t.mock.reply(recorded("action.timer", 1));
+      const tick = recorded("action.timer", 2);
+      const held = t.mock.replyHeld(tick);
+      t.mock.reply(answer({ app: "Z2UI5_CL_CONF_ACTIONS" }));
+      await t.press({ text: "Timer", event: "TIMER" });
+      await held.received;
+      try {
+        await t.press({ text: "Focus", event: "FOCUS" }, { wait: false });
+      } catch (e) {
+        if (e.name !== "Unsupported") throw e;
+      }
+      await t.wait(300);
+      const during = t.posts().length;
+      held.release();
+      try {
+        await t.posted(4, 3000);
+      } catch {
+        // judged below
+      }
+      await t.settle();
+      t.equal(during, 3, "POSTs while the tick was in flight (app start, TIMER, the tick) - the user event waits");
+      t.ok(t.posts().length >= 4, `the user event was dropped: ${t.posts().length} POSTs`);
+      t.equal(t.front(3).EVENT, "FOCUS", "S_FRONT.EVENT of the request after the tick");
+      t.equal(t.front(3).ID, tick.body.S_FRONT.ID, "S_FRONT.ID of the kept event (the id the tick's response named)");
+    },
+  },
 ];

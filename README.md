@@ -54,8 +54,8 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 
 ## Status
 
-- **Protocol 3**, specification revision 0.6, derived from abap2UI5
-  branch `DEV` at `1445078` (after 1.150.0). It breaks protocol 2: the
+- **Protocol 3**, specification revision 0.7, derived from abap2UI5
+  branch `DEV` at `04ead8ec` (after 1.150.0). It breaks protocol 2: the
   response carries its views, its navigation intent and its follow-up
   actions as the sections `VIEWS`, `NAV` and `ACTIONS`, an app start
   carries the route parsed as `ROUTE`, the flags of an event wire are one
@@ -72,7 +72,8 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   ```
 
   The maintainer decided ten open questions in revision 0.3, question 14
-  is resolved, question 15 was decided with protocol 3, three are open
+  is resolved, question 15 was decided with protocol 3, question 2 was
+  decided again in revision 0.7 (the unchanged timer tick), three are open
   ([spec/open-questions.md](spec/open-questions.md)).
 - **Who speaks protocol 3:** abap2UI5 `DEV` - the backend, the UI5 SPA
   and the node runtime packed from it - and the two renderers of this

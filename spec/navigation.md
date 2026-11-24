@@ -120,6 +120,14 @@ hash in step with the app on screen ([RT] header comment):
   *Frontend checks:* `router.back-restores`, `router.start-route`.
 - A route to a draft that is gone starts the class fresh and SHOULD queue a
   toast saying so. *Checked by:* `route.expired-draft`.
+- **Implementation note.** A backend that prunes its draft chains
+  ([sessions.md](sessions.md#retention)) leaves every route of the UI5
+  frontend's history a draft to restore: within an app the router
+  replaces its history entry with the newest draft, the caller's entry
+  points at the draft the hop came from (protected as part of the app
+  stack), and a restore starts a new chain from the restored draft
+  (protected) - abap2UI5 `docs/agents/architecture-seams.md` "Fewer
+  drafts", [RT] `sync`. What is left is expiry.
 
 ## Launchpad hashes
 

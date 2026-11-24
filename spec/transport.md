@@ -240,6 +240,21 @@ These are rules for frontends; they keep a session consistent.
   instead; decided in revision 0.3,
   [open question 8](open-questions.md#8-one-roundtrip-at-a-time-for-frontends-driven-by-a-program)).
   *Frontend checks:* `transport.one-at-a-time`, `ui5.wire-queue-last`.
+- **A user event that meets a timer tick.** A `START_TIMER` tick
+  ([request.md](request.md#the-timer-tick)) is a roundtrip the user did
+  not start and, under its no-busy flag, cannot see. A frontend SHOULD
+  NOT drop a user event because a tick is in flight: it keeps it, sends
+  it once the tick's response is adopted, and sends it **with the id
+  that response named** - never with the id the tick continued, which
+  would drop what the tick did. The rule of one roundtrip at a time
+  holds: the kept event waits, it does not overlap the tick. The UI5
+  frontend keeps the first such event and lets a second one meet the
+  busy guard as ever; it does not tick again while the event waits, and
+  drops the event with its view, on an app switch, a reset, a route
+  restore and an error response ([V1] `eB` (`tickInFlight`,
+  `oTickQueuedEvent`), `_dispatchQueuedEvent`; [VO] `evStartTimer`; from
+  abap2UI5 `880ff0a5`, branch `DEV` - before it the click was dropped).
+  *Frontend check:* `transport.tick-keeps-event`.
 - **Timeout.** The UI5 frontend gives up after 600 s ([SRV]
   `REQUEST_TIMEOUT_MS`); a frontend SHOULD have a timeout.
 - **Retry.** After a network failure, a timeout or a 502/503/504 a frontend

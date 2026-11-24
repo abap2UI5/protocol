@@ -150,6 +150,7 @@ check requires.
 | `request.client-prev` | MUST | core | - | MS_CLIENT_PREV, when sent, is a non-negative integer and never on the first request | [request.md#s_front](../../spec/request.md#s_front) |
 | `request.no-empty-keys` | SHOULD | core | - | Empty values are left out (T_EVENT_ARG, SEARCH, HASH, ROUTE, MODEL, CONFIG) | [request.md#shape](../../spec/request.md#shape) |
 | `request.config-cadence` | SHOULD | core | - | The static session block travels with the app start, not with every event | [request.md#config-the-session-block](../../spec/request.md#config-the-session-block) |
+| `request.timer-mark` | MUST | core | timers | S_FRONT.TIMER is sent only on the tick of a START_TIMER, and only as true | [request.md#the-timer-tick](../../spec/request.md#the-timer-tick) |
 | `transport.contextid-accept` | SHOULD | core | - | Every roundtrip POST asks for the session id in a header (sap-contextid-accept: header) | [transport.md#request-headers](../../spec/transport.md#request-headers) |
 | `transport.contextid-only-when-held` | MUST | core | - | sap-contextid is not sent before the backend handed one out, and never empty | [transport.md#request-headers](../../spec/transport.md#request-headers) |
 | `transport.contextid-kept` | MUST | core | - | The last sap-contextid response header is sent with every later POST; a response without it keeps it | [transport.md#stateful-sessions-sap-contextid](../../spec/transport.md#stateful-sessions-sap-contextid) |
@@ -157,6 +158,7 @@ check requires.
 | `transport.csrf-final` | MUST | core | - | A 403 without X-CSRF-Token: Required (the backend's own gate) is final - no re-send | [transport.md#csrf-and-origin](../../spec/transport.md#csrf-and-origin) |
 | `transport.no-retry-500` | MUST | core | - | A 500 is not re-sent automatically | [transport.md#client-behaviour](../../spec/transport.md#client-behaviour) |
 | `transport.one-at-a-time` | MUST | core | concurrent | While a roundtrip is in flight, a second user event starts no second roundtrip | [transport.md#client-behaviour](../../spec/transport.md#client-behaviour) |
+| `transport.tick-keeps-event` | SHOULD | core | timers, concurrent | A user event that meets a START_TIMER tick in flight is sent after the tick's response, with the id that response named | [transport.md#client-behaviour](../../spec/transport.md#client-behaviour) |
 | `model.only-edited` | MUST | core | - | MODEL names exactly the attributes the user edited | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.none-when-unedited` | MUST | core | - | An event after no edit sends no model delta | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
 | `model.scalar` | MUST | core | - | An edited scalar travels whole: "NAME": <current value> | [request.md#the-model-delta](../../spec/request.md#the-model-delta) |
