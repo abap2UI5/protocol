@@ -54,8 +54,8 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 
 ## Status
 
-- **Protocol 3**, specification revision 0.8, derived from abap2UI5
-  branch `DEV` at `4a418249` (after 1.150.0). It breaks protocol 2: the
+- **Protocol 3**, specification revision 0.9, derived from abap2UI5
+  branch `DEV` at `a9c08191` (after 1.150.0). It breaks protocol 2: the
   response carries its views, its navigation intent and its follow-up
   actions as the sections `VIEWS`, `NAV` and `ACTIONS`, an app start
   carries the route parsed as `ROUTE`, the flags of an event wire are one

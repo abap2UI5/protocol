@@ -86,7 +86,7 @@ prefix ([FE] `msg_toast`, `msg_box`):
 | `START_TIMER` | backend event, delay in ms, no-busy flag?, repeat flag? ([below](#the-timer)) | portable - the event is an ordinary roundtrip when the delay ends; a semantic frontend offers it as an action. The repeat flag is UI5 profile ([open question 16](open-questions.md#16-the-repeating-timer-in-portable-renderers)). *Checked by:* `action.timer`, `action.timer-repeat`. *Frontend checks:* `portable.timer`, `semantic.timer-action` |
 | `STOP_TIMER` | none ([below](#the-timer)) | UI5 profile ([open question 16](open-questions.md#16-the-repeating-timer-in-portable-renderers)) - ends the timer. *Checked by:* `action.timer-repeat` |
 | `SCROLL_TO`, `SCROLL_INTO_VIEW` | control id, ... | portable |
-| `SET_TITLE`, `SET_FAVICON` | text / URL | portable. *Frontend check:* `portable.set-title` |
+| `SET_TITLE`, `SET_FAVICON` | text / URL | portable. Under the UI5 profile inside a launchpad `SET_TITLE` also sets the shell title ([below](#the-title)). *Frontend check:* `portable.set-title` |
 | `CLIPBOARD_COPY`, `DOWNLOAD_B64_FILE`, `OPEN_NEW_TAB`, `URLHELPER`, `LOCATION_RELOAD`, `SYSTEM_LOGOUT`, `STORE_DATA`, `KEYBOARD_SHORTCUT`, `PLAY_AUDIO` | per [IC] `follow_up_action` | portable (MAY be a no-op where the platform lacks it) |
 | `MESSAGE_TOAST`, `MESSAGE_BOX` | above | portable |
 | `BUSY_INDICATOR`, `INVISIBLE_MESSAGE`, `THEMING` | method, args | portable (via `CONTROL_GLOBAL`) |
@@ -104,6 +104,35 @@ The navigation family (`SET_NAV_ROUTING`, `SET_PUSH_STATE`, `HASH_REPLACE`,
 follow-up actions: the backend folds it into the options of `NAV`
 ([CL] `follow_up_action`, [navigation.md](navigation.md#the-nav-section)).
 `HASH_BACK` is a follow-up action.
+
+## The title
+
+`SET_TITLE` titles the screen. A frontend sets the page's title with it
+where it owns the page ([BRW] `evSetTitle`). Under the UI5 profile inside
+a launchpad it **also sets the shell title**, as `SET_TITLE_LAUNCHPAD`
+does - the user reads the shell header there, and an app no longer
+branches between the two actions ([BRW] `evSetTitle`, [LIB]
+`setShellTitle`; from abap2UI5 `a9c08191`, branch `DEV` - before it only
+`SET_TITLE_LAUNCHPAD` reached the shell):
+
+- A title that arrives before the launchpad's shell service is ready - the
+  first response of a launch can outrun it - is kept and applied once the
+  service resolves, not dropped; the later of two such titles wins ([LIB]
+  `setShellTitle`: `oLaunchpad.pendingTitle`; [COMP] `_initLaunchpad`). The
+  same holds for `SET_TITLE_LAUNCHPAD`.
+- Only a component that owns the page sets it: an embedded component whose
+  host keeps the page (`state.ownsPage` false,
+  [navigation.md](navigation.md#the-nav-section)) changes neither
+  the page's title nor the shell's ([BRW] `ownsPage`).
+  **Implementation note.** `SET_TITLE_LAUNCHPAD` asks no such question in
+  the UI5 frontend ([LP] `evSetTitleLaunchpad`) - an embedded component
+  inside a launchpad still sets the shell title with it.
+- Outside a launchpad `SET_TITLE` is the page's title only, and
+  `SET_TITLE_LAUNCHPAD` does nothing ([LP] `evSetTitleLaunchpad`).
+- *Frontend check:* `portable.set-title` (the page's title); the shell
+  title is not checked - the frontend suite runs no launchpad (abap2UI5
+  checks it in its own specs, `node/tests/launchpad.spec.js` and
+  `browserActions.spec.js`).
 
 ## The timer
 
@@ -171,8 +200,18 @@ profile in this revision
 - **A timer belongs to its app.** A response that names another `APP` - a
   navigation, a popup app included - MUST end a repeating timer; the next
   app arms its own, and an app that wants its poll back after a called app
-  returned starts it again ([V1] `_processAfterRendering`: the app switch
-  clears `timerRepeat`). *Frontend check:* `ui5.timer-repeat-app-change`.
+  returned starts it again - or has the backend keep it
+  ([below](#a-timer-the-backend-keeps)) ([V1] `_processAfterRendering`:
+  the app switch clears `timerRepeat`). *Frontend check:*
+  `ui5.timer-repeat-app-change`.
+- **The same timer again.** A repeating `START_TIMER` with the event,
+  delay and no-busy flag of the running one replaces it with itself: the
+  pending tick is cancelled and armed again with the full delay once the
+  actions run - what the response would have armed anyway (*One timer*,
+  *The repeat* above). It changes nothing a backend or a user can tell, so
+  a backend may send it again without asking whether the timer still runs
+  ([VO] `evStartTimer`, `resumeRepeatTimer`: the slot is filled, nothing
+  is armed twice).
 - Under a popup or popover of the same app the timer SHOULD go on; when
   the view that armed it is gone (the popup closed, MAIN rebuilt), its
   ticks go through MAIN ([VO] `resumeRepeatTimer`: the MAIN view's
@@ -181,6 +220,17 @@ profile in this revision
 - An error the frontend shows instead of a response SHOULD end a
   repeating timer - it would tick roundtrips under the error ([SRV]
   `responseError`). *Frontend check:* `ui5.timer-repeat-error`.
+- **Retry.** Where the frontend offers to re-send the failed request (a
+  network failure, a timeout, a 502/503/504 -
+  [transport.md](transport.md#client-behaviour)), the re-sent request
+  SHOULD take the repeating timer the error ended up again: once its
+  response is applied, the timer is armed as after any response, and a
+  response that names another `APP` ends it as ever. The re-sent request
+  continues the same draft id, and a backend that sends a running timer
+  only when it changed (below) does not send it again - without this a
+  poll was lost with every successful Retry ([SRV] `readHttp` `onRetry`,
+  `responseError`: the overlay's retry keeps `timerRepeat`; from abap2UI5
+  `a9c08191`, branch `DEV`). *Frontend check:* `ui5.timer-repeat-retry`.
 - **Implementation note.** The UI5 frontend also ends a repeating timer
   on a Back/Forward restore - the restored screen arms its own ([SRV]
   `restoreFromRoute`) -, on `Server.reset` ([SRV] `reset`) and with the
@@ -194,6 +244,45 @@ profile in this revision
 
 The requests are those of revision 0.7: a tick of a repeating timer is a
 tick like any other.
+
+### A timer the backend keeps
+
+From abap2UI5 `a9c08191` (branch `DEV`) an app can **declare** its
+repeating timer instead of sending it ([IC] `timer_set`, `timer_stop`).
+The backend keeps the declaration with the app's draft, next to what it
+last sent for it ([CONT] `ms_timer`, `ms_timer_sent`), and writes the
+actions of the section above itself ([H] `main_end_timer`). Nothing on the
+wire is new (revision 0.9); what a backend MAY do with the two actions:
+
+- A backend MAY send a repeating `START_TIMER` again **whenever the app
+  gets the screen again**: in the response to a request without a draft
+  id - a page load, a Back/Forward restore, an app-state link - in the
+  response of a hop to the app - its first display, the return from an
+  app it called, a popup app closing - and when the declaration changed.
+  The frontend ended the timer on each of those (above), so the poll comes
+  back without the app arming it again in a `check_on_navigated( )`
+  branch. A frontend handles it like any `START_TIMER`; one identical to
+  the running timer changes nothing ([above](#the-timer), *The same timer
+  again*). abap2UI5 sends nothing while an unchanged timer runs, so an
+  unchanged tick still answers with the draft id it continued
+  ([sessions.md](sessions.md#draft-ids)).
+- A backend MAY put **`STOP_TIMER` first in `ACTIONS` of a hop
+  response**: the response of the app navigated to ends the timer of the
+  app left, unless the app answering declares one of its own. A frontend
+  ends a repeating timer only on a response that names another `APP`
+  (above); another instance of the same class names the same `APP` and
+  would go on ticking the poll of the app left. First, so that a
+  `START_TIMER` the answering app queued in the same roundtrip still wins -
+  the actions run in order ([ACT] `prepare_app_stack`: `check_timer_end`;
+  [H] `main_end_timer`).
+- **Implementation note.** In abap2UI5 an app's own `follow_up_action( )`
+  with `START_TIMER` or `STOP_TIMER` takes the slot over and drops the
+  declaration ([CL] `follow_up_action`); `nav_app_call( me )` keeps it
+  ([ACT] `prepare_app_stack`); `timer_stop( )` sends `STOP_TIMER` only when
+  the declared timer was sent ([CL] `timer_stop`, [H] `main_end_timer`).
+- Not checked by the backend suite: both rules are MAY, and the
+  conformance apps declare no timer - `timer_set( )` is on `DEV` only,
+  while the apps are linted against the released runtime as well.
 
 ## The offline queue
 

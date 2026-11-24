@@ -275,4 +275,36 @@ export default [
       await noMorePosts(t, 3, 1500, "POSTs after the error (the timer must end - it would tick under the error)");
     },
   },
+  {
+    id: "ui5.timer-repeat-retry",
+    title: "The error's Retry takes a repeating timer up again",
+    level: "SHOULD",
+    profile: "ui5",
+    needs: ["timers"],
+    spec: TIMER,
+    async run(t) {
+      await startActions(t);
+      // the first tick meets a 503 - a request that may not have reached the
+      // backend, which the frontend offers to re-send (spec/transport.md)
+      t.mock.reply(errorReply(503, "conformance: the backend is restarting"));
+      t.mock.reply(quiet());
+      // the next tick is answered with ["STOP_TIMER"] (recorded)
+      t.mock.reply(recorded("action.timer-repeat", 2));
+      await t.press(REPEAT);
+      await t.posted(3, 5000);
+      await t.settle();
+      await noMorePosts(t, 3, 1000, "POSTs under the error (the timer must end with it)");
+      await t.retry();
+      try {
+        await t.posted(5, 5000);
+      } catch {
+        // judged below
+      }
+      t.ok(t.posts().length >= 4, "the Retry sent nothing");
+      t.deepEqual(t.post(3), t.post(2), "the re-sent request (the same body as the failed tick)");
+      t.ok(t.posts().length >= 5, "no tick after the retried request's response - the Retry must take the repeating timer up again");
+      t.equal(t.front(4).EVENT, "TICK", "S_FRONT.EVENT after the Retry");
+      await noMorePosts(t, 5, 1500, "POSTs after the response with STOP_TIMER");
+    },
+  },
 ];

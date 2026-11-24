@@ -2,6 +2,57 @@
 
 ## Unreleased
 
+- **Specification revision 0.9 - the timer the backend keeps, and the
+  title in the launchpad** (2026-11-24), derived from abap2UI5 branch
+  `DEV` at `a9c08191`. No wire change: protocol 3 stays, no action,
+  element, request field or response section is new
+  ([spec/versioning.md](spec/versioning.md#compatible-changes-within-protocol-3)).
+  - **A timer the backend keeps** - new section
+    [spec/actions.md](spec/actions.md#a-timer-the-backend-keeps). abap2UI5
+    lets an app declare its repeating timer (`client->timer_set( )` /
+    `timer_stop( )`) and writes the actions itself ([H]
+    `main_end_timer`, [ACT] `prepare_app_stack`, [CONT] `ms_timer`). A
+    backend MAY send a repeating `START_TIMER` again whenever the app gets
+    the screen again (a request without a draft id - page load,
+    Back/Forward restore, app-state link -, a hop to the app, a changed
+    declaration) and MAY put `STOP_TIMER` first in `ACTIONS` of a hop
+    response - another instance of the same class names the same `APP`,
+    and the frontend would keep the poll of the app left running.
+  - **The same timer again** - restated in
+    [spec/actions.md](spec/actions.md#the-timer): a repeating
+    `START_TIMER` identical to the running one changes nothing a backend
+    or a user can tell ([VO] `evStartTimer`, `resumeRepeatTimer`).
+  - **Retry** - where a frontend offers to re-send a failed request, the
+    re-sent request SHOULD take the repeating timer the error ended up
+    again ([SRV] `readHttp` `onRetry`, `responseError`); the backend does
+    not send a running timer again for the same draft id.
+  - **`SET_TITLE` in the launchpad** - new section
+    [spec/actions.md](spec/actions.md#the-title) and
+    [profiles/ui5.md](profiles/ui5.md#the-title-in-the-launchpad): under
+    the UI5 profile inside a launchpad `SET_TITLE` also sets the shell
+    title like `SET_TITLE_LAUNCHPAD`; a title that arrives before the
+    shell service is ready is applied once it resolves; only a component
+    that owns the page sets it ([BRW] `evSetTitle`, `ownsPage`, [LIB]
+    `setShellTitle`, [COMP] `_initLaunchpad`). Not covered by the frontend
+    suite, which runs no launchpad.
+  - Sources: new [BRW] (`actions/Browser.js`) and [COMP] (`Component.js`);
+    [CONT] names `ms_timer` / `ms_timer_sent`, [LIB] `setShellTitle`.
+  - Checks: new frontend check `ui5.timer-repeat-retry` (SHOULD, UI5
+    profile): a 503 on a tick, the error's Retry re-sends the same body,
+    and the timer ticks again after its response. The adapter contract
+    has an optional `retry()` (the `ui5` adapter presses the error
+    overlay's Retry). No backend check: both backend rules are MAY, and
+    the conformance apps cannot call `timer_set( )` - it is on DEV only,
+    and the apps are linted against the released runtime too. Check lists
+    regenerated.
+  - Traffic recorded again (`traffic/node-runtime/suite.json`,
+    `ui5-frontend.json`) on a runtime packed from DEV `a9c08191`
+    (`@abaplint/transpiler-cli` 2.14.35 `--no-save`): only ids, ports and
+    timestamps moved - the conformance apps declare no timer. The UI5 SPA
+    of that commit passes every check, `ui5.timer-repeat-retry` included;
+    the `bundle/webapp` of the commit before (`53140e3e`) warns on it.
+    `conformance/RESULTS.md` has the run.
+
 - **Specification revision 0.8 - the repeating timer** (2026-11-24),
   derived from abap2UI5 branch `DEV` at `4a418249`. Protocol 3 stays: an
   optional element of an existing action and a new action, no change to

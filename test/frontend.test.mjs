@@ -174,7 +174,7 @@ const AGENT_SKIPS = [
   "portable.default-aggregation", "portable.unknown-property", "portable.unknown-control", "portable.excluded-action",
   "portable.box-details", "portable.timer", "portable.set-title", "portable.view-replaced",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
-  "ui5.timer-repeat", "ui5.timer-repeat-user-event", "ui5.timer-stop", "ui5.timer-replace", "ui5.timer-repeat-app-change", "ui5.timer-repeat-popup", "ui5.timer-repeat-error",
+  "ui5.timer-repeat", "ui5.timer-repeat-user-event", "ui5.timer-stop", "ui5.timer-replace", "ui5.timer-repeat-app-change", "ui5.timer-repeat-popup", "ui5.timer-repeat-error", "ui5.timer-repeat-retry",
 ];
 
 // Its known deviation (RESULTS.md, windowed tables), with the place of the
@@ -221,7 +221,7 @@ const CARDS_SKIPS = [
   "router.keep", "router.hash-sent", "router.back-restores", "router.app-state",
   "router.start-route", "router.start-app-state", "router.no-route-on-events", "router.hash-write-owner", "portable.set-title",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
-  "ui5.timer-repeat", "ui5.timer-repeat-user-event", "ui5.timer-stop", "ui5.timer-replace", "ui5.timer-repeat-app-change", "ui5.timer-repeat-popup", "ui5.timer-repeat-error",
+  "ui5.timer-repeat", "ui5.timer-repeat-user-event", "ui5.timer-stop", "ui5.timer-replace", "ui5.timer-repeat-app-change", "ui5.timer-repeat-popup", "ui5.timer-repeat-error", "ui5.timer-repeat-retry",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
 ];
 
@@ -242,7 +242,7 @@ test("the Adaptive Cards renderer: every portable-profile check it can be driven
 const TERMINAL_SKIPS = [
   "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event", "message.details-sanitized",
   "ui5.wire-ebp", "ui5.wire-source-argument", "ui5.wire-queue-last", "ui5.nest",
-  "ui5.timer-repeat", "ui5.timer-repeat-user-event", "ui5.timer-stop", "ui5.timer-replace", "ui5.timer-repeat-app-change", "ui5.timer-repeat-popup", "ui5.timer-repeat-error",
+  "ui5.timer-repeat", "ui5.timer-repeat-user-event", "ui5.timer-stop", "ui5.timer-replace", "ui5.timer-repeat-app-change", "ui5.timer-repeat-popup", "ui5.timer-repeat-error", "ui5.timer-repeat-retry",
   "semantic.snapshot-schema", "semantic.recorded-snapshots", "semantic.timer-action",
 ];
 

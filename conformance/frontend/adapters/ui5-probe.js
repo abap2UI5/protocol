@@ -9,7 +9,8 @@
  *                     the last response (follow-up actions included)
  *   locate(spec)      the DOM id to type into / click for a target:
  *                     { slot, id } | { slot, path } | { slot, text } | { slot, nav: true }
- *                     | { box: <button text> }
+ *                     | { box: <button text> } | { retry: true } (the error
+ *                     overlay's Retry)
  *   state()           the normalized state the suite reads
  */
 (() => {
@@ -65,6 +66,14 @@
       const hits = allElements().filter((el) => el.getMetadata().getName() === "sap.m.Button" && visible(el)
         && el.getText && el.getText() === spec.box && el.getParent && el.getParent() && el.getParent().hasStyleClass && el.getParent().hasStyleClass("sapMMessageBox"));
       return hits.length ? { el: hits[0], kind: "button" } : { error: `no message box button "${spec.box}"` };
+    }
+    if (spec.retry) {
+      // the error overlay (ErrorView): a sap.m.Dialog in the error state,
+      // Retry among its buttons when the failed request may be re-sent
+      const hits = allElements().filter((el) => el.getMetadata().getName() === "sap.m.Button" && visible(el)
+        && el.getText && el.getText() === "Retry" && el.getParent && el.getParent()
+        && el.getParent().getMetadata().getName() === "sap.m.Dialog" && el.getParent().getState && el.getParent().getState() === "Error");
+      return hits.length ? { el: hits[0], kind: "button" } : { error: "no Retry on an error overlay" };
     }
     const slot = spec.slot || "MAIN";
     const inSlot = allElements().filter((el) => slotOf(ctx, el) === slot);

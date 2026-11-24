@@ -1,14 +1,18 @@
 # The abap2UI5 protocol - specification
 
-**Protocol 3, specification revision 0.8 (2026-11-24).** Derived from the
+**Protocol 3, specification revision 0.9 (2026-11-24).** Derived from the
 implementations, not designed ahead of them: abap2UI5 branch `DEV` at
-`4a418249` - the framework after 1.150.0, with protocol 3 - for the backend
+`a9c08191` - the framework after 1.150.0, with protocol 3 - for the backend
 and the UI5 frontend, and the node runtime packed from that commit; no
 release carries protocol 3 yet. Revision 0.6 (2026-11-22, DEV `1445078`)
 introduced protocol 3; 0.7 (DEV `04ead8ec`) added the timer tick
 (`S_FRONT.TIMER`, the unchanged tick that keeps its draft id) and the
-retention of drafts; 0.8 adds the repeating timer and `STOP_TIMER`
-([actions.md](actions.md#the-timer)). The implementations outside that
+retention of drafts; 0.8 (DEV `4a418249`) the repeating timer and
+`STOP_TIMER` ([actions.md](actions.md#the-timer)); 0.9 adds no wire: a
+backend that keeps an app's timer and sends it again when the app gets the
+screen back ([actions.md](actions.md#a-timer-the-backend-keeps)), the timer
+through a Retry, and `SET_TITLE` titling the launchpad shell
+([actions.md](actions.md#the-title)). The implementations outside that
 repository still speak protocol 2 and are cited for what did not change:
 `@cap2ui5/cds-plugin` 0.7.0 (which hosts the released runtime),
 abap2UI5/mcp-server `332a0b0` and abap2UI5/headless-frontend `c1c24ba`
@@ -82,11 +86,11 @@ the repository named.
 | **[TY]** | abap2UI5 `src/01/02/z2ui5_if_ui5_types.intf.abap` - wire constants and types, `c_protocol` |
 | **[IC]** | abap2UI5 `src/02/z2ui5_if_client.intf.abap` - the public client API |
 | **[DR]** | abap2UI5 `src/01/01/z2ui5_cl_ui5_srv_draft.clas.abap` - the draft store: `read`, `cleanup`, `touch`, `prune_chain` (`c_min_keep_per_chain`) |
-| **[CONT]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_app_cont.clas.abap` - the app container: `db_save` (asks the store to prune), `db_check_unchanged` (the unchanged tick), `mt_draft_keep` (the drafts a link or a restore protects) |
+| **[CONT]** | abap2UI5 `src/01/02/z2ui5_cl_ui5_app_cont.clas.abap` - the app container: `db_save` (asks the store to prune), `db_check_unchanged` (the unchanged tick), `mt_draft_keep` (the drafts a link or a restore protects), `ms_timer` / `ms_timer_sent` (the declared timer) |
 | **[EXIT]** | abap2UI5 `src/02/z2ui5_if_ui5_exit.intf.abap`, `src/01/04/z2ui5_cl_ui5_user_exit.clas.abap` |
 | **[SRV]** | abap2UI5 `bundle/webapp/core/Server.js` (`app/webapp` up to 1.149.0, like every frontend file below) - request building, HTTP, response adoption, `PROTOCOL` |
 | **[SES]** | abap2UI5 `bundle/webapp/core/Session.js` - the session block and location cadence |
-| **[LIB]** | abap2UI5 `bundle/webapp/core/Lib.js` - `buildDeltaFromPaths`, `normalizeEventArgs`, `eventOptions`, `bindingPathOf`, `isValidContextId` |
+| **[LIB]** | abap2UI5 `bundle/webapp/core/Lib.js` - `buildDeltaFromPaths`, `normalizeEventArgs`, `eventOptions`, `bindingPathOf`, `isValidContextId`, `setShellTitle` (the launchpad shell's title) |
 | **[V1]** | abap2UI5 `bundle/webapp/controller/View1.controller.js` - `eB`, `eBP`, `eF`, the processing phases (`_applyViews`, `_runPendingActions`, `_dispatchQueuedEvent`) |
 | **[VO]** | abap2UI5 `bundle/webapp/core/actions/ViewOps.js` - `evStartTimer` (the `START_TIMER` tick), `evStopTimer` (`STOP_TIMER`), `resumeRepeatTimer` (the repeating timer armed again) |
 | **[CTX]** | abap2UI5 `bundle/webapp/core/Context.js` - the component's context: `destroy` (its end) |
@@ -96,6 +100,8 @@ the repository named.
 | **[WM]** | abap2UI5 `bundle/webapp/core/WindowModel.js` (main `694fb262`) - the model and the list binding of a windowed table |
 | **[WT]** | abap2UI5 `node/srv/zcl_tst_window.clas.abap`, `node/tests/e2e/window.spec.js` (main `694fb262`) - the fixture app and the e2e tests of the windowed table |
 | **[LP]** | abap2UI5 `bundle/webapp/core/actions/Launchpad.js` - the launchpad actions |
+| **[BRW]** | abap2UI5 `bundle/webapp/core/actions/Browser.js` - the browser actions: `evSetTitle`, `ownsPage` |
+| **[COMP]** | abap2UI5 `bundle/webapp/Component.js` - the UI5 component: `_initLaunchpad` (the launchpad services) |
 | **[RT]** | abap2UI5 `bundle/webapp/core/Router.js` - the one reader and writer of the hash: routes, `startRoute` (what a request sends as `ROUTE`), `sync` (the `NAV` section) |
 | **[EVW]** | abap2UI5 `bundle/webapp/core/ErrorView.js` - the error overlay |
 | **[SF]** | abap2UI5 `bundle/webapp/core/ScrollFocus.js` - focus and scroll positions |

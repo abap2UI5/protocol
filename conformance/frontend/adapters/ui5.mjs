@@ -202,6 +202,13 @@ export function createUi5Adapter({ webapp: explicit, slowMo = 0 } = {}) {
       await adapter.settle();
     },
 
+    /** The error overlay's Retry ([SRV] readHttp onRetry). */
+    async retry() {
+      const hit = await adapter.locate({ retry: true });
+      await page.click(`[id="${hit.domId}"]`);
+      await adapter.settle();
+    },
+
     async back() {
       await page.goBack({ waitUntil: "commit" }).catch(() => {});
       await sleep(100);

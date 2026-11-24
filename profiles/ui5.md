@@ -154,7 +154,10 @@ this revision, not portable v1
 ([open question 16](../spec/open-questions.md#16-the-repeating-timer-in-portable-renderers)).
 *Frontend checks:* `ui5.timer-repeat`, `ui5.timer-repeat-user-event`,
 `ui5.timer-stop`, `ui5.timer-replace`, `ui5.timer-repeat-app-change`,
-`ui5.timer-repeat-popup`, `ui5.timer-repeat-error`. The whitelist is the
+`ui5.timer-repeat-popup`, `ui5.timer-repeat-error`,
+`ui5.timer-repeat-retry` (from `a9c08191`: the error overlay's Retry
+takes the repeating timer up again, [SRV] `readHttp` `onRetry`). The
+whitelist is the
 safety boundary: an action name, target or method outside it is not
 called ([FA] `execute`, `Object.create(null)` dispatch). The target
 `VIEW_SLOTS` has one method, `destroy` - a view's own close wire; a
@@ -164,6 +167,22 @@ applies itself ([V1] `_applyViews`, [RT] `sync`). Until abap2UI5 DEV
 `43d5f6a` (2026-11-23) the whitelist still held what protocol 2 had used
 for that - `VIEW_SLOTS` `display` / `updateModel` and a target `ROUTER`
 with `sync` - reachable from a view wire, written by nothing.
+
+### The title in the launchpad
+
+Inside the SAP Fiori launchpad `SET_TITLE` sets the shell title as well
+as the page's title, like `SET_TITLE_LAUNCHPAD` - one action titles the app
+inside and outside the launchpad ([BRW] `evSetTitle`, [LIB]
+`setShellTitle`; from abap2UI5 `a9c08191`, branch `DEV`;
+[../spec/actions.md](../spec/actions.md#the-title)). The shell service
+(`ShellUIService`) resolves asynchronously when the component starts; a
+title that arrives before it - the first response of a launch can - is
+kept and set once the service resolves ([COMP] `_initLaunchpad`,
+`oLaunchpad.pendingTitle`), for both actions. Only a component that owns
+the page (`state.ownsPage`,
+[../spec/navigation.md](../spec/navigation.md#the-nav-section)) sets a title with `SET_TITLE`; an embedded one whose host keeps the page
+sets neither ([BRW] `ownsPage`). Not covered by the frontend suite, which
+runs no launchpad.
 
 ## Windowed tables
 

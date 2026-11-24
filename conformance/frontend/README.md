@@ -65,8 +65,9 @@ frontend instance against an endpoint of its own.
 A frontend is plugged in by an adapter ([adapters/base.mjs](adapters/base.mjs)
 has the contract): `open({ mock })`, `start(run, { app })` (a fresh instance
 against the run's endpoint), the interactions `fill(target, value)`,
-`press(target)`, `closeBox({ action, text })`, `back()`, `setModel(path,
-value)`, then `settle()`, `state()` (the normalized state: slots and their
+`press(target)`, `closeBox({ action, text })`, `retry()` (the Retry of
+the error shown; optional), `back()`, `setModel(path, value)`, then
+`settle()`, `state()` (the normalized state: slots and their
 text, field values, models, messages, the error shown, diagnostics, hash,
 title, focus) and `stop()` / `close()`. A target carries what every kind of
 frontend needs to find it - `{ path: "/NAME", id: "name" }` for a field,
@@ -235,6 +236,7 @@ check requires.
 | `ui5.timer-repeat-app-change` | MUST | ui5 | timers | A response that names another APP ends a repeating timer | [actions.md#the-timer](../../spec/actions.md#the-timer) |
 | `ui5.timer-repeat-popup` | SHOULD | ui5 | timers | A repeating timer armed from a popup goes on under it and after it closed | [actions.md#the-timer](../../spec/actions.md#the-timer) |
 | `ui5.timer-repeat-error` | SHOULD | ui5 | timers | An error response ends a repeating timer | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `ui5.timer-repeat-retry` | SHOULD | ui5 | timers | The error's Retry takes a repeating timer up again | [actions.md#the-timer](../../spec/actions.md#the-timer) |
 | `semantic.snapshot-schema` | MUST | semantic | snapshot | Every snapshot matches schema/snapshot.schema.json | [semantic.md#snapshot-v1](../../profiles/semantic.md#snapshot-v1) |
 | `semantic.recorded-snapshots` | SHOULD | semantic | snapshot | Replayed recorded traffic gives the recorded snapshots (traffic/node-runtime/agent-client.json) | [semantic.md#snapshot-v1](../../profiles/semantic.md#snapshot-v1) |
 | `semantic.timer-action` | MUST | semantic | snapshot | START_TIMER is offered as an action with trigger timer | [semantic.md#actions](../../profiles/semantic.md#actions) |

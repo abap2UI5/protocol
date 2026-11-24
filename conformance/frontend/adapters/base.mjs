@@ -13,6 +13,9 @@
  *   fill(target, value)      the user edits a field: target { path, id, slot }
  *   press(target)            the user fires an event: target { text, event, id, slot, nav }
  *   closeBox(action)         the user closes the open message box with `action`
+ *   retry()                  the user re-sends the failed request from the
+ *                            error the frontend shows (optional; Unsupported
+ *                            when the frontend offers no retry)
  *   back()                   browser Back (capability "url")
  *   setModel(path, value, slot)  a two-way binding writes `path` (capability "modelEdit")
  *   settle()                 resolves once the frontend is idle
