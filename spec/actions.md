@@ -83,7 +83,8 @@ prefix ([FE] `msg_toast`, `msg_box`):
 | Action | Arguments | Profile |
 |---|---|---|
 | `SET_FOCUS` | control id, selection start?, selection end? | portable |
-| `START_TIMER` | backend event, delay in ms, no-busy flag? | portable - the event is an ordinary roundtrip when the delay ends; a semantic frontend offers it as an action. *Checked by:* `action.timer`. *Frontend checks:* `portable.timer`, `semantic.timer-action` |
+| `START_TIMER` | backend event, delay in ms, no-busy flag?, repeat flag? ([below](#the-timer)) | portable - the event is an ordinary roundtrip when the delay ends; a semantic frontend offers it as an action. The repeat flag is UI5 profile ([open question 16](open-questions.md#16-the-repeating-timer-in-portable-renderers)). *Checked by:* `action.timer`, `action.timer-repeat`. *Frontend checks:* `portable.timer`, `semantic.timer-action` |
+| `STOP_TIMER` | none ([below](#the-timer)) | UI5 profile ([open question 16](open-questions.md#16-the-repeating-timer-in-portable-renderers)) - ends the timer. *Checked by:* `action.timer-repeat` |
 | `SCROLL_TO`, `SCROLL_INTO_VIEW` | control id, ... | portable |
 | `SET_TITLE`, `SET_FAVICON` | text / URL | portable. *Frontend check:* `portable.set-title` |
 | `CLIPBOARD_COPY`, `DOWNLOAD_B64_FILE`, `OPEN_NEW_TAB`, `URLHELPER`, `LOCATION_RELOAD`, `SYSTEM_LOGOUT`, `STORE_DATA`, `KEYBOARD_SHORTCUT`, `PLAY_AUDIO` | per [IC] `follow_up_action` | portable (MAY be a no-op where the platform lacks it) |
@@ -103,6 +104,96 @@ The navigation family (`SET_NAV_ROUTING`, `SET_PUSH_STATE`, `HASH_REPLACE`,
 follow-up actions: the backend folds it into the options of `NAV`
 ([CL] `follow_up_action`, [navigation.md](navigation.md#the-nav-section)).
 `HASH_BACK` is a follow-up action.
+
+## The timer
+
+`START_TIMER` raises a backend event once its delay has passed - a
+**tick**, an ordinary event request marked `S_FRONT.TIMER: true`
+([request.md](request.md#the-timer-tick)). From abap2UI5 `4a418249`
+(branch `DEV`) it can repeat itself, and `STOP_TIMER` ends it ([VO]
+`evStartTimer`, `evStopTimer`, `resumeRepeatTimer`; [IC]
+`cs_event-start_timer`, `cs_event-stop_timer`).
+
+```json
+["START_TIMER", "TICK", "5000", "", "X"]
+["STOP_TIMER"]
+```
+
+| Element | Content |
+|---|---|
+| [1] | the backend event of the tick |
+| [2] | the delay in milliseconds, as text ([VO] `evStartTimer`: not a number is 0) |
+| [3] | optional, the **no-busy** flag: the tick shows no busy indicator ([../profiles/ui5.md](../profiles/ui5.md#the-options-of-a-wire), `noBusy`) |
+| [4] | optional, the **repeat** flag: the timer arms itself again after every response (below) |
+
+The flags are ABAP booleans: `"X"`, `"true"` or `true` are on, anything
+else - `""`, an absent element - is off ([CC] `castArg` `bool`). A repeat
+without the no-busy flag keeps the empty element [3] in its place; only
+trailing empty arguments are dropped ([above](#follow-up-actions), [EV]
+`args_trim_trailing`). `STOP_TIMER` has no argument. A backend writes
+both from the app's `follow_up_action( )` ([IC]: `t_arg` = event, delay,
+no-busy flag, repeat flag; `cs_event-stop_timer` without `t_arg`); wired
+into a view, `STOP_TIMER` is `.eF('STOP_TIMER')`
+([below](#wired-frontend-actions)). *Checked by:* `action.timer-repeat`,
+`ui5.frontend-wire`.
+
+A frontend implementing the repeat flag and `STOP_TIMER` - the UI5
+profile in this revision
+([open question 16](open-questions.md#16-the-repeating-timer-in-portable-renderers)):
+
+- **One timer.** A frontend instance has at most one timer. A
+  `START_TIMER` replaces it, a pending tick and a repeating timer alike;
+  one without the repeat flag is a one-shot timer again ([VO]
+  `evStartTimer`: one slot `START_TIMER`, `timerRepeat` set or cleared by
+  every `START_TIMER`). *Frontend check:* `ui5.timer-replace`.
+- **The repeat.** Once a response has been applied - its views rendered,
+  its follow-up actions run, the events it let through sent
+  ([response.md](response.md#processing-order)) - a frontend MUST arm the
+  repeating timer again with the same event, delay and no-busy flag: after
+  the response to a tick and after the response to a user event alike.
+  It MUST NOT arm it while a roundtrip is in flight, and no tick of it
+  goes out while one is: a user event cancels the pending tick, and the
+  response to that event arms it again with the full delay; an event sent
+  right after a response (one a tick held back, a queue-last firing)
+  leaves the arming to its own response
+  ([transport.md](transport.md#client-behaviour)). A response that armed
+  a timer itself (a `START_TIMER` among its actions) is not armed twice
+  ([VO] `resumeRepeatTimer`, called last by [V1]
+  `_processAfterRendering`; `state.isBusy`, the slot already filled).
+  Every tick is an ordinary tick: `S_FRONT.TIMER: true`, the id the
+  response before it named ([request.md](request.md#the-timer-tick)).
+  *Frontend checks:* `ui5.timer-repeat`, `ui5.timer-repeat-user-event`.
+- **`STOP_TIMER`** - as a follow-up action or as a wire - cancels the
+  pending tick and ends a repeating timer; with no timer it does nothing,
+  and it is no error ([VO] `evStopTimer`). The wire runs without a
+  roundtrip ([below](#wired-frontend-actions)). *Frontend checks:*
+  `ui5.timer-repeat`, `ui5.timer-stop`.
+- **A timer belongs to its app.** A response that names another `APP` - a
+  navigation, a popup app included - MUST end a repeating timer; the next
+  app arms its own, and an app that wants its poll back after a called app
+  returned starts it again ([V1] `_processAfterRendering`: the app switch
+  clears `timerRepeat`). *Frontend check:* `ui5.timer-repeat-app-change`.
+- Under a popup or popover of the same app the timer SHOULD go on; when
+  the view that armed it is gone (the popup closed, MAIN rebuilt), its
+  ticks go through MAIN ([VO] `resumeRepeatTimer`: the MAIN view's
+  controller, and with no live controller at all the timer ends).
+  *Frontend check:* `ui5.timer-repeat-popup`.
+- An error the frontend shows instead of a response SHOULD end a
+  repeating timer - it would tick roundtrips under the error ([SRV]
+  `responseError`). *Frontend check:* `ui5.timer-repeat-error`.
+- **Implementation note.** The UI5 frontend also ends a repeating timer
+  on a Back/Forward restore - the restored screen arms its own ([SRV]
+  `restoreFromRoute`) -, on `Server.reset` ([SRV] `reset`) and with the
+  component ([CTX] `destroy`). A one-shot timer is cancelled by every
+  roundtrip that starts before it fired ([V1] `eB`, [LIB]
+  `cancelPendingTimers`) - an app keeps a one-shot poll going by arming
+  it in every response, as up to `4a418249` it had to.
+- **Implementation note.** A poll needs no state in the app: a tick that
+  changes nothing MAY be answered with the id it continued, and writes no
+  draft ([sessions.md](sessions.md#draft-ids)).
+
+The requests are those of revision 0.7: a tick of a repeating timer is a
+tick like any other.
 
 ## The offline queue
 
@@ -129,7 +220,8 @@ the event, without a roundtrip ([CL] `follow_up_action`, `IF result IS
 SUPPLIED`; [EV] `get_event_client`). The wire form is the UI5 profile's
 `.eF('<ACTION>', <args>...)`
 ([../profiles/ui5.md](../profiles/ui5.md#event-wires)); the actions are the
-same as above. `cs_event-popup_close` and `popover_close` are written as
+same as above - `STOP_TIMER` among them, `.eF('STOP_TIMER')`
+([above](#the-timer)). `cs_event-popup_close` and `popover_close` are written as
 `.eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP'|'POPOVER')` - one
 teardown path for the frontend ([EV] `map_client_event`). A frontend MUST
 run such a wire without a roundtrip; the draft id stays the one it adopted

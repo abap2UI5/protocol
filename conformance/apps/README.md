@@ -135,10 +135,12 @@ Follow-up actions.
 | | |
 |---|---|
 | Model | `TICKS` (integer, 0), bound to an Input with id `inp` |
-| View | also a button with the wired frontend action `SET_TITLE` "wired title" (`follow_up_action( )` as attribute) |
+| View | buttons for the events below, and two with a wired frontend action (`follow_up_action( )` as attribute): "Title here" - `SET_TITLE` "wired title", `.eF('SET_TITLE', 'wired title')`; "Stop here" - `STOP_TIMER`, `.eF('STOP_TIMER')` |
 | `FOCUS` | `["SET_FOCUS", "inp"]` |
 | `SEVERAL` | `["SET_TITLE", "conformance title"]`, `["MESSAGE_TOAST", "show", "between"]`, `["SET_FOCUS", "inp"]` - in this order |
 | `TIMER` | `["START_TIMER", "TICK", "500"]` |
+| `TIMER_REPEAT` | `["START_TIMER", "TICK", "500", "", "X"]` - the repeating timer, the empty no-busy flag in its place |
+| `TIMER_STOP` | `["STOP_TIMER"]` (the app writes the literal: `cs_event-stop_timer` is on abap2UI5 DEV from `4a418249` only) |
 | `TICK` | `TICKS` + 1 |
 
 ## Z2UI5_CL_CONF_WINDOW

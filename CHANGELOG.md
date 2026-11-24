@@ -2,6 +2,57 @@
 
 ## Unreleased
 
+- **Specification revision 0.8 - the repeating timer** (2026-11-24),
+  derived from abap2UI5 branch `DEV` at `4a418249`. Protocol 3 stays: an
+  optional element of an existing action and a new action, no change to
+  a request or to the shape of a response
+  ([spec/versioning.md](spec/versioning.md#compatible-changes-within-protocol-3)).
+  - **`START_TIMER` repeats.** An optional fifth element (`args[4]`, an
+    ABAP boolean: `"X"`, `"true"` or `true`) repeats the timer; the
+    no-busy element before it may then be `""` -
+    `["START_TIMER", "TICK", "5000", "", "X"]`. A frontend arms the same
+    event, delay and no-busy flag again after every applied response,
+    never while a roundtrip is in flight (the rule of revision 0.7's
+    kept click, [spec/transport.md](spec/transport.md#client-behaviour)),
+    goes on through user events and under a popup or popover of the same
+    app (through MAIN once the arming view is gone), and ends it on
+    `STOP_TIMER`, on a new `START_TIMER` (which replaces it, one-shot
+    without the flag), on a response that names another `APP` and on an
+    error response; the UI5 frontend also on a Back/Forward restore, a
+    reset and its end. One timer per frontend instance. New section
+    [spec/actions.md](spec/actions.md#the-timer) ([VO] `evStartTimer`,
+    `resumeRepeatTimer`, [V1] `_processAfterRendering`, [SRV] `reset`,
+    `restoreFromRoute`, `responseError`, [CTX] `destroy`).
+  - **New action `STOP_TIMER`** - `["STOP_TIMER"]`, no argument: cancels
+    the pending tick and ends a repeating timer, nothing when there is
+    none ([VO] `evStopTimer`). A follow-up action, and as a wire
+    `.eF('STOP_TIMER')` (`spec/actions.md`, *Wired frontend actions*).
+  - **Requests unchanged**: a tick of a repeating timer is the tick of
+    revision 0.7 (`S_FRONT.TIMER: true`), noted in
+    [spec/request.md](spec/request.md#the-timer-tick).
+  - **Profile.** The repeat flag and `STOP_TIMER` are UI5 profile;
+    portable v1 (`portable-v1.json`) is unchanged and a portable renderer
+    runs a repeating timer once - new open question 16
+    ([spec/open-questions.md](spec/open-questions.md#16-the-repeating-timer-in-portable-renderers)).
+    `profiles/ui5.md` and `profiles/portable.md` (section 6) say so.
+  - Sources: new [CTX] (`Context.js`); [VO] names `evStopTimer` and
+    `resumeRepeatTimer`.
+  - Checks: backend `action.timer-repeat` (new) and `ui5.frontend-wire`
+    (also the wired `STOP_TIMER`); frontend, UI5 profile:
+    `ui5.timer-repeat`, `ui5.timer-repeat-user-event`, `ui5.timer-stop`,
+    `ui5.timer-replace`, `ui5.timer-repeat-app-change` (MUST),
+    `ui5.timer-repeat-popup`, `ui5.timer-repeat-error` (SHOULD). The
+    conformance app ACTIONS has the events `TIMER_REPEAT` and `TIMER_STOP`
+    and a wired "Stop here" (ABAP and the cap2UI5 twin). Check lists
+    regenerated; the two renderers skip the new checks (profile).
+  - Traffic recorded again (`traffic/node-runtime/suite.json`,
+    `ui5-frontend.json`) on a runtime packed from DEV `4a418249`
+    (`@abaplint/transpiler-cli` 2.14.35 installed `--no-save` next to
+    it). The UI5 SPA of that commit passes every check;
+    `conformance/RESULTS.md` has the run, and a finding in abap2UI5: its
+    linter release (`@abap2ui5/linter` 0.11.0) does not know `STOP_TIMER`
+    yet.
+
 - **Specification revision 0.7 - the timer tick and the pruned draft
   chain** (2026-11-24), derived from abap2UI5 branch `DEV` at `04ead8ec`
   (`880ff0a5`, `cdd2fb25`, `04ead8ec`; maintainer approved). Protocol 3

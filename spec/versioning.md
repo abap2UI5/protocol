@@ -88,7 +88,7 @@ read for the screen to be right.
 
 ## This specification's own version
 
-The specification has a revision of its own (0.7, see
+The specification has a revision of its own (0.8, see
 [README.md](README.md)), and the package `@abap2ui5/protocol` a semantic
 version. A revision that only clarifies text or adds checks keeps the
 protocol number; the conformance suite of a revision checks protocol 3 as

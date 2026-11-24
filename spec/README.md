@@ -1,12 +1,14 @@
 # The abap2UI5 protocol - specification
 
-**Protocol 3, specification revision 0.7 (2026-11-24).** Derived from the
+**Protocol 3, specification revision 0.8 (2026-11-24).** Derived from the
 implementations, not designed ahead of them: abap2UI5 branch `DEV` at
-`04ead8ec` - the framework after 1.150.0, with protocol 3 - for the backend
+`4a418249` - the framework after 1.150.0, with protocol 3 - for the backend
 and the UI5 frontend, and the node runtime packed from that commit; no
 release carries protocol 3 yet. Revision 0.6 (2026-11-22, DEV `1445078`)
-introduced protocol 3; 0.7 adds the timer tick (`S_FRONT.TIMER`, the
-unchanged tick that keeps its draft id) and the retention of drafts. The implementations outside that
+introduced protocol 3; 0.7 (DEV `04ead8ec`) added the timer tick
+(`S_FRONT.TIMER`, the unchanged tick that keeps its draft id) and the
+retention of drafts; 0.8 adds the repeating timer and `STOP_TIMER`
+([actions.md](actions.md#the-timer)). The implementations outside that
 repository still speak protocol 2 and are cited for what did not change:
 `@cap2ui5/cds-plugin` 0.7.0 (which hosts the released runtime),
 abap2UI5/mcp-server `332a0b0` and abap2UI5/headless-frontend `c1c24ba`
@@ -86,7 +88,8 @@ the repository named.
 | **[SES]** | abap2UI5 `bundle/webapp/core/Session.js` - the session block and location cadence |
 | **[LIB]** | abap2UI5 `bundle/webapp/core/Lib.js` - `buildDeltaFromPaths`, `normalizeEventArgs`, `eventOptions`, `bindingPathOf`, `isValidContextId` |
 | **[V1]** | abap2UI5 `bundle/webapp/controller/View1.controller.js` - `eB`, `eBP`, `eF`, the processing phases (`_applyViews`, `_runPendingActions`, `_dispatchQueuedEvent`) |
-| **[VO]** | abap2UI5 `bundle/webapp/core/actions/ViewOps.js` - `evStartTimer` (the `START_TIMER` tick) |
+| **[VO]** | abap2UI5 `bundle/webapp/core/actions/ViewOps.js` - `evStartTimer` (the `START_TIMER` tick), `evStopTimer` (`STOP_TIMER`), `resumeRepeatTimer` (the repeating timer armed again) |
+| **[CTX]** | abap2UI5 `bundle/webapp/core/Context.js` - the component's context: `destroy` (its end) |
 | **[FA]** | abap2UI5 `bundle/webapp/core/FrontendAction.js` - action dispatch |
 | **[CC]** | abap2UI5 `bundle/webapp/core/actions/ControlCall.js` - `CONTROL_GLOBAL`, `GLOBAL_TARGETS` |
 | **[SL]** | abap2UI5 `bundle/webapp/core/actions/Slots.js`, `bundle/webapp/core/ViewSlots.js` - the view slots |

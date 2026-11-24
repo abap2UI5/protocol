@@ -39,4 +39,18 @@ export default [
       t.equal(tick.json.MODEL && tick.json.MODEL.TICKS, 1, "MODEL.TICKS after the timer event");
     },
   },
+  {
+    id: "action.timer-repeat",
+    title: "A repeating timer is [\"START_TIMER\", <event>, <ms>, \"\", \"X\"] - the empty no-busy flag keeps its place - and the stop is [\"STOP_TIMER\"]",
+    level: "MUST",
+    profile: "core",
+    spec: `${A}#the-timer`,
+    async run(t) {
+      const start = await t.start("ACTIONS");
+      const repeat = await t.event(start, "TIMER_REPEAT");
+      t.deepEqual(actions(repeat), [["START_TIMER", "TICK", "500", "", "X"]], "S_FRONT.ACTIONS of the repeating timer");
+      const stop = await t.event(repeat, "TIMER_STOP");
+      t.deepEqual(actions(stop), [["STOP_TIMER"]], "S_FRONT.ACTIONS of the stop");
+    },
+  },
 ];

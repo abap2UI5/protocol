@@ -116,7 +116,7 @@ arguments when the event fires, and the controller methods `eB`, `eBP` and
   forms: they are written by every backend of protocol 3.
   *Frontend checks:* `ui5.wire-ebp`, `ui5.wire-source-argument`,
   `ui5.wire-queue-last`, `request.event-arguments`, `request.leave-event`,
-  `slots.frontend-close`.
+  `slots.frontend-close`, `ui5.timer-stop`.
 
 ### The options of a wire
 
@@ -146,7 +146,15 @@ ones: `CONTROL_BY_ID` (a whitelisted method on a control resolved by id,
 `FORMATTING`), `BINDING_CALL`, `BIND_ELEMENT`, `SET_ODATA_MODEL` and the
 variant and launchpad actions (`CROSS_APP_NAV_TO_EXT`,
 `CROSS_APP_NAV_TO_PREV_APP`, `CROSS_APP_NAV_GET_LINKS`,
-`SET_TITLE_LAUNCHPAD`, `SET_APP_FULL_WIDTH`, [LP]). The whitelist is the
+`SET_TITLE_LAUNCHPAD`, `SET_APP_FULL_WIDTH`, [LP]) and, from abap2UI5
+`4a418249` (branch `DEV`), the repeat flag of `START_TIMER` and
+`STOP_TIMER` ([../spec/actions.md](../spec/actions.md#the-timer); [VO]
+`evStartTimer`, `evStopTimer`, `resumeRepeatTimer`) - UI5 profile in
+this revision, not portable v1
+([open question 16](../spec/open-questions.md#16-the-repeating-timer-in-portable-renderers)).
+*Frontend checks:* `ui5.timer-repeat`, `ui5.timer-repeat-user-event`,
+`ui5.timer-stop`, `ui5.timer-replace`, `ui5.timer-repeat-app-change`,
+`ui5.timer-repeat-popup`, `ui5.timer-repeat-error`. The whitelist is the
 safety boundary: an action name, target or method outside it is not
 called ([FA] `execute`, `Object.create(null)` dispatch). The target
 `VIEW_SLOTS` has one method, `destroy` - a view's own close wire; a

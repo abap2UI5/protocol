@@ -228,6 +228,13 @@ check requires.
 | `ui5.wire-source-argument` | MUST | ui5 | wires | A ${$source>/prop} argument is resolved from the firing control | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
 | `ui5.wire-queue-last` | MUST | ui5 | wires, concurrent | A wire with the options { queueLast, noBusy } keeps its last firing during a roundtrip and sends it afterwards | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
 | `ui5.nest` | MUST | ui5 | nest | A NEST view is inserted into its anchor inside MAIN and destroyed again | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `ui5.timer-repeat` | MUST | ui5 | timers | A repeating START_TIMER ticks again after every response, with the id that response named, until a STOP_TIMER | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `ui5.timer-repeat-user-event` | MUST | ui5 | timers, concurrent | A repeating START_TIMER does not tick while a user event is in flight, and goes on after its response | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `ui5.timer-stop` | MUST | ui5 | timers, wires | STOP_TIMER wired into a view (.eF) ends a repeating timer without a roundtrip, and does nothing when no timer runs | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `ui5.timer-replace` | MUST | ui5 | timers | A START_TIMER without the repeat flag replaces a repeating timer - it ticks once | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `ui5.timer-repeat-app-change` | MUST | ui5 | timers | A response that names another APP ends a repeating timer | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `ui5.timer-repeat-popup` | SHOULD | ui5 | timers | A repeating timer armed from a popup goes on under it and after it closed | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `ui5.timer-repeat-error` | SHOULD | ui5 | timers | An error response ends a repeating timer | [actions.md#the-timer](../../spec/actions.md#the-timer) |
 | `semantic.snapshot-schema` | MUST | semantic | snapshot | Every snapshot matches schema/snapshot.schema.json | [semantic.md#snapshot-v1](../../profiles/semantic.md#snapshot-v1) |
 | `semantic.recorded-snapshots` | SHOULD | semantic | snapshot | Replayed recorded traffic gives the recorded snapshots (traffic/node-runtime/agent-client.json) | [semantic.md#snapshot-v1](../../profiles/semantic.md#snapshot-v1) |
 | `semantic.timer-action` | MUST | semantic | snapshot | START_TIMER is offered as an action with trigger timer | [semantic.md#actions](../../profiles/semantic.md#actions) |

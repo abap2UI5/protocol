@@ -103,6 +103,7 @@ export default [
     async run(t) {
       const xml = displayOf(await t.start("ACTIONS"), "MAIN").XML;
       t.ok(xml.includes(`press=".eF('SET_TITLE', 'wired title')"`), "the wired SET_TITLE");
+      t.ok(xml.includes(`press=".eF('STOP_TIMER')"`), "the wired STOP_TIMER (no argument)");
       const popup = await t.event(await t.start("SLOTS"), "POPUP_OPEN");
       t.ok(displayOf(popup, "POPUP").XML.includes(`press=".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')"`), "the popup's frontend close");
     },

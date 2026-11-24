@@ -340,7 +340,7 @@ frontend MUST perform:
 | `MESSAGE_BOX show / alert / confirm / information / warning / error / success` | 45 (`message_box_display`) + 6 | dialog with type, text, title, actions, `onClose` event (the pressed action is its argument), details |
 | `VIEW_SLOTS destroy POPUP / POPOVER` | 5 | the frontend close of `cs_event-popup_close` / `popover_close` |
 | `SET_FOCUS` | 20 | focus the control with that id (optional selection start/end) |
-| `START_TIMER` | 8 | fire the event after the delay |
+| `START_TIMER` | 8 | fire the event after the delay; the repeat flag (element [4]) and `STOP_TIMER` are UI5 profile, not v1 ([open question 16](../spec/open-questions.md#16-the-repeating-timer-in-portable-renderers)) |
 | `DOWNLOAD_B64_FILE`, `CLIPBOARD_COPY`, `URLHELPER`, `OPEN_NEW_TAB` | 4, 4, 3, 2 | browser (or platform share/intent) APIs |
 | `SCROLL_TO`, `SCROLL_INTO_VIEW` | 2, 1 | scroll the element with that id |
 | `SET_TITLE`, `SET_FAVICON`, `LOCATION_RELOAD`, `SYSTEM_LOGOUT`, `STORE_DATA`, `KEYBOARD_SHORTCUT`, `PLAY_AUDIO` | 1-2 each | MAY be a no-op where the platform has no counterpart |

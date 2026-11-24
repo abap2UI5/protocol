@@ -12,7 +12,7 @@ stay below it for the record. A new provisional decision is added here as
 (revision 0.4) and questions 12 and 13 (revision 0.5) are; question 14
 is resolved, and question 15 was decided with protocol 3 (revision 0.6).
 Question 2 was decided again in revision 0.7: the unchanged timer tick is
-an exception to the new id.
+an exception to the new id. Question 16 (revision 0.8) is open.
 
 The first five came out of the backend suite (revision 0.1,
 [../conformance/RESULTS.md](../conformance/RESULTS.md)); the others out of
@@ -35,6 +35,7 @@ the frontend suite (revision 0.2).
 | 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the rows the app loaded and MAY ask for more; not in portable v1; snapshot v1 carries `total` and `window` (alternative (c), additive - the agent client implements it, still with the window request of 1.149.0) |
 | 14 | tables behind a data reference in the backend suite | resolved: (b) a backend MUST read the `__delta` at `/<attr>/*` - app REF (and the windowed `MR_WIN` of the app WINDOW), checks `model.reference-delta`, `window.delta-rows-reference` |
 | 15 | the app-driven window and the protocol number | decided (0.6): (b) protocol 3 - the number moved with the next breaking change of the wire, and the app-driven window is part of protocol 3 |
+| 16 | the repeating timer and `STOP_TIMER` in portable renderers | open - current decision: UI5 profile; portable v1 unchanged, a portable renderer runs a repeating timer once and skips `STOP_TIMER` |
 
 ## 1. The NEST slots in portable renderers
 
@@ -584,3 +585,38 @@ one window of its own order.
 **Touches.** abap2UI5 `c_protocol` and the frontend's `PROTOCOL`,
 `spec/versioning.md`, `schema/request.schema.json`, every frontend that
 sends window requests.
+
+## 16. The repeating timer in portable renderers
+
+**Current decision (revision 0.8): UI5 profile.** abap2UI5 `4a418249`
+(branch `DEV`) added the repeat flag of `START_TIMER` (element [4]) and
+the action `STOP_TIMER` ([actions.md](actions.md#the-timer)). Portable
+profile v1 is the census of the core apps it was filled from, and no app
+of that census uses either: `portable-v1.json` is unchanged, and the
+frontend checks of the repeat (`ui5.timer-repeat`,
+`ui5.timer-repeat-user-event`, `ui5.timer-stop`, `ui5.timer-replace`,
+`ui5.timer-repeat-app-change`, `ui5.timer-repeat-popup`,
+`ui5.timer-repeat-error`) are of the UI5 profile. A portable renderer
+that does not know the flag runs the timer once - as `START_TIMER` always
+did - and skips `STOP_TIMER` as an action it does not know, logging it
+([actions.md](actions.md#follow-up-actions)); the two renderers of this
+repository do so.
+
+*Why it is open.* `START_TIMER` is portable, and the repeat changes what
+an app may leave out: an app that arms a repeating poll once and relies on
+it gets one tick in a renderer without the flag - the poll stops without
+an error. The rules are not UI5-specific (no control, no DOM: a timer, the
+end of a response, the app's name).
+
+**Alternatives.**
+- (a) Portable: the flag and `STOP_TIMER` join `actions.wire` of the next
+  portable profile; the checks move to the portable profile, and every
+  portable renderer implements the repeat, its ends and the stop.
+- (b) UI5 profile, and portable apps must not use them (a linter rule on
+  the fourth `t_arg` of `start_timer` and on `stop_timer`) - the current
+  decision without the silent difference.
+- (c) The current decision: UI5 profile, nothing more.
+
+**Touches.** `profiles/portable.md` section 6, `portable-v1.json`
+(`actions.wire`), `conformance/frontend/lib/checks/ui5.mjs`,
+`renderers/adaptive-cards/host.mjs`, `renderers/terminal/session.mjs`.

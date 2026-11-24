@@ -189,7 +189,9 @@ moves it into `S_FRONT`).
   id. *Frontend check:* `request.timer-mark`.
 - The tick is otherwise an ordinary event request: it continues the id
   adopted last, carries the model delta like any event, and its event is
-  the one the action named.
+  the one the action named. The ticks of a repeating timer (revision 0.8,
+  [actions.md](actions.md#the-timer)) are ticks like this one - the
+  repeat changes when a tick is sent, not what it sends.
 - A backend that does not know `TIMER` ignores it (above). A backend that
   knows it MAY answer a tick whose app state is unchanged with the id it
   continued, and writes no draft then; for every other request - a tick

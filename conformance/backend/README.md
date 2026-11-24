@@ -131,6 +131,7 @@ fails when it is out of date).
 | `action.follow-up` | MUST | core | A follow-up action is a JSON array ["<ACTION>", <args>...] in S_FRONT.ACTIONS | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.order` | MUST | core | Follow-up actions keep the order the app queued them in, messages included | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.timer` | MUST | core | A timer is ["START_TIMER", <event>, <ms>] and its event is an ordinary roundtrip | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
+| `action.timer-repeat` | MUST | core | A repeating timer is ["START_TIMER", <event>, <ms>, "", "X"] - the empty no-busy flag keeps its place - and the stop is ["STOP_TIMER"] | [actions.md#the-timer](../../spec/actions.md#the-timer) |
 | `nav.call` | MUST | core | nav_app_call hands the screen to the called app: its APP, its MAIN view, its model | [navigation.md#the-app-stack](../../spec/navigation.md#the-app-stack) |
 | `nav.leave-with-result` | MUST | core | nav_app_leave returns to the caller, which re-displays and reads the result | [navigation.md#the-app-stack](../../spec/navigation.md#the-app-stack) |
 | `nav.leave-reserved-event` | MUST | core | The reserved event ___ZZZ_NAL leaves the app without running it | [navigation.md#the-reserved-leave-event](../../spec/navigation.md#the-reserved-leave-event) |
