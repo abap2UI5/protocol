@@ -108,7 +108,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: abap2UI5/abap2UI5
-          ref: 1445078997fb09cf69cb8761d884ac470f34aa8a   # DEV, protocol 3 - the commit the spec is derived from and the traffic was recorded on
+          ref: 1dc0803378a451a88dc70716aec454c3945503f4   # main, 1.151.0 (protocol 3, revision 0.9: repeating timer, STOP_TIMER) - tag 1.151.0 once it is cut
           path: deps/abap2UI5
           sparse-checkout: bundle/webapp
           persist-credentials: false
