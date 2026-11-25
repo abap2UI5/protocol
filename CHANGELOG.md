@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **`SET_TITLE_LAUNCHPAD` follows the owns-the-page rule** (2026-11-25):
+  like `SET_TITLE`, an embedded component that does not own the page sets
+  no shell title with it (abap2UI5 DEV `bd85ca52`, [LIB] `setShellTitle`);
+  the implementation note in
+  [spec/actions.md](spec/actions.md#the-title) is replaced by the rule.
 - **Specification revision 0.9 - the timer the backend keeps, and the
   title in the launchpad** (2026-11-24), derived from abap2UI5 branch
   `DEV` at `a9c08191`. No wire change: protocol 3 stays, no action,

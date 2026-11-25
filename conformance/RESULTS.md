@@ -153,12 +153,9 @@ also titles the launchpad shell
 - The backend suite on a runtime packed from DEV `a9c08191`: 94 pass, as
   before; traffic recorded again on it - only ids, ports and timestamps
   moved, since no conformance app declares a timer.
-- **Observed in abap2UI5, not a deviation from the spec:**
-  `SET_TITLE_LAUNCHPAD` is not gated by `ownsPage` ([LP]
-  `evSetTitleLaunchpad`), while `SET_TITLE` is ([BRW] `evSetTitle`) - an
-  embedded component inside a launchpad still titles the shell with the
-  former. Written as an implementation note in the spec; for the
-  maintainer to decide whether it is intended.
+- **Observed in abap2UI5, resolved:** `SET_TITLE_LAUNCHPAD` is gated by
+  `ownsPage` like `SET_TITLE` from DEV `bd85ca52` ([LIB]
+  `setShellTitle`); the implementation note in the spec is gone.
 
 ## The repeating timer
 

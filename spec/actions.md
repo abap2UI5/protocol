@@ -123,10 +123,12 @@ branches between the two actions ([BRW] `evSetTitle`, [LIB]
 - Only a component that owns the page sets it: an embedded component whose
   host keeps the page (`state.ownsPage` false,
   [navigation.md](navigation.md#the-nav-section)) changes neither
-  the page's title nor the shell's ([BRW] `ownsPage`).
-  **Implementation note.** `SET_TITLE_LAUNCHPAD` asks no such question in
-  the UI5 frontend ([LP] `evSetTitleLaunchpad`) - an embedded component
-  inside a launchpad still sets the shell title with it.
+  the page's title nor the shell's ([BRW] `ownsPage`). The same holds for
+  `SET_TITLE_LAUNCHPAD`: such a component sets no shell title and keeps
+  none for the shell service, and the frontend logs the refusal ([LIB]
+  `setShellTitle`; from abap2UI5 `bd85ca52`, branch `DEV` - before it
+  `SET_TITLE_LAUNCHPAD` set the shell title from an embedded component as
+  well).
 - Outside a launchpad `SET_TITLE` is the page's title only, and
   `SET_TITLE_LAUNCHPAD` does nothing ([LP] `evSetTitleLaunchpad`).
 - *Frontend check:* `portable.set-title` (the page's title); the shell
