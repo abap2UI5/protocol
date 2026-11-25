@@ -66,11 +66,11 @@ export function createTerminalAdapter() {
       adapter.version = "renderers/terminal (this repository)";
     },
 
-    async start(run, { app: cls, search } = {}) {
+    async start(run, { app: cls, search, hash } = {}) {
       if (!cls && search === undefined) throw new Unsupported("the terminal starts apps by class name");
       session = createSession({ url: run.url, location: (c) => ({ origin: mock.origin, pathname: run.path, search: `?app_start=${encodeURIComponent(c)}` }) });
       app = createTerminalApp({ session, width: WIDTH, height: 40 });
-      await session.start(cls, search !== undefined ? { search } : {});
+      await session.start(cls, { ...(search !== undefined ? { search } : {}), ...(hash !== undefined ? { hash } : {}) });
     },
 
     async fill(target, value) {

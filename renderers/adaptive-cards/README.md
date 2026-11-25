@@ -105,7 +105,7 @@ node renderers/adaptive-cards/demo.mjs --file response.json       # a response o
   [portable-v1.json](../../profiles/portable-v1.json): toasts, boxes,
   `START_TIMER` (it fires the event), `VIEW_SLOTS destroy`; the rest of the
   portable list has no counterpart in a card and is a logged no-op (focus,
-  scroll, title, downloads, the `ROUTER` action - a card has no URL).
+  scroll, title, downloads, the `NAV` section - a card has no URL).
 
 ## Conformance
 
@@ -129,8 +129,8 @@ DOM, focus, a document title or a programmatic model edit are skipped.
   formats stay text; `DateTimePicker` is text.
 - Typed bindings are shown raw (no number or date formatting); formatters
   and `parts` bindings render empty.
-- No URL: routing (`ROUTER`, the hash) is ignored, as a frontend without a
-  URL may ([spec/navigation.md](../../spec/navigation.md#the-router-action)).
+- No URL: routing (`NAV`, the hash) is ignored, as a frontend without a
+  URL may ([spec/navigation.md](../../spec/navigation.md#the-nav-section)).
 
 ## Mapping
 

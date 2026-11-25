@@ -7,6 +7,8 @@
 // REQUEST the request it found in get( )-r_event_data
 // (path reason skip top, S:<path>:<A|D> per sorter,
 // F<group>:<path>:<operator>:<value1>:<value2> per condition).
+import { displays } from "../client.mjs";
+
 const W = "spec/windowed-tables.md";
 const EVENT = "___ZZZ_WIN";
 const PATH = "/T_ROWS";
@@ -35,10 +37,7 @@ function expectHanded(t, r, last, request, what) {
   t.equal(r.json.MODEL.REQUEST, request, `${what}: MODEL.REQUEST (get( )-r_event_data)`);
 }
 
-const noView = (r) => {
-  const system = (r.json.S_FRONT.S_ACTION && r.json.S_FRONT.S_ACTION.T_SYSTEM) || [];
-  return !system.some((a) => a[0] === "VIEW_SLOTS" && a[1] === "display");
-};
+const noView = (r) => displays(r).length === 0;
 
 export default [
   {
@@ -67,13 +66,15 @@ export default [
       t.equal(grown.json.MODEL.MAINS, start.json.MODEL.MAINS + 1, "MODEL.MAINS (main( ) runs once for a window request)");
       t.equal(grown.json.S_FRONT.APP, start.json.S_FRONT.APP, "S_FRONT.APP");
       t.ok(grown.json.S_FRONT.ID && grown.json.S_FRONT.ID !== start.json.S_FRONT.ID, "the window request is answered with a draft id of its own");
-      t.ok(noView(grown), `a window request answered with a view the app did not display: ${JSON.stringify(grown.json.S_FRONT.S_ACTION)}`);
-      const all = await more(t, grown, 8, 4);
-      expectWindow(t, all, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 12, "MORE 8 4");
+      t.ok(noView(grown), `a window request answered with a view the app did not display: ${JSON.stringify(grown.json.S_FRONT.VIEWS)}`);
       // the path is handed over as it was sent: which table asks is the app's to read
       const elsewhere = await t.event(start, EVENT, { args: ["/SUMMARY", APP_EVENT, "MORE", "4", "4"] });
       expectHanded(t, elsewhere, "ROWS MORE 4 4", "/SUMMARY MORE 4 4", "a request with the path /SUMMARY");
       t.ok(elsewhere.json.MODEL.T_ROWS === undefined || ids(elsewhere).join() === "1,2,3,4", `the app does not load rows for /SUMMARY: ${JSON.stringify(ids(elsewhere))}`);
+      // last: it makes the start the third draft of its chain, which a
+      // backend may prune (spec/sessions.md#retention)
+      const all = await more(t, grown, 8, 4);
+      expectWindow(t, all, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 12, "MORE 8 4");
     },
   },
   {
@@ -88,12 +89,6 @@ export default [
       const sorted = await restart(t, start, "SORT", 4, QTY_DESC);
       expectWindow(t, sorted, BY_QTY.slice(0, 4), 12, "SORT QTY descending");
       expectHanded(t, sorted, "ROWS SORT 0 4", "/T_ROWS SORT 0 4 S:QTY:D", "SORT QTY descending");
-      const grown = await more(t, sorted, 4, 4);
-      expectWindow(t, grown, BY_QTY.slice(0, 8), 12, "MORE inside the sort");
-      expectHanded(t, grown, "ROWS MORE 4 4", "/T_ROWS MORE 4 4", "MORE inside the sort");
-      const filtered = await restart(t, grown, "FILTER", 4, QTY_DESC, JSON.stringify([[["NAME", "Contains", "1", null]]]));
-      expectWindow(t, filtered, [10, 12, 1, 11], 4, "FILTER NAME Contains 1, the sort sent along");
-      expectHanded(t, filtered, "ROWS FILTER 0 4", "/T_ROWS FILTER 0 4 S:QTY:D F1:NAME:Contains:1:", "FILTER NAME Contains 1");
       // the shape of the parts: a column in any case, two sorters in their
       // order, the groups numbered from 1, a number and a null as text
       const two = await t.event(start, EVENT, { args: [PATH, APP_EVENT, "SORT", "8", "4", JSON.stringify([{ PATH: "done", DESCENDING: false }, { PATH: "Name", DESCENDING: true }]), "[]"] });
@@ -105,6 +100,14 @@ export default [
       const between = await restart(t, start, "FILTER", 8, "[]", JSON.stringify([[["QTY", "BT", 3, 6]]]));
       expectHanded(t, between, "ROWS FILTER 0 8", "/T_ROWS FILTER 0 8 F1:QTY:BT:3:6", "FILTER QTY BT 3 6");
       expectWindow(t, between, [1, 6, 9, 11], 4, "QTY BT 3 6");
+      // last: from here the start is the third draft of its chain, which a
+      // backend may prune (spec/sessions.md#retention)
+      const grown = await more(t, sorted, 4, 4);
+      expectWindow(t, grown, BY_QTY.slice(0, 8), 12, "MORE inside the sort");
+      expectHanded(t, grown, "ROWS MORE 4 4", "/T_ROWS MORE 4 4", "MORE inside the sort");
+      const filtered = await restart(t, grown, "FILTER", 4, QTY_DESC, JSON.stringify([[["NAME", "Contains", "1", null]]]));
+      expectWindow(t, filtered, [10, 12, 1, 11], 4, "FILTER NAME Contains 1, the sort sent along");
+      expectHanded(t, filtered, "ROWS FILTER 0 4", "/T_ROWS FILTER 0 4 S:QTY:D F1:NAME:Contains:1:", "FILTER NAME Contains 1");
     },
   },
   {
@@ -146,10 +149,10 @@ export default [
       const more20 = await t.event(start, "TOTAL", { args: ["20"] });
       t.deepEqual(state(more20), { TOTAL: 20, COUNT: 4, SIZE: 4, EVENT: APP_EVENT }, "MODEL.__WINDOW.T_ROWS after the app set its total to 20");
       t.ok(noView(more20), "the app displayed no view");
-      const less = await t.event(more20, "TOTAL", { args: ["2"] });
-      t.deepEqual(state(less), { TOTAL: 4, COUNT: 4, SIZE: 4, EVENT: APP_EVENT }, "MODEL.__WINDOW.T_ROWS after the app set its total to 2 with 4 rows loaded");
       const filtered = await restart(t, start, "FILTER", 4, "[]", JSON.stringify([[["QTY", "GT", 6, null]]]));
       expectWindow(t, filtered, [2, 4, 5, 7], 6, "a filter the app counted itself");
+      const less = await t.event(more20, "TOTAL", { args: ["2"] });
+      t.deepEqual(state(less), { TOTAL: 4, COUNT: 4, SIZE: 4, EVENT: APP_EVENT }, "MODEL.__WINDOW.T_ROWS after the app set its total to 2 with 4 rows loaded");
     },
   },
   {
@@ -159,19 +162,24 @@ export default [
     profile: "core",
     spec: `${W}#the-app-owns-the-order`,
     async run(t) {
+      // Only drafts a backend must hold are continued: the newest of a
+      // chain and the one before it (spec/sessions.md#retention).
       const start = await t.start("WINDOW");
       const sorted = await restart(t, start, "SORT", 4, QTY_DESC);
+      const first = await more(t, start, 4, 4);
+      expectWindow(t, first, [1, 2, 3, 4, 5, 6, 7, 8], 12, "more rows of the first draft (no sort), a later one sorted");
       const filtered = await restart(t, sorted, "FILTER", 4, QTY_DESC, JSON.stringify([[["QTY", "GT", 8, null]]]));
       expectWindow(t, filtered, [5, 10, 2, 7], 4, "sorted, then filtered");
-      const edited = await t.event(filtered, "CHECK", { model: { T_ROWS: { __delta: { 0: { DONE: true } } } } });
-      t.equal(edited.json.MODEL.SUMMARY, "5", "SUMMARY after the edit");
       const earlier = await more(t, sorted, 4, 4);
       expectWindow(t, earlier, BY_QTY.slice(0, 8), 12, "more rows of the draft that was sorted and not yet filtered");
-      t.deepEqual(earlier.json.MODEL.T_ROWS.map((row) => row.DONE), Array(8).fill(false), "DONE in the draft before the edit");
       const again = await more(t, sorted, 4, 4);
       expectWindow(t, again, BY_QTY.slice(0, 8), 12, "the same draft once more");
-      const first = await more(t, start, 4, 4);
-      expectWindow(t, first, [1, 2, 3, 4, 5, 6, 7, 8], 12, "more rows of the first draft (no sort)");
+      const edited = await t.event(filtered, "CHECK", { model: { T_ROWS: { __delta: { 0: { DONE: true } } } } });
+      t.equal(edited.json.MODEL.SUMMARY, "5", "SUMMARY after the edit");
+      const before = await t.event(filtered, "CHECK");
+      t.equal(before.json.MODEL.SUMMARY, "", "SUMMARY of the draft before the edit");
+      expectWindow(t, before, [5, 10, 2, 7], 4, "the filtered draft once more");
+      t.deepEqual(before.json.MODEL.T_ROWS.map((row) => row.DONE), Array(4).fill(false), "DONE in the draft before the edit");
     },
   },
   {

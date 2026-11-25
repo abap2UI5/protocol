@@ -2,6 +2,274 @@
 
 ## Unreleased
 
+- **`SET_TITLE_LAUNCHPAD` follows the owns-the-page rule** (2026-11-25):
+  like `SET_TITLE`, an embedded component that does not own the page sets
+  no shell title with it (abap2UI5 DEV `bd85ca52`, [LIB] `setShellTitle`);
+  the implementation note in
+  [spec/actions.md](spec/actions.md#the-title) is replaced by the rule.
+- **Specification revision 0.9 - the timer the backend keeps, and the
+  title in the launchpad** (2026-11-24), derived from abap2UI5 branch
+  `DEV` at `a9c08191`. No wire change: protocol 3 stays, no action,
+  element, request field or response section is new
+  ([spec/versioning.md](spec/versioning.md#compatible-changes-within-protocol-3)).
+  - **A timer the backend keeps** - new section
+    [spec/actions.md](spec/actions.md#a-timer-the-backend-keeps). abap2UI5
+    lets an app declare its repeating timer (`client->timer_set( )` /
+    `timer_stop( )`) and writes the actions itself ([H]
+    `main_end_timer`, [ACT] `prepare_app_stack`, [CONT] `ms_timer`). A
+    backend MAY send a repeating `START_TIMER` again whenever the app gets
+    the screen again (a request without a draft id - page load,
+    Back/Forward restore, app-state link -, a hop to the app, a changed
+    declaration) and MAY put `STOP_TIMER` first in `ACTIONS` of a hop
+    response - another instance of the same class names the same `APP`,
+    and the frontend would keep the poll of the app left running.
+  - **The same timer again** - restated in
+    [spec/actions.md](spec/actions.md#the-timer): a repeating
+    `START_TIMER` identical to the running one changes nothing a backend
+    or a user can tell ([VO] `evStartTimer`, `resumeRepeatTimer`).
+  - **Retry** - where a frontend offers to re-send a failed request, the
+    re-sent request SHOULD take the repeating timer the error ended up
+    again ([SRV] `readHttp` `onRetry`, `responseError`); the backend does
+    not send a running timer again for the same draft id.
+  - **`SET_TITLE` in the launchpad** - new section
+    [spec/actions.md](spec/actions.md#the-title) and
+    [profiles/ui5.md](profiles/ui5.md#the-title-in-the-launchpad): under
+    the UI5 profile inside a launchpad `SET_TITLE` also sets the shell
+    title like `SET_TITLE_LAUNCHPAD`; a title that arrives before the
+    shell service is ready is applied once it resolves; only a component
+    that owns the page sets it ([BRW] `evSetTitle`, `ownsPage`, [LIB]
+    `setShellTitle`, [COMP] `_initLaunchpad`). Not covered by the frontend
+    suite, which runs no launchpad.
+  - Sources: new [BRW] (`actions/Browser.js`) and [COMP] (`Component.js`);
+    [CONT] names `ms_timer` / `ms_timer_sent`, [LIB] `setShellTitle`.
+  - Checks: new frontend check `ui5.timer-repeat-retry` (SHOULD, UI5
+    profile): a 503 on a tick, the error's Retry re-sends the same body,
+    and the timer ticks again after its response. The adapter contract
+    has an optional `retry()` (the `ui5` adapter presses the error
+    overlay's Retry). No backend check: both backend rules are MAY, and
+    the conformance apps cannot call `timer_set( )` - it is on DEV only,
+    and the apps are linted against the released runtime too. Check lists
+    regenerated.
+  - Traffic recorded again (`traffic/node-runtime/suite.json`,
+    `ui5-frontend.json`) on a runtime packed from DEV `a9c08191`
+    (`@abaplint/transpiler-cli` 2.14.35 `--no-save`): only ids, ports and
+    timestamps moved - the conformance apps declare no timer. The UI5 SPA
+    of that commit passes every check, `ui5.timer-repeat-retry` included;
+    the `bundle/webapp` of the commit before (`53140e3e`) warns on it.
+    `conformance/RESULTS.md` has the run.
+
+- **Specification revision 0.8 - the repeating timer** (2026-11-24),
+  derived from abap2UI5 branch `DEV` at `4a418249`. Protocol 3 stays: an
+  optional element of an existing action and a new action, no change to
+  a request or to the shape of a response
+  ([spec/versioning.md](spec/versioning.md#compatible-changes-within-protocol-3)).
+  - **`START_TIMER` repeats.** An optional fifth element (`args[4]`, an
+    ABAP boolean: `"X"`, `"true"` or `true`) repeats the timer; the
+    no-busy element before it may then be `""` -
+    `["START_TIMER", "TICK", "5000", "", "X"]`. A frontend arms the same
+    event, delay and no-busy flag again after every applied response,
+    never while a roundtrip is in flight (the rule of revision 0.7's
+    kept click, [spec/transport.md](spec/transport.md#client-behaviour)),
+    goes on through user events and under a popup or popover of the same
+    app (through MAIN once the arming view is gone), and ends it on
+    `STOP_TIMER`, on a new `START_TIMER` (which replaces it, one-shot
+    without the flag), on a response that names another `APP` and on an
+    error response; the UI5 frontend also on a Back/Forward restore, a
+    reset and its end. One timer per frontend instance. New section
+    [spec/actions.md](spec/actions.md#the-timer) ([VO] `evStartTimer`,
+    `resumeRepeatTimer`, [V1] `_processAfterRendering`, [SRV] `reset`,
+    `restoreFromRoute`, `responseError`, [CTX] `destroy`).
+  - **New action `STOP_TIMER`** - `["STOP_TIMER"]`, no argument: cancels
+    the pending tick and ends a repeating timer, nothing when there is
+    none ([VO] `evStopTimer`). A follow-up action, and as a wire
+    `.eF('STOP_TIMER')` (`spec/actions.md`, *Wired frontend actions*).
+  - **Requests unchanged**: a tick of a repeating timer is the tick of
+    revision 0.7 (`S_FRONT.TIMER: true`), noted in
+    [spec/request.md](spec/request.md#the-timer-tick).
+  - **Profile.** The repeat flag and `STOP_TIMER` are UI5 profile;
+    portable v1 (`portable-v1.json`) is unchanged and a portable renderer
+    runs a repeating timer once - new open question 16
+    ([spec/open-questions.md](spec/open-questions.md#16-the-repeating-timer-in-portable-renderers)).
+    `profiles/ui5.md` and `profiles/portable.md` (section 6) say so.
+  - Sources: new [CTX] (`Context.js`); [VO] names `evStopTimer` and
+    `resumeRepeatTimer`.
+  - Checks: backend `action.timer-repeat` (new) and `ui5.frontend-wire`
+    (also the wired `STOP_TIMER`); frontend, UI5 profile:
+    `ui5.timer-repeat`, `ui5.timer-repeat-user-event`, `ui5.timer-stop`,
+    `ui5.timer-replace`, `ui5.timer-repeat-app-change` (MUST),
+    `ui5.timer-repeat-popup`, `ui5.timer-repeat-error` (SHOULD). The
+    conformance app ACTIONS has the events `TIMER_REPEAT` and `TIMER_STOP`
+    and a wired "Stop here" (ABAP and the cap2UI5 twin). Check lists
+    regenerated; the two renderers skip the new checks (profile).
+  - Traffic recorded again (`traffic/node-runtime/suite.json`,
+    `ui5-frontend.json`) on a runtime packed from DEV `4a418249`
+    (`@abaplint/transpiler-cli` 2.14.35 installed `--no-save` next to
+    it). The UI5 SPA of that commit passes every check;
+    `conformance/RESULTS.md` has the run, and a finding in abap2UI5: its
+    linter release (`@abap2ui5/linter` 0.11.0) does not know `STOP_TIMER`
+    yet.
+
+- **Specification revision 0.7 - the timer tick and the pruned draft
+  chain** (2026-11-24), derived from abap2UI5 branch `DEV` at `04ead8ec`
+  (`880ff0a5`, `cdd2fb25`, `04ead8ec`; maintainer approved). Protocol 3
+  stays: a new optional request key and a guarantee of the backend, no
+  change to what a response looks like
+  ([spec/versioning.md](spec/versioning.md#compatible-changes-within-protocol-3)).
+  - **Request: `S_FRONT.TIMER`.** The event request of a `START_TIMER`
+    tick carries `TIMER: true`, and no other request does ([VO]
+    `evStartTimer`, [V1] `eB`, [SRV] `roundtrip`). New section
+    [spec/request.md](spec/request.md#the-timer-tick);
+    `schema/request.schema.json` admits the key (optional boolean) - the
+    UI5 SPA of DEV failed `portable.timer` on the schema before.
+    `profiles/ui5.md` lists `timer` among the options of the frontend's
+    dispatch (no wire carries it).
+  - **Draft ids: the unchanged tick.** A response to a tick whose app
+    state is unchanged MAY name the id it continued (no draft written);
+    every other 2xx response still names a new id
+    ([spec/sessions.md](spec/sessions.md#draft-ids), [H]
+    `main_end_reuse`, [CONT] `db_check_unchanged`). Open question 2 is
+    resolved with that exception - polling apps wrote a draft of their
+    whole state per tick.
+  - **Retention.** A backend MUST hold the newest draft of a chain and the
+    one before it (the retry of a lost response) and the protected ones -
+    the app stack, the draft of an app-state link, the draft a route or
+    app-state restore started from, every draft of an app whose app-state
+    hash is active - and MAY delete the others before they expire; until
+    revision 0.6 it had to hold every draft until its expiry. New section
+    [spec/sessions.md](spec/sessions.md#retention) (the reference's
+    `draft_keep_per_chain`, 2 by default, minimum 2: [CONT] `db_save`,
+    [DR] `prune_chain`); a note in `spec/navigation.md` (*Routes*) on why
+    the routes of the UI5 frontend's history survive.
+  - **Client behaviour: a click that meets a tick** is kept and sent after
+    the tick's response, with the id that response named (SHOULD,
+    [spec/transport.md](spec/transport.md#client-behaviour); [V1] `eB`,
+    `_dispatchQueuedEvent`).
+  - Sources: new [CONT] (`z2ui5_cl_ui5_app_cont`) and [VO] (`ViewOps.js`).
+  - Checks: backend `session.timer-tick` and `session.retention-protected`
+    (new; `session.id-reuse` renamed
+    in its title to what it continues - the draft before the newest);
+    four window checks (`window.app-event`, `window.request-sort-filter`,
+    `window.total-from-app`, `window.order-with-the-draft`) continue only
+    drafts a backend must hold - against a runtime of DEV `04ead8ec` they
+    failed on the pruned first draft. Frontend `request.timer-mark` and
+    `transport.tick-keeps-event` (new). The backend suite's client sends
+    `TIMER` with `event(..., { timer: true })`. Check lists regenerated.
+  - Traffic recorded again (`traffic/node-runtime/suite.json`,
+    `ui5-frontend.json`) on a runtime packed from DEV `04ead8ec`, which
+    names `@abaplint/transpiler-cli` 2.14.35 (`npm install --no-save`
+    next to it; `package.json` still pins 2.14.33 for the released
+    1.150.0). `conformance/RESULTS.md` has the run and the findings.
+
+- **BREAKING - protocol 3, specification revision 0.6** (2026-11-22),
+  derived from abap2UI5 branch `DEV` at `1445078` (after 1.150.0; no
+  release carries it yet). The maintainer broke the wire on purpose;
+  [spec/versioning.md](spec/versioning.md#what-protocol-3-broke) has the
+  table of what a protocol-2 implementation has to change.
+  - **Response: three sections replace the two action lists.**
+    `S_FRONT.S_ACTION.T_SYSTEM` and `T_CUSTOM` are gone. `S_FRONT.VIEWS`
+    says what becomes of the slots - one entry per slot, a display
+    `{ "XML", "OPT"? }` or a teardown `{ "DESTROY": true }`;
+    `S_FRONT.NAV` is the options object the `ROUTER` action carried;
+    `S_FRONT.ACTIONS` is the app's follow-up actions, entries and order
+    unchanged. A section that says nothing is absent ([H]
+    `response_abap_to_json`, [FE] `slots_serialize`, `nav_serialize`).
+    The backend orders nothing; the frontend applies `VIEWS` in slot
+    order ([V1] `_applyViews`). `spec/response.md` rewritten (*Sections*,
+    *View slots*, *Processing order*), `spec/core.md`, `spec/actions.md`
+    and `profiles/semantic.md` (how a response is folded) follow.
+  - **One owner per teardown rule.** The backend says the teardown of
+    POPUP and POPOVER for every app hop and every app start ([ACT]
+    `prepare_app_stack`, `factory_first_start`); the frontend no longer
+    takes them down because `S_FRONT.APP` changed. That a new MAIN view
+    takes the standalone slots down is the frontend's rule alone ([SL]
+    `displayMain`); the backend no longer drops a teardown next to a MAIN
+    display.
+  - **Request: `S_FRONT.ROUTE`.** A request without `ID` carries what the
+    page's hash asks it to restore, parsed by the frontend ([RT]
+    `startRoute`): `{ "APP", "DRAFT"? }` for a route, `{ "APP_STATE" }`
+    for an app-state link. The backend resolves an app start from `ROUTE`
+    and `SEARCH` and reads no hash structure any more ([H]
+    `request_json_to_abap`); `HASH` still travels, for the app. New
+    section [spec/request.md](spec/request.md#route); `spec/navigation.md`
+    (*Which app a request starts*, *Routes*, *Launchpad hashes*, *The
+    app-state hash*) follows - the launchpad split of a hash is the
+    frontend's rule now.
+  - **Navigation: "The NAV section"** replaces "The ROUTER action" in
+    `spec/navigation.md`. `setPushState` / `setHashReplace` are written
+    only for an app that owns the hash - a listener registered with
+    `setHashEvent`, routing off - and then as the whole app hash; the
+    suffix writes of the UI5 frontend are gone ([RT] `sync`).
+  - **UI5 profile: the flags of an event wire are one options object**
+    behind the event name - `.eB(['LIVE',{queueLast:true,noBusy:true}],
+    ...)` - where they were positions [3] to [5] of the event array
+    ([EV] `get_event`, [LIB] `eventOptions`). `profiles/ui5.md` (*Event
+    wires*, *The options of a wire*; the window request is
+    `eB(['___ZZZ_WIN', { noBusy }], ...)`).
+  - **Recorded, no wire change:** the UI5 frontend keeps an event a
+    control fires while its view is being built and sends it after the
+    response, the first roundtrip is busy like every other, window
+    requests are kept per table (`spec/response.md` *Processing order*,
+    `spec/transport.md`, `profiles/ui5.md`).
+  - **Open question 15 is decided: (b), protocol 3.** The app-driven
+    window, which had changed the meaning of `___ZZZ_WIN` under protocol
+    2, is part of protocol 3 from its first day.
+  - **The offline queue is withdrawn** from the specification
+    (`OFFLINE_QUEUE`, experimental in 1.149.0 and 1.150.0, removed from
+    abap2UI5 with main `694fb262`): `spec/actions.md` records it as
+    history, the source [OFF] is gone.
+  - Schemas: `response.schema.json` (`VIEWS`, `NAV`, `ACTIONS`,
+    `PROTOCOL` 3), `request.schema.json` (`ROUTE`).
+  - Backend checks: `slots.order` became `slots.several`, new
+    `slots.start-teardown`, `slots.hop-teardown`, `route.hash-not-read`
+    (for the removed `route.launchpad-shell-hash`) and
+    `ui5.event-wire-options`; the checks that read a response read the
+    sections, the route checks send `ROUTE`. Frontend checks:
+    `slots.app-change` is turned round (a response of another `APP` that
+    names no teardown leaves POPUP and POPOVER), new `slots.order`,
+    `router.start-route`, `router.start-app-state`,
+    `router.no-route-on-events` and `router.hash-write-owner`; the
+    scripted responses are of protocol 3 (`answer({ views, nav, actions })`
+    in `conformance/frontend/lib/responses.mjs`). The backend suite's
+    readers are `views( )`, `nav( )`, `actions( )`, `displayOf( )` and
+    `destroys( )`; `systemActions( )`, `customActions( )` and
+    `routerOptions( )` are gone from the package's exports. The check lists in
+    `conformance/backend/README.md` and `conformance/frontend/README.md`
+    are regenerated.
+  - Conformance apps: ECHO has one more wire, `LIVE` with the flags
+    queue-last and no-busy (`conformance/apps/README.md`, in the words of
+    the new sections).
+  - Portable profile: `actions.wire` of `profiles/portable-v1.json` names
+    the sections - `views`, `navOptions`, `foldedIntoNav`, `actions`,
+    `actionGlobals` (were `system`, `routerOptions`, `foldedIntoRouter`,
+    `custom`, `customGlobals`); `schema/portable-profile.schema.json` and
+    the generated table of `profiles/portable.md` follow.
+  - Renderers: Adaptive Cards and terminal read the sections through
+    `renderers/common/response.mjs` (the vendored snapshot module folds
+    protocol 2); the terminal sends `ROUTE` (`startRoute` is exported)
+    and writes an app's own hash only for an app that owns it.
+  - Traffic: `traffic/node-runtime/` recorded again on a runtime packed
+    from abap2UI5 `DEV`; `traffic/cap2ui5/` is removed until cap2UI5
+    speaks protocol 3; `traffic/node-runtime/agent-client.json` is kept
+    for its snapshots (`conformance/RESULTS.md`).
+  - Found on the way and fixed in abap2UI5 `1445078`: every response
+    carried `"O_NAV":null,"O_VIEWS":null` in `S_FRONT`.
+  - Tests: an implementation that still speaks protocol 2 is *behind* -
+    measured by one check, pinned (`test/lib/expected.mjs`): the released
+    `@abap2ui5/node-runtime`, cap2UI5, the vendored agent client, a UI5
+    checkout before protocol 3. `npm test` is green on the released
+    packages and on a runtime packed from `DEV`.
+  - **Who follows in this revision:** abap2UI5 `DEV` (backend, UI5
+    frontend), this repository's suites, schemas, and its two renderers,
+    Adaptive Cards and terminal. **Who does not, yet:** no
+    `@abap2ui5/node-runtime` release speaks protocol 3 - the suites run
+    against a runtime packed from abap2UI5 `DEV`; cap2UI5
+    (`@cap2ui5/cds-plugin` 0.7.0 hosts a protocol-2 runtime); the agent
+    client of abap2UI5/mcp-server (the copy vendored here, `332a0b0`,
+    speaks protocol 2 and refuses a protocol-3 response); the Web
+    Components frontend and the headless ABAP simulator were not run.
+    What is pinned for them is in `conformance/RESULTS.md` and
+    `test/lib/expected.mjs`.
+
 - **Windowed tables: the app-driven window of abap2UI5 main `694fb262`**
   (#3032, after 1.150.0; derived first from the DEV branch, `186f2c9b`),
   which replaced the window of 1.149.0 and 1.150.0. The app loads, sorts,

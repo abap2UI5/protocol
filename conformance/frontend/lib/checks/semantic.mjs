@@ -84,7 +84,7 @@ export default [
     spec: `${S}#actions`,
     async run(t) {
       await startApp(t, nextButton);
-      t.mock.reply(answer({ custom: [["START_TIMER", "TICK", "500"]] }));
+      t.mock.reply(answer({ actions: [["START_TIMER", "TICK", "500"]] }));
       await t.press(NEXT);
       const snap = (await t.state()).snapshot;
       t.ok(snap.actions.some((a) => a.event === "TICK" && a.trigger === "timer"), `no timer action: ${JSON.stringify(snap.actions)}`);

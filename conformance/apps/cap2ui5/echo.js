@@ -27,6 +27,7 @@ defineApp("Z2UI5_CL_CONF_ECHO", class {
       `<Button text="Nothing" press="${client._event("NOOP")}"/>` +
       `<Button text="Push" press="${client._event("PUSH")}"/>` +
       `<Button text="Render" press="${client._event("RERENDER")}"/>` +
+      `<Button text="Live" press="${client._event({ val: "LIVE", s_ctrl: { check_queue_last: true, check_no_busy: true } })}"/>` +
       `</Page></mvc:View>`);
   }
 

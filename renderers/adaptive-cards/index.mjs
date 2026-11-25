@@ -7,7 +7,8 @@
  *   import { renderResponses, submitToRequest, createCardHost } from "@abap2ui5/protocol/renderers/adaptive-cards";
  *   const { card, unsupported, state } = renderResponses([response]);
  */
-import { applyResponse, emptyState } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { emptyState } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { applyResponse } from "../common/response.mjs";
 import { renderCard } from "./render.mjs";
 
 export { renderCard, cardText, liveSlots, modelKeyOf, walk, htmlToText, CARD_SCHEMA, CARD_VERSION, LEAVE_EVENT } from "./render.mjs";

@@ -205,7 +205,7 @@
       }
     },
     "actions": {
-      "description": "Revision 0.3: the client API's action names (api) apart from what a renderer receives (wire). frontendActions.allowed equals api, kept for consumers of revision 0.2.",
+      "description": "The client API's action names (api) apart from what a renderer receives (wire): the entries of S_FRONT.VIEWS, the options of S_FRONT.NAV and the names in S_FRONT.ACTIONS / .eF (protocol 3). frontendActions.allowed equals api, kept for consumers of revision 0.2.",
       "type": "object",
       "required": [
         "api",
@@ -225,30 +225,31 @@
         "wire": {
           "type": "object",
           "required": [
-            "system",
-            "routerOptions",
-            "foldedIntoRouter",
-            "custom",
-            "customGlobals"
+            "views",
+            "navOptions",
+            "foldedIntoNav",
+            "actions",
+            "actionGlobals"
           ],
           "properties": {
-            "system": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+            "views": {
+              "description": "What an entry of S_FRONT.VIEWS asks of a slot.",
+              "type": "array",
+              "items": {
+                "enum": [
+                  "display",
+                  "destroy"
+                ]
               }
             },
-            "routerOptions": {
+            "navOptions": {
               "type": "array",
               "items": {
                 "type": "string",
                 "pattern": "^[a-z][A-Za-z0-9]*$"
               }
             },
-            "foldedIntoRouter": {
+            "foldedIntoNav": {
               "type": "object",
               "propertyNames": {
                 "pattern": "^[A-Z][A-Z0-9_]*$"
@@ -257,14 +258,14 @@
                 "type": "string"
               }
             },
-            "custom": {
+            "actions": {
               "type": "array",
               "items": {
                 "type": "string",
                 "pattern": "^[A-Z][A-Z0-9_]*$"
               }
             },
-            "customGlobals": {
+            "actionGlobals": {
               "type": "object",
               "additionalProperties": {
                 "type": "array",

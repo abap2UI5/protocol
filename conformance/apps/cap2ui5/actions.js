@@ -15,6 +15,9 @@ defineApp("Z2UI5_CL_CONF_ACTIONS", class {
         `<Button text="Focus" press="${client._event("FOCUS")}"/>` +
         `<Button text="Several" press="${client._event("SEVERAL")}"/>` +
         `<Button text="Timer" press="${client._event("TIMER")}"/>` +
+        `<Button text="Repeat" press="${client._event("TIMER_REPEAT")}"/>` +
+        `<Button text="Stop" press="${client._event("TIMER_STOP")}"/>` +
+        `<Button text="Stop here" press="${client.follow_up_action({ val: "STOP_TIMER" })}"/>` +
         `<Button text="Title here" press="${client.follow_up_action({ val: client.cs_event.set_title, t_arg: ["wired title"] })}"/>` +
         `</Page></mvc:View>`);
       return;
@@ -31,6 +34,15 @@ defineApp("Z2UI5_CL_CONF_ACTIONS", class {
         break;
       case "TIMER":
         client.follow_up_action({ val: client.cs_event.start_timer, t_arg: ["TICK", "500"] });
+        break;
+      case "TIMER_REPEAT":
+        // the fourth argument repeats the timer; the third (no busy) stays
+        // empty and keeps its place
+        client.follow_up_action({ val: client.cs_event.start_timer, t_arg: ["TICK", "500", "", "X"] });
+        break;
+      case "TIMER_STOP":
+        // the literal: cs_event.stop_timer is on abap2UI5 DEV from 4a418249 only
+        client.follow_up_action({ val: "STOP_TIMER" });
         break;
       case "TICK":
         this.ticks += 1;

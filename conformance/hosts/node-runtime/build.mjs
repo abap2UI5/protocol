@@ -56,6 +56,40 @@ export function appDrivenWindow() {
   return fs.existsSync(intf) && /\bcs_window_reason\b/i.test(fs.readFileSync(intf, "utf8"));
 }
 
+/** The file `name` below `dir`, wherever the package keeps it, or null. */
+function findBelow(dir, name) {
+  if (!fs.existsSync(dir)) return null;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      const hit = findBelow(p, name);
+      if (hit) return hit;
+    } else if (e.name === name) {
+      return p;
+    }
+  }
+  return null;
+}
+
+/** The protocol number a @abap2ui5/node-runtime package speaks: c_protocol
+ *  of its z2ui5_if_ui5_types (spec/versioning.md), 0 when it declares none.
+ *  `from` is a package.json the package is resolved from - this repository's
+ *  by default, the plugin's of the cap2UI5 host for the runtime it hosts -
+ *  and `within` a directory the package has to be found below (0 otherwise:
+ *  a host that is not installed must not answer with this repository's). */
+export function runtimeProtocol(from = path.join(ROOT, "package.json"), within = ROOT) {
+  let dir;
+  try {
+    dir = path.dirname(createRequire(from).resolve(`${PKG}/package.json`));
+  } catch {
+    return 0;
+  }
+  if (path.relative(within, dir).startsWith("..")) return 0;
+  const intf = findBelow(path.join(dir, "downport"), "z2ui5_if_ui5_types.intf.abap");
+  const m = intf && /\bc_protocol\s+TYPE\s+i\s+VALUE\s+(\d+)/i.exec(fs.readFileSync(intf, "utf8"));
+  return m ? Number(m[1]) : 0;
+}
+
 function runtimeMeta() {
   return JSON.parse(fs.readFileSync(require.resolve(`${PKG}/package.json`), "utf8"));
 }

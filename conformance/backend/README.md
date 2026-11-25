@@ -81,11 +81,11 @@ fails when it is out of date).
 | `transport.csrf-origin` | SHOULD | core | A POST whose Origin names another host is refused with 403 | [transport.md#csrf-and-origin](../../spec/transport.md#csrf-and-origin) |
 | `transport.head-terminate` | SHOULD | core | HEAD with sap-terminate: session is answered 2xx without a body | [transport.md#head-session-terminate-and-token-fetch](../../spec/transport.md#head-session-terminate-and-token-fetch) |
 | `transport.method-not-allowed` | SHOULD | core | A method other than GET, POST and HEAD is refused | [transport.md#other-methods](../../spec/transport.md#other-methods) |
-| `response.protocol` | MUST | core | Every response declares PROTOCOL 2 | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |
+| `response.protocol` | MUST | core | Every response declares PROTOCOL 3 | [versioning.md#the-protocol-number](../../spec/versioning.md#the-protocol-number) |
 | `response.id-and-app` | MUST | core | S_FRONT carries a draft id and the answering app's class name in upper case | [response.md#s_front](../../spec/response.md#s_front) |
 | `response.app-start-normalized` | MUST | core | The class in ?app_start= is matched case-insensitively | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
 | `response.start-displays-main` | MUST | core | The first start displays the MAIN view and sends the model | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `response.model-absent-when-unchanged` | SHOULD | core | A roundtrip that changes nothing bound carries no MODEL and no action | [response.md#model](../../spec/response.md#model) |
+| `response.model-absent-when-unchanged` | SHOULD | core | A roundtrip that changes nothing bound carries no MODEL and none of the sections VIEWS, NAV and ACTIONS | [response.md#model](../../spec/response.md#model) |
 | `response.model-push` | MUST | core | A roundtrip that changes bound data pushes the whole model without a view | [response.md#model](../../spec/response.md#model) |
 | `response.rerender` | MUST | core | Displaying MAIN again on an event sends the view and the model | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `response.model-types` | MUST | core | MODEL carries numbers as JSON numbers, booleans as JSON booleans, structures as objects, tables as arrays | [response.md#model](../../spec/response.md#model) |
@@ -120,33 +120,38 @@ fails when it is out of date).
 | `message.box-options` | MUST | core | A message box with buttons and a close event carries them as its option object | [actions.md#messages](../../spec/actions.md#messages) |
 | `message.box-close-event` | MUST | core | The close event of a box arrives with the pressed action as its first argument | [actions.md#messages](../../spec/actions.md#messages) |
 | `slots.popup-display` | MUST | core | A popup is displayed into POPUP, the MAIN view stays | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `slots.popup-replace` | MUST | core | Displaying one slot twice in a roundtrip sends one display, the last | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `slots.popup-destroy` | MUST | core | Closing the popup is ["VIEW_SLOTS", "destroy", "POPUP"] | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `slots.order` | MUST | core | View lifecycle actions leave in slot order (MAIN before POPUP), whatever order the app called | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `slots.popup-replace` | MUST | core | Displaying one slot twice in a roundtrip sends the last display | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `slots.popup-destroy` | MUST | core | Closing the popup is VIEWS.POPUP = { DESTROY: true }, and nothing else | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `slots.several` | MUST | core | Views displayed in one roundtrip travel each under its slot, whatever order the app called | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `slots.popover` | MUST | core | A popover is displayed into POPOVER with its anchor (openById) and destroyed again | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `slots.nest` | MUST | core | A nested view is displayed into NEST with anchor and mutators, and destroyed again | [response.md#view-slots](../../spec/response.md#view-slots) |
 | `slots.nest2` | MUST | core | The second nested slot NEST2 works like NEST | [response.md#view-slots](../../spec/response.md#view-slots) |
-| `action.follow-up` | MUST | core | A follow-up action is a JSON array ["<ACTION>", <args>...] in T_CUSTOM | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
+| `slots.start-teardown` | MUST | core | An app start says what becomes of POPUP and POPOVER: each is torn down unless the app displays it | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `slots.hop-teardown` | MUST | core | A response of another app than the request continued tears POPUP and POPOVER down unless that app displays them - a call and a return alike | [response.md#view-slots](../../spec/response.md#view-slots) |
+| `action.follow-up` | MUST | core | A follow-up action is a JSON array ["<ACTION>", <args>...] in S_FRONT.ACTIONS | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.order` | MUST | core | Follow-up actions keep the order the app queued them in, messages included | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.timer` | MUST | core | A timer is ["START_TIMER", <event>, <ms>] and its event is an ordinary roundtrip | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
+| `action.timer-repeat` | MUST | core | A repeating timer is ["START_TIMER", <event>, <ms>, "", "X"] - the empty no-busy flag keeps its place - and the stop is ["STOP_TIMER"] | [actions.md#the-timer](../../spec/actions.md#the-timer) |
 | `nav.call` | MUST | core | nav_app_call hands the screen to the called app: its APP, its MAIN view, its model | [navigation.md#the-app-stack](../../spec/navigation.md#the-app-stack) |
 | `nav.leave-with-result` | MUST | core | nav_app_leave returns to the caller, which re-displays and reads the result | [navigation.md#the-app-stack](../../spec/navigation.md#the-app-stack) |
 | `nav.leave-reserved-event` | MUST | core | The reserved event ___ZZZ_NAL leaves the app without running it | [navigation.md#the-reserved-leave-event](../../spec/navigation.md#the-reserved-leave-event) |
 | `nav.leave-is-back` | SHOULD | core | The MAIN display of a return to a stacked app is marked navBack | [navigation.md#the-app-stack](../../spec/navigation.md#the-app-stack) |
-| `route.mode` | MUST | core | An app that switches hash routing on sends ["ROUTER", "sync", {setNavRouting}] last in T_SYSTEM | [navigation.md#the-router-action](../../spec/navigation.md#the-router-action) |
-| `route.mode-not-repeated` | SHOULD | core | A plain event of a routed app does not repeat the routing mode | [navigation.md#the-router-action](../../spec/navigation.md#the-router-action) |
-| `route.call-push` | MUST | core | A nav_app_call under routing asks for a history push and names the caller's fresh draft | [navigation.md#the-router-action](../../spec/navigation.md#the-router-action) |
-| `route.start-by-class` | MUST | core | A request without ID whose HASH is #/app/<CLASS> starts that class | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
-| `route.precedence` | MUST | core | A route in HASH wins over ?app_start= in SEARCH | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
-| `route.restore-draft` | MUST | core | #/app/<CLASS>/<DRAFT> restores that draft and displays it | [navigation.md#routes](../../spec/navigation.md#routes) |
+| `route.mode` | MUST | core | An app that switches hash routing on sends NAV { setNavRouting } | [navigation.md#the-nav-section](../../spec/navigation.md#the-nav-section) |
+| `route.mode-not-repeated` | SHOULD | core | A plain event of a routed app does not repeat the routing mode | [navigation.md#the-nav-section](../../spec/navigation.md#the-nav-section) |
+| `route.call-push` | MUST | core | A nav_app_call under routing asks for a history push and names the caller's fresh draft | [navigation.md#the-nav-section](../../spec/navigation.md#the-nav-section) |
+| `route.start-by-class` | MUST | core | A request without ID whose ROUTE names a class starts that class | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
+| `route.precedence` | MUST | core | ROUTE wins over ?app_start= in SEARCH | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
+| `route.restore-draft` | MUST | core | ROUTE { APP, DRAFT } restores that draft and displays it | [navigation.md#routes](../../spec/navigation.md#routes) |
 | `route.expired-draft` | MUST | core | A route to a draft that does not exist starts the class fresh, with a toast | [navigation.md#routes](../../spec/navigation.md#routes) |
-| `route.launchpad-shell-hash` | MUST | core | Inside a launchpad hash (#<shell>&/app/<CLASS>) only the app part is a route | [navigation.md#launchpad-hashes](../../spec/navigation.md#launchpad-hashes) |
-| `route.app-state` | MUST | core | #/z2ui5-xapp-state=<DRAFT> restores the draft and keeps the app-state hash on | [navigation.md#the-app-state-hash](../../spec/navigation.md#the-app-state-hash) |
-| `route.app-state-names-no-app` | SHOULD | core | #/z2ui5-xapp-state=<DRAFT> restores the draft when the request names no app; a draft that is gone ends on the start app, with a toast | [navigation.md#the-app-state-hash](../../spec/navigation.md#the-app-state-hash) |
+| `route.hash-not-read` | MUST | core | HASH is not what an app start is resolved from: a route in HASH without ROUTE starts what SEARCH names | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
+| `route.app-state` | MUST | core | ROUTE { APP_STATE } restores the draft and keeps the app-state hash on | [navigation.md#the-app-state-hash](../../spec/navigation.md#the-app-state-hash) |
+| `route.app-state-names-no-app` | SHOULD | core | ROUTE { APP_STATE } restores the draft when the request names no app; a draft that is gone ends on the start app, with a toast | [navigation.md#the-app-state-hash](../../spec/navigation.md#the-app-state-hash) |
 | `nav.system-startup` | SHOULD | core | An app start that names no app is answered with a start app | [navigation.md#which-app-a-request-starts](../../spec/navigation.md#which-app-a-request-starts) |
 | `session.new-id` | MUST | core | Every response names a draft id other than the one the request continued | [sessions.md#draft-ids](../../spec/sessions.md#draft-ids) |
+| `session.timer-tick` | MUST | core | A timer tick (S_FRONT.TIMER) that changed the app state answers a new id; one that changed nothing may answer the id it continued, and the state carries over either way | [sessions.md#draft-ids](../../spec/sessions.md#draft-ids) |
 | `session.continuation` | MUST | core | State carries over from roundtrip to roundtrip through the draft id | [sessions.md#draft-ids](../../spec/sessions.md#draft-ids) |
-| `session.id-reuse` | MUST | core | An earlier draft id continues from the state it named (the retry of a lost response) | [sessions.md#drafts-are-snapshots](../../spec/sessions.md#drafts-are-snapshots) |
+| `session.id-reuse` | MUST | core | The draft before the newest continues from the state it named (the retry of a lost response) | [sessions.md#drafts-are-snapshots](../../spec/sessions.md#drafts-are-snapshots) |
+| `session.retention-protected` | MUST | core | A protected draft outlives the chain behind it: the draft a route restored, and the caller on the app stack, after three more roundtrips | [sessions.md#retention](../../spec/sessions.md#retention) |
 | `session.unknown-draft` | MUST | core | An event on a draft id the backend never issued is refused with an error status | [sessions.md#unknown-and-expired-drafts](../../spec/sessions.md#unknown-and-expired-drafts) |
 | `session.failed-roundtrip-not-persisted` | MUST | core | A roundtrip that fails leaves the draft it started from usable, its changes discarded | [sessions.md#failed-roundtrips](../../spec/sessions.md#failed-roundtrips) |
 | `error.app-exception` | MUST | core | An exception in the app is answered with a 5xx and a non-empty error body | [errors.md#the-error-response](../../spec/errors.md#the-error-response) |
@@ -159,6 +164,7 @@ fails when it is out of date).
 | `ui5.view-roots` | MUST | ui5 | MAIN and nested views are sap.ui.core.mvc.View XML, popups and popovers core:FragmentDefinition | [ui5.md#views](../../profiles/ui5.md#views) |
 | `ui5.binding-paths` | MUST | ui5 | Bound attributes appear in views as absolute model paths, table cells as relative ones | [ui5.md#bindings](../../profiles/ui5.md#bindings) |
 | `ui5.event-wire` | MUST | ui5 | A backend event is wired as .eB(['<EVENT>'], <args>...) | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
+| `ui5.event-wire-options` | MUST | ui5 | The flags of a wire are one options object behind the event name: .eB(['<EVENT>',{queueLast:true,noBusy:true}]) | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
 | `ui5.leave-wire` | MUST | ui5 | The leave wire is .eB(['___ZZZ_NAL']) | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
 | `ui5.frontend-wire` | MUST | ui5 | A frontend action wired into a view is .eF('<ACTION>', <args>...) | [ui5.md#event-wires](../../profiles/ui5.md#event-wires) |
 

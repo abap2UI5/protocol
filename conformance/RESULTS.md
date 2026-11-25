@@ -1,95 +1,262 @@
 # Results
 
-Backend suite, profile `ui5` (88 checks: 81 core, 7 UI5-profile; 71 MUST,
-17 SHOULD), run 2026-11-21 with `npm run conformance:<backend>`. The traffic
-of these runs is recorded in [`../traffic/`](../traffic/) - against what,
-[below](#what-the-traffic-is-recorded-against). Revision 0.5 moved the
-node-runtime host to abap2UI5 1.149.0 and added the checks of the windowed
-tables (`window.*`) and `model.unconvertible-scalar-skipped` (SHOULD), and
-moved the cap2UI5 host to `@cap2ui5/cds-plugin` 0.6.0, which hosts the
-same runtime. Open question 14 added the conformance app REF and the
-checks of a table behind a data reference; the cap2UI5 host moved to
-`@cap2ui5/cds-plugin` 0.7.0, whose `t.ref( )` declares a field
-`TYPE REF TO data` ([below](#tables-behind-a-data-reference)). On
-2026-11-20 the node-runtime host moved to abap2UI5 1.150.0, which changes
-nothing the suite checks ([below](#the-move-from-11490-to-11500)). Since
-2026-11-21 the windowed tables are the app-driven ones abap2UI5 merged to
-main with `694fb262` (#3032), after 1.150.0
-([below](#the-move-to-the-app-driven-window)): nine `window.*` checks
-replace fourteen. Neither released host has that window - the
-node-runtime host on `@abap2ui5/node-runtime` 1.150.0 and the cap2UI5
-host on plugin 0.7.0 cannot start the app WINDOW and fail its eight MUST
-checks, pinned with the place of the fix (the next abap2UI5 release) in
-[`../test/lib/expected.mjs`](../test/lib/expected.mjs); on a runtime built
-from `694fb262` the node-runtime host passes every check. The other pinned
-result is cap2UI5's SHOULD warning `error.details`.
+**Protocol 3** (spec revision 0.9, 2026-11-24). Backend suite, profile
+`ui5` (94 checks: 86 core, 8 UI5-profile; 77 MUST, 17 SHOULD), run
+2026-11-24 with `npm run conformance:node-runtime` against a runtime packed
+from abap2UI5's branch DEV `a9c08191`. The traffic of this run is recorded in
+[`../traffic/`](../traffic/) - against what,
+[below](#what-the-traffic-is-recorded-against). What the move changed in
+the suites, what it found and who has not followed yet:
+[the move to protocol 3](#the-move-to-protocol-3); what revision 0.7
+changed: [the timer tick and the pruned chain](#the-timer-tick-and-the-pruned-chain);
+revision 0.8: [the repeating timer](#the-repeating-timer); revision 0.9:
+[the timer the backend keeps](#the-timer-the-backend-keeps). The sections further
+down are the record of the revisions before it, as they were written -
+they speak of protocol 2, of `T_SYSTEM` and `T_CUSTOM`, and of results
+that the tables here replace.
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| `node-runtime` | `@abap2ui5/node-runtime` built from abap2UI5 main `694fb262` (it names itself 1.150.0; `npm install --no-save`) - **the recorded traffic** | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.33) | 88 | 0 | 0 | 0 | conformant (ui5) |
-| `node-runtime` | `@abap2ui5/node-runtime` 1.150.0 (released, `package.json`, CI) | the same, the app WINDOW left out (its `window_bind_tab( )` does not compile there) | 79 | 8 | 1 | 0 | the windowed tables pinned (`window.*`, the app's start); everything else passes |
-| `cap2ui5` | `@cap2ui5/cds-plugin` 0.7.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | 78 | 8 | 2 | 0 | the windowed tables pinned (the app's start); SHOULD warnings `window.request-bounds` and `error.details` (below) |
+| `node-runtime` | `@abap2ui5/node-runtime` packed from abap2UI5 DEV `a9c08191` (it names itself 1.150.0; `npm install --no-save`) - **the recorded traffic** | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.35, the version the package names, installed with it `--no-save`) | 94 | 0 | 0 | 0 | conformant (ui5) |
+| `node-runtime` | `@abap2ui5/node-runtime` 1.150.0 (released, `package.json`, CI) | the same, the app WINDOW left out | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.7.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned; no traffic recorded |
 
-Per area (both backends identical except `window` and `error`):
+Per area, node-runtime on the DEV runtime:
 
-| Area | Checks | node-runtime | cap2ui5 |
-|---|---:|---|---|
-| transport | 8 | 8 pass | 8 pass |
-| response | 8 | 8 pass | 8 pass |
-| event | 5 | 5 pass | 5 pass |
-| model | 12 | 12 pass | 12 pass |
-| window | 9 | 9 pass (released 1.150.0: 8 fail, 1 warn) | 8 fail, 1 warn (the app's start, `500`) |
-| message | 4 | 4 pass | 4 pass |
-| slots | 7 | 7 pass | 7 pass |
-| action | 3 | 3 pass | 3 pass |
-| nav / route | 15 | 15 pass | 15 pass |
-| session | 5 | 5 pass | 5 pass |
-| error | 5 | 5 pass | 4 pass, 1 warn (`error.details`) |
-| ui5 | 7 | 7 pass | 7 pass |
+| Area | Checks | node-runtime |
+|---|---:|---|
+| transport | 8 | 8 pass |
+| response | 8 | 8 pass |
+| event | 5 | 5 pass |
+| model | 12 | 12 pass |
+| window | 9 | 9 pass |
+| message | 4 | 4 pass |
+| slots | 9 | 9 pass |
+| action | 4 | 4 pass |
+| nav / route | 15 | 15 pass |
+| session | 7 | 7 pass |
+| error | 5 | 5 pass |
+| ui5 | 8 | 8 pass |
 
 The ABAP system itself (abap2UI5 on NetWeaver / ABAP Cloud) has not been run
 yet - it needs a system with the apps pulled in by abapGit; the transpiled
 runtime is the same framework source.
 
-The two hosts are framework releases apart: cap2UI5 0.7.0 (like 0.6.0)
-pins `@abap2ui5/node-runtime` 1.149.0, the node-runtime host runs 1.150.0
-- and for the recording a runtime built from abap2UI5 main `694fb262`.
-The recorded traffic of the two is identical for every check but
-`error.details` and the windowed tables, which the comparison leaves out
-while they are pinned ([below](#differences-between-the-two-backends)).
-
 ## What the traffic is recorded against
 
-`traffic/` is recorded with the node-runtime host on a runtime **built
-from abap2UI5 main `694fb262`** - `npm install --no-save` of the tgz of
-that commit's `node/` package and `OPEN_ABAP_CORE_DIR` at the
-open-abap-core of the same build, as abap2UI5's own CI runs this suite -
-the UI5 frontend's request code from the same commit's `app/webapp`, and
-the cap2UI5 host on its pinned plugin 0.7.0. The released packages have
-no app-driven window, and a recording of them would carry no answer of
-the app WINDOW for the frontend checks to replay. `package.json` keeps the
-released `@abap2ui5/node-runtime` 1.150.0 (no unpublished version is
-pinned), and `npm test` is green on both installations:
+`traffic/node-runtime/` is recorded with the node-runtime host on a runtime
+**packed from abap2UI5 DEV `a9c08191`** (`4a418249` in revision 0.8,
+`04ead8ec` in revision 0.7, `1445078` up to revision 0.6) -
+`npm run pack:node-runtime` in that checkout, `npm install --no-save` of the tgz here and
+`OPEN_ABAP_CORE_DIR` at the open-abap-core of the same checkout, as
+abap2UI5's own CI runs this suite - and the UI5 frontend's request code
+from the same commit's `bundle/webapp` (`ui5-frontend.json`). No release
+speaks protocol 3 yet. `package.json` keeps the released
+`@abap2ui5/node-runtime` 1.150.0 (no unpublished version is pinned), and
+`npm test` is green on both installations:
 
 - `test/traffic.test.mjs` reads the results of the recording
   (`RECORDED_FAILURES` in [`../test/lib/expected.mjs`](../test/lib/expected.mjs):
-  node-runtime none, cap2UI5 the windowed tables), whatever is installed;
+  none), whatever is installed;
 - the live backend run (`test/backends.test.mjs`, `run-conformance.mjs
-  --expected`) pins the window checks for node-runtime only when the
-  installed runtime has no app-driven window (`cs_window_reason` in its
-  client interface) - the released 1.150.0, CI;
-- the node-runtime host leaves the app WINDOW out of its build on such a
-  runtime, and `npm run lint:abap` leaves it out of abaplint, saying so -
-  the rest of the apps are built and linted as before;
-- the UI5 frontend: CI checks out the release commit of 1.150.0
-  (`af05dce`), whose list binding sends the window request of 1.150.0 -
-  `test/frontend.test.mjs` pins the window checks it fails when the
-  checkout's `core/WindowModel.js` has no app-driven window, and none when
-  it has ([below](#frontend-suite)).
+  --expected`) runs the whole suite against a runtime on protocol 3 and,
+  against one that is behind - the released 1.150.0, CI - the one check
+  `response.protocol`, pinned as its failure (`behind( )` in
+  `expected.mjs`, read off `c_protocol` of the installed package);
+- the UI5 frontend the same way: the whole suite against a checkout on
+  protocol 3 (`PROTOCOL` in its `core/Server.js`), `slots.main` alone,
+  pinned as failed, against the release commit CI checks out;
+- the app WINDOW is left out of the build and of abaplint on a runtime
+  without the app-driven window, as before.
 
-Once a release carries the app-driven window, `package.json` and CI move
-to it, the conditions above find it, and every window pin falls away but
-cap2UI5's, until a plugin hosts that release.
+Two recordings are not of this revision:
+
+- **`traffic/cap2ui5/` is gone.** `@cap2ui5/cds-plugin` 0.7.0 hosts a
+  protocol-2 runtime; its traffic would validate against no schema here,
+  and the comparison of the two backends (`test/traffic.test.mjs`) is
+  skipped with that reason (`CAP_TRAFFIC_MISSING`) until `npm run record`
+  runs against a plugin on protocol 3.
+- **`traffic/node-runtime/agent-client.json` is kept as it was**, recorded
+  on 2026-11-21 with mcp-server against a protocol-2 runtime. Its
+  snapshots are the samples of `schema/snapshot.schema.json`, which
+  protocol 3 did not change; its exchanges are protocol 2 and are not
+  validated against the schemas of this revision (`TRAFFIC_PROTOCOL_2`).
+
+Once a release carries protocol 3, `package.json` and CI move to it and
+the conditions above find it.
+
+## The timer tick and the pruned chain
+
+Revision 0.7 (2026-11-24) follows two changes on abap2UI5's branch DEV
+(maintainer approved): the UI5 frontend marks the request of a
+`START_TIMER` tick with `S_FRONT.TIMER: true` and keeps a click that meets
+a tick in flight (`880ff0a5`), and the backend answers an unchanged tick
+with the id it continued and prunes every draft chain to its last two
+drafts by default (`cdd2fb25`, `04ead8ec`). What they found here:
+
+- **The UI5 SPA of DEV failed `portable.timer`** before this revision:
+  its tick carried `TIMER`, which `schema/request.schema.json` refused
+  (`additionalProperties: false`, and `spec/request.md` allowed no other
+  key). *The spec was behind*: `TIMER` is a key of `S_FRONT` now
+  ([../spec/request.md](../spec/request.md#the-timer-tick)).
+- **Four window checks failed against a runtime of DEV `04ead8ec`** -
+  `window.app-event`, `window.request-sort-filter`,
+  `window.total-from-app`, `window.order-with-the-draft` - with
+  `NO_DRAFT_ENTRY_OF_PREVIOUS_REQUEST_FOUND`: they continued the app's
+  first draft after two later drafts of its chain were saved, and the
+  pruning had deleted it. That was a MUST of revision 0.6 ("any draft id
+  ... until the draft expires"), which the maintainer gave up for the
+  draft volume: a backend now has to hold the newest draft of a chain and
+  the one before it, and the protected ones
+  ([../spec/sessions.md](../spec/sessions.md#retention)). *The checks
+  relied on more than the spec now guarantees*: they continue only
+  drafts a backend must hold, in another order, and test the same.
+- New checks: backend `session.timer-tick` (a tick that changed the app
+  state answers a new id, an unchanged one may answer its own, state
+  carries over) and `session.retention-protected` (the draft a route
+  restored and the caller on the app stack survive three more roundtrips
+  - on DEV `04ead8ec` they are protected from the pruning); frontend `request.timer-mark` (`TIMER` only on a tick,
+  only `true`) and `transport.tick-keeps-event` (SHOULD: a click during a
+  tick goes out after the tick's response, with the id it named). The
+  node-runtime host never reuses an id - its own serializer makes the
+  reference's compare fail ([../spec/sessions.md](../spec/sessions.md#draft-ids)) -
+  so its traffic shows the new-id branch only. The UI5 SPA of DEV, the
+  Adaptive Cards and the terminal renderer pass both frontend checks.
+
+## The timer the backend keeps
+
+Revision 0.9 (2026-11-24) follows abap2UI5 DEV `a9c08191`, with no wire
+change. An app there declares its repeating timer (`client->timer_set( )`)
+and the backend sends the repeating `START_TIMER` whenever the app gets
+the screen again and `STOP_TIMER` first in the response of a hop away
+([../spec/actions.md](../spec/actions.md#a-timer-the-backend-keeps)); the
+error overlay's Retry takes the repeating timer up again; and `SET_TITLE`
+also titles the launchpad shell
+([../spec/actions.md](../spec/actions.md#the-title)).
+
+- New frontend check `ui5.timer-repeat-retry` (SHOULD, UI5 profile): a
+  tick of the repeating timer meets a 503, the error overlay's Retry
+  re-sends the same body, and the timer ticks again after the retried
+  response. The UI5 SPA of DEV `a9c08191` passes it; the `bundle/webapp`
+  of the commit before (`53140e3e`) warns ("no tick after the retried
+  request's response") - the check tells the two apart. The adapter
+  contract gained an optional `retry()`; the Adaptive Cards and the
+  terminal renderer claim the portable profile and skip the check.
+- **Not covered.** The backend rules are MAY and have no check: the
+  conformance apps would have to call `timer_set( )`, which is on DEV
+  only, while they are linted against the released runtime as well (and
+  their cap2UI5 twin runs on 1.149.0). abap2UI5 covers them with its own
+  ABAP unit tests (`ltcl_07_timer`) and the e2e test `timer-set.spec.js`.
+  The shell title is not covered either: the frontend suite runs no
+  launchpad; abap2UI5 covers it in `node/tests/launchpad.spec.js` and
+  `browserActions.spec.js`.
+- The backend suite on a runtime packed from DEV `a9c08191`: 94 pass, as
+  before; traffic recorded again on it - only ids, ports and timestamps
+  moved, since no conformance app declares a timer.
+- **Observed in abap2UI5, resolved:** `SET_TITLE_LAUNCHPAD` is gated by
+  `ownsPage` like `SET_TITLE` from DEV `bd85ca52` ([LIB]
+  `setShellTitle`); the implementation note in the spec is gone.
+
+## The repeating timer
+
+Revision 0.8 (2026-11-24) follows abap2UI5 DEV `4a418249`: an optional
+fifth element of `START_TIMER` repeats the timer - the UI5 frontend arms
+the same tick again after every applied response, never while a
+roundtrip is in flight - and the new action `STOP_TIMER` ends it
+([../spec/actions.md](../spec/actions.md#the-timer)). Requests did not
+change: a tick of a repeating timer is the tick of revision 0.7.
+
+- The conformance app ACTIONS has the events `TIMER_REPEAT` (`["START_TIMER",
+  "TICK", "500", "", "X"]`) and `TIMER_STOP` (`["STOP_TIMER"]`) and a
+  button wired `.eF('STOP_TIMER')`, in ABAP and in the cap2UI5 twin. Both
+  write the literal `STOP_TIMER`: `cs_event-stop_timer` is on DEV from
+  `4a418249` only, and the apps are linted against the released runtime.
+- New backend check `action.timer-repeat` (the empty no-busy element
+  keeps its place, the stop has no argument); `ui5.frontend-wire` also
+  reads the wired `STOP_TIMER`. The node-runtime packed from DEV
+  `4a418249` passes both; traffic recorded again on it.
+- New frontend checks, UI5 profile
+  ([open question 16](../spec/open-questions.md#16-the-repeating-timer-in-portable-renderers)):
+  `ui5.timer-repeat` (re-armed after every tick's response, with the id
+  it named, until a response's `STOP_TIMER`), `ui5.timer-repeat-user-event`
+  (no tick while a user event is in flight, the repeat goes on after its
+  response), `ui5.timer-stop` (the `.eF` wire, and a stop with no timer),
+  `ui5.timer-replace` (a one-shot `START_TIMER` replaces the repeat),
+  `ui5.timer-repeat-app-change` (a response of another app ends it) - MUST;
+  `ui5.timer-repeat-popup` (armed from a popup, it goes on after the popup
+  closed) and `ui5.timer-repeat-error` (an error ends it) - SHOULD. The
+  UI5 SPA of DEV `4a418249` passes all seven. Against the `bundle/webapp`
+  of the commit before (`960e5d85`) `ui5.timer-repeat`,
+  `ui5.timer-repeat-user-event` and `ui5.timer-stop` fail and
+  `ui5.timer-repeat-popup` warns - the checks tell a frontend without the
+  repeat from one with it; the three that check an end pass there, as
+  they must for a timer that never repeats.
+- The Adaptive Cards and the terminal renderer claim the portable
+  profile and skip the seven checks; they run a repeating timer once and
+  skip `STOP_TIMER` as an unknown action, as a portable v1 renderer may.
+- **A finding in abap2UI5, not in the protocol:** the abap2UI5 linter of
+  abap2UI5's own `package.json` (`@abap2ui5/linter` 0.11.0) reports the
+  wired `STOP_TIMER` of the app ACTIONS as `unknown-frontend-action` -
+  its dispatch table predates `4a418249`, while the DEV manifest
+  (`.github/shared/linter-manifest.json`) lists the action. Clean with
+  the next linter release that syncs the manifest.
+
+## The move to protocol 3
+
+abap2UI5 broke the wire on its branch DEV on 2026-11-22 (maintainer
+decision; `z2ui5_if_ui5_types=>c_protocol` and `PROTOCOL` in
+`core/Server.js` are 3) - what broke is listed in
+[../spec/versioning.md](../spec/versioning.md#what-protocol-3-broke). This
+repository followed on its own branch DEV: the specification (revision
+0.6), the schemas, both suites, the conformance apps, the two renderers
+and the recorded traffic. abap2UI5's CI runs both suites of this branch
+against every change there (`conformance_backend`, `conformance_frontend`
+in its `test.yaml`).
+
+**The suites.** The backend suite reads `S_FRONT.VIEWS`, `NAV` and
+`ACTIONS` (`views( )`, `nav( )`, `actions( )`, `displayOf( )`, `destroys( )`
+in `conformance/backend/lib/client.mjs`) and sends `ROUTE` where it sent a
+hash for the backend to parse. Checks that changed:
+
+| Check | |
+|---|---|
+| `slots.several` (was `slots.order`) | the backend sorts nothing - MAIN and POPUP of one roundtrip each under its slot; the order is the frontend's (`slots.order` of the frontend suite) |
+| `slots.start-teardown`, `slots.hop-teardown` (new) | the teardown of POPUP and POPOVER on an app start and on an app hop is the backend's to send |
+| `route.hash-not-read` (new; `route.launchpad-shell-hash` is gone) | a backend resolves no app start from `HASH`; reading a launchpad hash is the frontend's parse (`router.start-route`) |
+| `route.start-by-class`, `route.precedence`, `route.restore-draft`, `route.expired-draft`, `route.app-state`, `route.app-state-names-no-app` | driven with `ROUTE` |
+| `ui5.event-wire-options` (new) | the flags of a wire as one options object - the app ECHO has a wire with them for it |
+| frontend `slots.app-change` | turned round: a response of another app takes down what its `VIEWS` names and nothing because the name changed |
+| frontend `slots.order`, `router.start-route`, `router.start-app-state`, `router.no-route-on-events`, `router.hash-write-owner` (new) | the slot order whatever the key order; `ROUTE` on an app start, parsed, never with an event; a hash of the app's own only for an app that owns the hash |
+
+**A finding in abap2UI5, fixed.** The first recording against DEV
+(`e94eaa4`) showed two keys in every `S_FRONT` that no specification
+names: `"O_NAV":null,"O_VIEWS":null` - the two references that hold the
+sections inside the backend, written out by the generic conversion of
+the structure. Nothing failed on it (a frontend ignores unknown keys, the
+schema allows them). Fixed in abap2UI5 `1445078`
+(`z2ui5_cl_ui5_handler=>response_abap_to_json` writes `ID`, `APP` and
+`PROTOCOL` by name); the traffic here is recorded after the fix.
+
+**Who is behind.** Protocol 3 is in no release, and three implementations
+of other repositories speak protocol 2. An implementation that is behind
+is not measured by this revision - every exchange would fail on the shape
+of the response - and is pinned by the one check that says so
+(`test/lib/expected.mjs`):
+
+| Implementation | Speaks | Pinned by | Follows with |
+|---|---|---|---|
+| `@abap2ui5/node-runtime` 1.150.0 (released) | 2 | `response.protocol` | the next abap2UI5 release |
+| cap2UI5, `@cap2ui5/cds-plugin` 0.7.0 | 2 | `response.protocol`; its traffic is not recorded | a plugin that hosts that release. The twin of the app ECHO's new wire (`conformance/apps/cap2ui5/echo.js`) runs on plugin 0.7.0 and writes the flags by position there - `.eB(['LIVE',false,false,false,true,true])`, protocol 2 |
+| the agent client of abap2UI5/mcp-server, vendored at `332a0b0` | 2 | `slots.main` (it refuses the response) | `lib/appclient.mjs` and `lib/snapshot.mjs` there: read `VIEWS`, `NAV`, `ACTIONS`, no teardown on an app change, the options object of a wire; then `npm run vendor:agent` and `npm run record` |
+| the UI5 SPA of abap2UI5 1.150.0 (`af05dce`, CI's frontend job) | 2 | `slots.main` | CI checking out a commit on protocol 3 |
+| the Web Components frontend (abap2UI5/frontend-webcomponent) | 2 | not run since 2026-10-03 | that repository |
+
+**The renderers of this repository** (Adaptive Cards, terminal) follow in
+this revision. They fold a response with a module of their own,
+[`renderers/common/response.mjs`](../renderers/common/response.mjs): the
+vendored snapshot module's `applyResponse` reads protocol 2 and is
+byte-equal to mcp-server. The terminal renderer sends `ROUTE` and writes
+an app's own hash only for an app that owns it.
 
 ## The move to the app-driven window
 
@@ -494,33 +661,32 @@ records - as a rule, or as an implementation note:
   (SHOULD, `route.app-state-names-no-app`), the behaviour of the reference
   from 1.147.0 on.
 - **`DEFAULT` routing mode on every hop to an app without a mode** -
-  normative ([../spec/navigation.md](../spec/navigation.md#the-router-action)).
+  normative ([../spec/navigation.md](../spec/navigation.md#the-nav-section)).
 - **Event argument conversion** (`true` -> `X`, `null`/`false` -> empty,
   objects -> compact JSON text) - normative, the same on both backends.
 
 ## Frontend suite
 
-Frontend suite, 87 checks (72 MUST, 15 SHOULD; 69 core, 8 portable, 7 UI5,
-3 semantic), run 2026-11-21 against the traffic recorded from a runtime
-built from abap2UI5 main `694fb262` (the app-driven window) - the UI5 SPA
-of that commit and of the release 1.150.0 CI pins, the agent client, the
-Adaptive Cards and the terminal renderer; the Web Components row is the
-run of 2026-10-03 (81 checks) and was not repeated - with
+Frontend suite, 102 checks (83 MUST, 19 SHOULD; 76 core, 8 portable, 15 UI5,
+3 semantic), run 2026-11-24 for protocol 3 (revision 0.9) against the
+traffic recorded from a runtime packed from abap2UI5 DEV `a9c08191` - the
+UI5 SPA of that commit, the Adaptive Cards and the terminal renderer - with
 `abap2ui5-conformance frontend --adapter <name>` (each frontend at its
 widest profile). The scripted backend answers from
 [`../traffic/node-runtime/`](../traffic/node-runtime/) plus synthetic edge
 cases. A skip is no verdict: outside the profile, a capability the
 frontend does not have (a URL, a DOM, timers), or an interaction it cannot
-perform.
+perform. The paragraphs below the table are the record of the revisions
+before protocol 3.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 main `694fb262` `app/webapp` (#3032, the app-driven window), OpenUI5 1.153.0 (npm), Chromium 153 | ui5 | 83 | 0 | 0 | 4 | conformant (ui5) |
-| UI5 SPA (`ui5`) | abap2UI5 1.150.0 `app/webapp` (release commit `af05dce`, which CI pins) | ui5 | 80 | 3 | 0 | 4 | the three `ui5.window-*` checks: the window request of 1.150.0 - pinned for such a checkout, fixed in `694fb262` |
-| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `332a0b0` (vendored - `adapters/vendor/mcp-server/source.json`) | semantic | 63 | 1 | 0 | 23 | not conformant (semantic): `semantic.recorded-snapshots` - the window request of 1.149.0 and 1.150.0 ([windowed tables](#windowed-tables)), pinned |
-| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 69 | 0 | 0 | 18 | every check it can be driven through holds |
-| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 75 | 0 | 0 | 12 | every check it can be driven through holds, the router checks included |
-| Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | conformant (portable) in 3 of 4 runs; `model.number-and-boolean` intermittent (below) |
+| UI5 SPA (`ui5`) | abap2UI5 DEV `a9c08191` `bundle/webapp` (protocol 3), OpenUI5 1.153.0 (npm), Chromium 156 | ui5 | 98 | 0 | 0 | 4 | conformant (ui5) |
+| UI5 SPA (`ui5`) | abap2UI5 1.150.0 `app/webapp` (release commit `af05dce`, which CI pins) | ui5 | - | - | - | - | **behind: protocol 2** - `slots.main` fails, pinned ([above](#the-move-to-protocol-3)) |
+| agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `332a0b0` (vendored - `adapters/vendor/mcp-server/source.json`) | semantic | - | - | - | - | **behind: protocol 2** - it refuses every response of this revision; `slots.main` fails, pinned. Its last result on protocol 2: 63 pass, 1 fail, 23 skip |
+| Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 72 | 0 | 0 | 30 | every check it can be driven through holds |
+| terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 82 | 0 | 0 | 20 | every check it can be driven through holds, the router checks included |
+| Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | protocol 2, not run for this revision; then conformant (portable) in 3 of 4 runs, `model.number-and-boolean` intermittent (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
 The UI5 SPA run is stable (two consecutive runs, identical results) and

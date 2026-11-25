@@ -49,23 +49,29 @@ export function recordedUi5(label) {
 /** A fresh opaque draft id (32 upper-case hex, as the reference mints them). */
 export const draftId = () => crypto.randomBytes(16).toString("hex").toUpperCase();
 
-/** A synthetic 200 response. */
-export function answer({ app = "Z2UI5_CL_CONF_FE", id = draftId(), protocol = 2, system, custom, model, sFront = {}, extra = {} } = {}) {
+/**
+ * A synthetic 200 response.
+ *   views    { <SLOT>: display(xml, options) | destroy() } - S_FRONT.VIEWS
+ *   nav      the navigation options - S_FRONT.NAV
+ *   actions  [[<ACTION>, ...args], ...] - S_FRONT.ACTIONS
+ * A section that says nothing is left off, as a backend leaves it off.
+ */
+export function answer({ app = "Z2UI5_CL_CONF_FE", id = draftId(), protocol = 3, views, nav, actions, model, sFront = {}, extra = {} } = {}) {
   const front = { ID: id, APP: app };
   if (protocol !== undefined) front.PROTOCOL = protocol;
-  const action = {};
-  if (system && system.length) action.T_SYSTEM = system;
-  if (custom && custom.length) action.T_CUSTOM = custom;
-  if (Object.keys(action).length) front.S_ACTION = action;
+  if (views && Object.keys(views).length) front.VIEWS = views;
+  if (nav && Object.keys(nav).length) front.NAV = nav;
+  if (actions && actions.length) front.ACTIONS = actions;
   Object.assign(front, sFront);
   const body = { S_FRONT: front, ...extra };
   if (model !== undefined) body.MODEL = model;
   return { status: 200, body };
 }
 
-export const display = (slot, xml, options) => (options ? ["VIEW_SLOTS", "display", slot, xml, options] : ["VIEW_SLOTS", "display", slot, xml]);
-export const destroy = (slot) => ["VIEW_SLOTS", "destroy", slot];
-export const router = (options) => ["ROUTER", "sync", options];
+/** The entry of a slot that displays `xml`. */
+export const display = (xml, options) => (options ? { XML: xml, OPT: options } : { XML: xml });
+/** The entry of a slot that is torn down. */
+export const destroy = () => ({ DESTROY: true });
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 export const attr = esc;

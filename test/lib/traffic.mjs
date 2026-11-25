@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { TRAFFIC_PROTOCOL_2 } from "./expected.mjs";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 export const TRAFFIC = path.join(ROOT, "traffic");
@@ -13,14 +14,15 @@ export function load(backend, file) {
   return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : null;
 }
 
-/** Every recorded exchange of a backend: { source, label, malformed?, request, response }. */
+/** Every recorded exchange of a backend: { source, label, malformed?, request, response } -
+ *  but the ones of a file that is still protocol 2 (expected.mjs, TRAFFIC_PROTOCOL_2). */
 export function exchanges(backend) {
   const out = [];
   const suite = load(backend, "suite.json");
   for (const c of (suite && suite.checks) || []) {
     for (const x of c.exchanges) out.push({ source: `suite ${c.id}`, ...x });
   }
-  for (const f of ["ui5-frontend.json", "agent-client.json"]) {
+  for (const f of ["ui5-frontend.json", "agent-client.json"].filter((x) => !TRAFFIC_PROTOCOL_2.includes(x))) {
     const d = load(backend, f);
     for (const x of (d && d.exchanges) || []) out.push({ source: f, ...x });
   }

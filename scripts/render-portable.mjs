@@ -47,11 +47,11 @@ export function render(profile) {
   const code = (xs) => xs.map((x) => `\`${x}\``).join(", ");
   const actions = ["| Client API (`actions.api`) | What the renderer receives (`actions.wire`) |", "|---|---|"];
   for (const a of api) {
-    const opt = wire.foldedIntoRouter[a];
-    actions.push(`| \`${a}\` | ${opt ? `the \`ROUTER\` option \`${opt}\` - never \`${a}\` itself` : (wire.custom.includes(a) ? `\`${a}\` (\`T_CUSTOM\`, \`.eF\`)` : "-")} |`);
+    const opt = wire.foldedIntoNav[a];
+    actions.push(`| \`${a}\` | ${opt ? `the \`NAV\` option \`${opt}\` - never \`${a}\` itself` : (wire.actions.includes(a) ? `\`${a}\` (\`ACTIONS\`, \`.eF\`)` : "-")} |`);
   }
-  for (const [g, methods] of Object.entries(wire.customGlobals)) actions.push(`| (\`${g}\`) | \`${g}\` ${methods.join(" / ")} (\`T_CUSTOM\` or \`.eF\`, directly or as a \`CONTROL_GLOBAL\` target) |`);
-  actions.push("", `System actions (\`T_SYSTEM\`): ${Object.entries(wire.system).map(([k, m]) => `\`${k}\` ${m.join(" / ")}`).join(", ")}; the \`ROUTER\` options: ${code(wire.routerOptions)}. MAY be a no-op where the platform has no counterpart: ${code(wire.noOpAllowed || [])}.`);
+  for (const [g, methods] of Object.entries(wire.actionGlobals)) actions.push(`| (\`${g}\`) | \`${g}\` ${methods.join(" / ")} (\`ACTIONS\` or \`.eF\`, directly or as a \`CONTROL_GLOBAL\` target) |`);
+  actions.push("", `The sections of \`S_FRONT\`: \`VIEWS\` entries that ${wire.views.join(" / ")} a slot; the \`NAV\` options: ${code(wire.navOptions)}. MAY be a no-op where the platform has no counterpart: ${code(wire.noOpAllowed || [])}.`);
   const v11 = ["| Family | Controls | Core apps blocked in v1 | Web Component | Fit / note |", "|---|---|---:|---|---|"];
   for (const r of profile.v11Candidates) v11.push(`| ${r.family} | ${r.controls} | ${r.coreAppsBlocked} | ${r.webComponent} | ${r.note} |`);
   return { controls: controls.join("\n").trim(), actions: actions.join("\n"), v11: v11.join("\n"), mapping: mapping.join("\n").trim() };

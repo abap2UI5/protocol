@@ -55,6 +55,15 @@ CLASS z2ui5_cl_conf_actions IMPLEMENTATION.
                     )->a( n = `text`  v = `Timer`
                     )->a( n = `press` v = client->_event( `TIMER` )
                 )->tag( `Button`
+                    )->a( n = `text`  v = `Repeat`
+                    )->a( n = `press` v = client->_event( `TIMER_REPEAT` )
+                )->tag( `Button`
+                    )->a( n = `text`  v = `Stop`
+                    )->a( n = `press` v = client->_event( `TIMER_STOP` )
+                )->tag( `Button`
+                    )->a( n = `text`  v = `Stop here`
+                    )->a( n = `press` v = client->follow_up_action( `STOP_TIMER` )
+                )->tag( `Button`
                     )->a( n = `text`  v = `Title here`
                     )->a( n = `press` v = client->follow_up_action( val   = z2ui5_if_client=>cs_event-set_title
                                                                    t_arg = VALUE #( ( `wired title` ) ) ) ).
@@ -79,6 +88,16 @@ CLASS z2ui5_cl_conf_actions IMPLEMENTATION.
       WHEN `TIMER`.
         client->follow_up_action( val   = z2ui5_if_client=>cs_event-start_timer
                                   t_arg = VALUE #( ( `TICK` ) ( `500` ) ) ).
+      WHEN `TIMER_REPEAT`.
+        " the fourth argument repeats the timer; the third (no busy) stays
+        " empty and keeps its place
+        client->follow_up_action( val   = z2ui5_if_client=>cs_event-start_timer
+                                  t_arg = VALUE #( ( `TICK` ) ( `500` ) ( `` ) ( `X` ) ) ).
+      WHEN `TIMER_STOP`.
+        " the literal, not cs_event-stop_timer: the constant is on abap2UI5
+        " DEV from 4a418249, the released runtime the apps are linted
+        " against does not have it
+        client->follow_up_action( `STOP_TIMER` ).
       WHEN `TICK`.
         ticks = ticks + 1.
     ENDCASE.

@@ -33,9 +33,10 @@ Implementations mount it where they like: an ICF node on an ABAP system
 only other frontends MAY answer a GET with anything, and a non-UI5 frontend
 MUST NOT need it. The reference also answers `GET <endpoint>?z2ui5-bundle`
 with the frontend as one JavaScript file for embedding hosts
-([HTTP] `_http_get_bundle`), and `GET <endpoint>?z2ui5-bundle=devtools`
-with the frontend's developer tools ([HTTP] `_http_get_devtools`) - UI5
-profile as well.
+([HTTP] `_http_get_bundle`), `GET <endpoint>?z2ui5-bundle=devtools`
+with the frontend's developer tools ([HTTP] `_http_get_devtools`) and
+`GET <endpoint>?z2ui5-bundle=cc` with its custom controls ([HTTP]
+`_http_get_cc`) - UI5 profile as well.
 
 ## The roundtrip POST
 
@@ -225,7 +226,10 @@ These are rules for frontends; they keep a session consistent.
 - **One roundtrip at a time.** While a roundtrip is in flight a frontend
   MUST NOT start another one for a user event; it either drops the event or
   - for a wire flagged queue-last - keeps the last one and sends it after
-  the response ([V1] `eB`, `_dispatchQueuedEvent`). A restore triggered by
+  the response ([V1] `eB`, `_dispatchQueuedEvent`). The UI5 frontend also
+  keeps what no user fired: an event a control raises while the response
+  is still building its view, and the window requests of windowed tables
+  ([response.md](response.md#processing-order)). A restore triggered by
   browser history MAY supersede the request in flight; the older response
   is then dropped ([SRV] `readHttp` `isStale`). A user event is whatever
   the frontend's user asks for - a click, or a call of a program driving
@@ -236,6 +240,28 @@ These are rules for frontends; they keep a session consistent.
   instead; decided in revision 0.3,
   [open question 8](open-questions.md#8-one-roundtrip-at-a-time-for-frontends-driven-by-a-program)).
   *Frontend checks:* `transport.one-at-a-time`, `ui5.wire-queue-last`.
+- **A user event that meets a timer tick.** A `START_TIMER` tick
+  ([request.md](request.md#the-timer-tick)) is a roundtrip the user did
+  not start and, under its no-busy flag, cannot see. A frontend SHOULD
+  NOT drop a user event because a tick is in flight: it keeps it, sends
+  it once the tick's response is adopted, and sends it **with the id
+  that response named** - never with the id the tick continued, which
+  would drop what the tick did. The rule of one roundtrip at a time
+  holds: the kept event waits, it does not overlap the tick. The UI5
+  frontend keeps the first such event and lets a second one meet the
+  busy guard as ever; it does not tick again while the event waits, and
+  drops the event with its view, on an app switch, a reset, a route
+  restore and an error response ([V1] `eB` (`tickInFlight`,
+  `oTickQueuedEvent`), `_dispatchQueuedEvent`; [VO] `evStartTimer`; from
+  abap2UI5 `880ff0a5`, branch `DEV` - before it the click was dropped).
+  *Frontend check:* `transport.tick-keeps-event`.
+- **A repeating timer** ([actions.md](actions.md#the-timer), revision
+  0.8) follows the same rule: it is armed again only once a response is
+  applied and no roundtrip is in flight - never while a user event waits
+  or is in flight - so its ticks never overlap another roundtrip and a
+  kept event goes out before the next tick ([VO] `resumeRepeatTimer`, [V1]
+  `_processAfterRendering`). *Frontend check:*
+  `ui5.timer-repeat-user-event`.
 - **Timeout.** The UI5 frontend gives up after 600 s ([SRV]
   `REQUEST_TIMEOUT_MS`); a frontend SHOULD have a timeout.
 - **Retry.** After a network failure, a timeout or a 502/503/504 a frontend

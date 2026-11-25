@@ -11,11 +11,12 @@
  * Exit code: 0 when no MUST check failed. With --expected the reference
  * backend's pinned failures (test/lib/expected.mjs, per backend) are accepted: 0 when
  * exactly those checks failed - another failure, or a pinned check that
- * passes now (unpin it), is exit 1.
+ * passes now (unpin it), is exit 1. A backend that still speaks protocol 2
+ * is then measured by the one check that says so (expected.mjs, "behind").
  */
 import fs from "node:fs";
 import { runBackendSuite, formatResult, formatSummary } from "../conformance/backend/index.mjs";
-import { expectedFailureIds } from "../test/lib/expected.mjs";
+import { expectedFailureIds, backendFilter } from "../test/lib/expected.mjs";
 
 const [name, ...rest] = process.argv.slice(2);
 const opt = (k, d) => {
@@ -35,6 +36,7 @@ try {
   report = await runBackendSuite({
     url: backend.url,
     profile: opt("--profile", "ui5"),
+    only: rest.includes("--expected") ? backendFilter(name) : undefined,
     onResult: (r) => process.stdout.write(`${formatResult(r)}\n`),
   });
 } finally {

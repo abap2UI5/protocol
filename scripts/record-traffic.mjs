@@ -14,7 +14,10 @@
  *   node scripts/record-traffic.mjs node-runtime|cap2ui5
  *
  * The two optional sources are skipped (and say so) when the checkout is not
- * there. test/traffic.test.mjs validates every recorded message against the
+ * there. Nothing that still speaks another protocol than this revision's is
+ * recorded (test/lib/expected.mjs, "behind"): a backend is left alone, with
+ * a line saying so, and so is an agent client - its traffic would validate
+ * against no schema here. test/traffic.test.mjs validates every recorded message against the
  * schemas, and compares the two backends' suite traffic.
  */
 import fs from "node:fs";
@@ -23,6 +26,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { runBackendSuite } from "../conformance/backend/index.mjs";
 import { createUi5Frontend, locateWebapp } from "./lib/ui5-frontend.mjs";
+import { PROTOCOL, SPEAKS, behind } from "../test/lib/expected.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const KEEP_HEADERS = ["content-type", "cache-control", "x-content-type-options", "sap-contextid", "sap-contextid-accept", "sap-terminate", "origin", "if-none-match", "etag"];
@@ -182,7 +186,11 @@ async function recordAgentClient(backend, dir) {
     process.stderr.write(`[record] agent-client skipped - no mcp-server checkout at ${home} (MCP_SERVER_HOME)\n`);
     return;
   }
-  const { createAppClient } = await import(pathToFileURL(file).href);
+  const { createAppClient, PROTOCOL: speaks } = await import(pathToFileURL(file).href);
+  if (speaks !== PROTOCOL) {
+    process.stderr.write(`[record] agent-client skipped - the client at ${home} speaks protocol ${speaks}, this revision is protocol ${PROTOCOL}; ${path.relative(ROOT, path.join(dir, "agent-client.json"))} stays as it is\n`);
+    return;
+  }
   const exchanges = [];
   const snapshots = [];
   let label = "";
@@ -248,6 +256,10 @@ async function recordAgentClient(backend, dir) {
 
 async function main() {
   const name = process.argv[2];
+  if (Object.prototype.hasOwnProperty.call(SPEAKS, name) && behind(name)) {
+    process.stderr.write(`[record] ${name} is not recorded - it ${SPEAKS[name] ? `speaks protocol ${SPEAKS[name]}` : "is not installed"}, this revision is protocol ${PROTOCOL} (test/lib/expected.mjs)\n`);
+    return;
+  }
   const backend = await startBackend(name);
   const dir = path.join(ROOT, "traffic", name);
   try {

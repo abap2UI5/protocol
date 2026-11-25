@@ -9,8 +9,10 @@ alternatives, and what it touches.
 the decision and its rationale; the alternatives that were on the table
 stay below it for the record. A new provisional decision is added here as
 "Current decision" until it is decided the same way - question 11
-(revision 0.4) and questions 12, 13 and 15 (revision 0.5) are; question 14
-is resolved.
+(revision 0.4) and questions 12 and 13 (revision 0.5) are; question 14
+is resolved, and question 15 was decided with protocol 3 (revision 0.6).
+Question 2 was decided again in revision 0.7: the unchanged timer tick is
+an exception to the new id. Question 16 (revision 0.8) is open.
 
 The first five came out of the backend suite (revision 0.1,
 [../conformance/RESULTS.md](../conformance/RESULTS.md)); the others out of
@@ -19,7 +21,7 @@ the frontend suite (revision 0.2).
 | # | Question | Decided (0.3) |
 |---:|---|---|
 | 1 | NEST slots in portable renderers | (c) + (b): renderers tolerate them, portable apps must not use them |
-| 2 | a new draft id in every response | (c) as it was |
+| 2 | a new draft id in every response | (c) as it was; revision 0.7: resolved - an unchanged timer tick (`S_FRONT.TIMER`) MAY answer the id it continued, every other event keeps the rule - new check `session.timer-tick` |
 | 3 | the request URL in the error body | (a) a backend MUST NOT reflect unvalidated request data - new check `error.no-reflection` |
 | 4 | boolean event arguments for non-ABAP backends | (a) as it was |
 | 5 | the detail of an app's error | (c) as it was |
@@ -32,7 +34,8 @@ the frontend suite (revision 0.2).
 | 12 | windowed tables as a part of the core protocol | open - current decision: core, and every conforming backend offers them |
 | 13 | windowed tables in frontends that are not the UI5 frontend | open - current decision: they show the rows the app loaded and MAY ask for more; not in portable v1; snapshot v1 carries `total` and `window` (alternative (c), additive - the agent client implements it, still with the window request of 1.149.0) |
 | 14 | tables behind a data reference in the backend suite | resolved: (b) a backend MUST read the `__delta` at `/<attr>/*` - app REF (and the windowed `MR_WIN` of the app WINDOW), checks `model.reference-delta`, `window.delta-rows-reference` |
-| 15 | the app-driven window and the protocol number | open - current decision: protocol 2 stays, as in the implementation |
+| 15 | the app-driven window and the protocol number | decided (0.6): (b) protocol 3 - the number moved with the next breaking change of the wire, and the app-driven window is part of protocol 3 |
+| 16 | the repeating timer and `STOP_TIMER` in portable renderers | open - current decision: UI5 profile; portable v1 unchanged, a portable renderer runs a repeating timer once and skips `STOP_TIMER` |
 
 ## 1. The NEST slots in portable renderers
 
@@ -68,6 +71,35 @@ portable rule); `portable-v1.json` is unchanged (`slots.notInV1`,
 `clientApi.excluded` already said so).
 
 ## 2. A new draft id in every response
+
+**Resolved (revision 0.7): (c) with one exception - the unchanged timer
+tick.** A response to a request with `S_FRONT.TIMER: true`
+([request.md](request.md#the-timer-tick)) whose app state the roundtrip
+left unchanged MAY name the id the request continued, and the backend
+writes no draft; for every other request - a click, a keystroke, a window
+request, a tick that changed the app state - every 2xx response still
+names a new id ([sessions.md](sessions.md#draft-ids), backend checks
+`session.new-id`, `session.timer-tick`). abap2UI5 implements it on branch
+`DEV` (`cdd2fb25`, [H] `main_end_reuse`; the frontend marks the tick from
+`880ff0a5`); the maintainer approved it.
+
+*Rationale.* A polling app - `START_TIMER` every two seconds - wrote a
+draft of its whole state per tick and user: 1,800 rows an hour of a
+screen on which nothing happened, and a chain that grew without end.
+The tick is the one roundtrip the user did not ask for and the one that
+repeats; for it, what the rule of revision 0.3 protects - that a frontend
+sees whether *its user's* event changed anything - is not at stake, and
+what the rule relies on holds all the same: a draft is a snapshot, so the
+retry of a lost response, the browser history and an app-state link
+continue an id that still names the state it named. Alternative (b) for
+every event was rejected again: a click keeps its new id, so a frontend
+keeps telling an event that changed something from one that did not.
+Pruning the chain ([sessions.md](sessions.md#retention), revision 0.7) is
+the other half of the draft volume and independent of this exception.
+
+**Touches.** `spec/request.md` (`TIMER`, *The timer tick*),
+`spec/sessions.md` (*Draft ids*), `schema/request.schema.json`; backend
+check `session.timer-tick`, frontend check `request.timer-mark`.
 
 **Decided (revision 0.3): (c), as it was.** Every 2xx response MUST name a
 draft id different from the one its request continued
@@ -283,30 +315,32 @@ Keeping a header is cheap for every client.
 used to list `SET_PUSH_STATE`, `HASH_REPLACE`, `HASH_BACK`,
 `HASH_ATTACH_CHANGED`, `SET_NAV_ROUTING` and `SET_APP_STATE_ACTIVE` among
 the allowed frontend actions, but only `HASH_BACK` travels as a follow-up
-action - the others are folded into the one `ROUTER` system action by the
-backend ([actions.md](actions.md#vocabulary), [CL] `follow_up_action`, [FE]
-`check_on_event`). The file now carries both:
+action - the others are folded by the backend into one options object,
+the `ROUTER` system action of protocol 2 and `S_FRONT.NAV` of protocol 3
+([actions.md](actions.md#vocabulary), [CL] `follow_up_action`, [FE]
+`nav_serialize`). The file now carries both:
 
 - `actions.api` - the `follow_up_action( )` names a portable app may call
   (`frontendActions.allowed` is the same list and stays, so consumers of
   revision 0.2 - the Web Components frontend copies the file - keep
   working; the change is additive and the profile stays version 1);
-- `actions.wire` - what a renderer receives: the system actions
-  (`VIEW_SLOTS`, `ROUTER` with its `routerOptions`), the names folded into
-  `ROUTER` (`foldedIntoRouter`), and the `T_CUSTOM` / `.eF` names
-  (`custom`, `customGlobals`).
+- `actions.wire` - what a renderer receives: the framework's part of the
+  response (in the words of protocol 2, when this was decided: the system
+  actions `VIEW_SLOTS` and `ROUTER` with its `routerOptions`), the names
+  folded into those options (`foldedIntoRouter`), and the follow-up /
+  `.eF` names (`custom`, `customGlobals`).
 
 [../profiles/portable.md](../profiles/portable.md#6-frontend-actions)
 renders the mapping from the file.
 
-*Rationale.* A renderer reading the old list as `T_CUSTOM` names
-implemented five actions it never receives and could miss the `ROUTER`
+*Rationale.* A renderer reading the old list as follow-up action names
+implemented five actions it never receives and could miss the navigation
 options; an app author needs the client API's names. One list cannot serve
 both.
 
 **Alternatives considered.** (a) Rename the field to say it lists client
-API calls; (b) list the wire actions and the `ROUTER` options separately
-in v1.1.
+API calls; (b) list the wire actions and the navigation options
+separately in v1.1.
 
 **Touches.** `profiles/portable-v1.json` (`actions`),
 `schema/portable-profile.schema.json`, `scripts/render-portable.mjs`,
@@ -332,7 +366,7 @@ in a frontend that does not resolve it.
 
 **Alternatives.**
 - (a) Core rule: every frontend MUST resolve `${/PATH}` arguments of
-  `T_CUSTOM` actions against the model of the slot the response filled -
+  follow-up actions against the model of the slot the response filled -
   with a frontend check, and the portable renderers follow.
 - (b) UI5 profile only: portable apps must not pass bound arguments (a
   linter rule), other frontends keep the text.
@@ -390,7 +424,7 @@ requests, in the shape of
 [windowed-tables.md](windowed-tables.md#the-window-request). `window_bind_tab( )` is **not** part of the portable
 profile v1. For the semantic profile the decision took alternative (c) as
 an additive change of snapshot v1, after its implementation
-([versioning.md](versioning.md#compatible-changes-within-protocol-2)
+([versioning.md](versioning.md#compatible-changes-within-protocol-3)
 allows it, `snapshotVersion` stays 1): a windowed table carries `total`
 and `window: { size, more? }`, `truncated` is true while rows are missing,
 `app_act` takes `window` and a `BINDING_CALL` on such a table is the
@@ -427,7 +461,7 @@ ones), is the maintainer's to decide.
   "MORE", skip, top]`); sorting and filtering stay outside. A frontend check drives
   it. The two renderers of this repository follow.
 - (c) Snapshot v2 (or an additive key in v1, which
-  [versioning.md](versioning.md#compatible-changes-within-protocol-2)
+  [versioning.md](versioning.md#compatible-changes-within-protocol-3)
   allows): a table carries `total` and an action that asks for more rows,
   so an agent can page. *Taken for the semantic profile as additive keys
   of v1 (revision 0.5, after the agent client of abap2UI5/mcp-server
@@ -493,42 +527,96 @@ hosts, which cannot start the app WINDOW.
 
 ## 15. The app-driven window and the protocol number
 
-**Current decision (revision 0.5): protocol 2 stays, as in the
-implementation.** abap2UI5 after 1.150.0 (main `694fb262`, #3032)
-replaced the windowed table of 1.149.0 by an app-driven one
-([windowed-tables.md](windowed-tables.md)): the arguments of `___ZZZ_WIN`
-are `[path, event, reason, skip, top, sort?, filter?]` and run the app,
-where they were `[path, count, sort?, filter?]` answered by the backend;
-the rows of a `__delta` on a windowed table are rows of the table, where
-they were positions in the backend's order; a whole table value is
-written, where it was refused; `__WINDOW` carries `EVENT`. By
-[versioning.md](versioning.md#compatible-changes-within-protocol-2) -
-"changing a key's type or meaning" - that breaks the wire. abap2UI5 main
-keeps `c_protocol` and the frontend's `PROTOCOL` at 2 ([TY], [SRV]), and
-this revision follows it: the window of 1.149.0 was public for a few days
-(released 2026-11-16), a frontend and a backend of abap2UI5 ship together,
-and the one frontend outside the framework that sends window requests,
-the agent client, is pinned as a finding
+**Decided (revision 0.6): (b), protocol 3.** The maintainer broke the wire
+on 2026-11-22 - the response sections `VIEWS`, `NAV` and `ACTIONS`, the
+parsed `ROUTE`, the options object of an event wire
+([versioning.md](versioning.md#what-protocol-3-broke)) - and raised
+`c_protocol` and the frontend's `PROTOCOL` to 3 with it ([TY], [SRV];
+abap2UI5 `DEV`). No release had shipped the app-driven window under
+protocol 2 with a number of its own, so it is part of protocol 3 from its
+first day: a frontend of 1.149.0 or 1.150.0 refuses the responses of a
+protocol-3 backend on the number, and the two no longer misread each
+other's window requests.
+
+*Rationale.* The rule of [versioning.md](versioning.md#compatible-changes-within-protocol-3)
+asked for a new number; what stood against it was the cost of moving every
+frontend for one reserved event. That cost is paid by the other breaks of
+protocol 3 anyway.
+
+*What stays of the question.* Between abap2UI5 main `694fb262` (#3032) and
+the first release with protocol 3, a build of main declares protocol 2
+with the app-driven window. Such a build paired with a frontend or a
+backend of 1.149.0 or 1.150.0 misreads window requests as described below;
+no release is in that state.
+
+**What was asked (revision 0.5).** abap2UI5 after 1.150.0 (main
+`694fb262`, #3032) replaced the windowed table of 1.149.0 by an
+app-driven one ([windowed-tables.md](windowed-tables.md)): the arguments
+of `___ZZZ_WIN` are `[path, event, reason, skip, top, sort?, filter?]` and
+run the app, where they were `[path, count, sort?, filter?]` answered by
+the backend; the rows of a `__delta` on a windowed table are rows of the
+table, where they were positions in the backend's order; a whole table
+value is written, where it was refused; `__WINDOW` carries `EVENT`. By the
+rule - "changing a key's type or meaning" - that breaks the wire. abap2UI5
+main kept `c_protocol` and the frontend's `PROTOCOL` at 2, and revision
+0.5 followed it: the window of 1.149.0 was public for a few days (released
+2026-11-16), a frontend and a backend of abap2UI5 ship together, and the
+one frontend outside the framework that sends window requests, the agent
+client, is pinned as a finding
 ([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
+A pinned webapp of 1.149.0 against a newer backend, or a newer frontend
+against a backend of 1.149.0, misread each other's window requests
+without an error - the app sees an event named after a count and loads
+nothing, or the backend reads the app's event name as a count and answers
+one window of its own order.
 
-*Why it is open.* The rule says otherwise, and the protocol number exists
-for exactly the pairing this produces: a pinned webapp of 1.149.0 against
-a newer backend, or a newer frontend against a backend of 1.149.0. Both
-misread each other's window requests without an error - the app sees an
-event named after a count and loads nothing, or the backend reads the
-app's event name as a count and answers one window of its own order.
-
-**Alternatives.**
-- (a) As decided: 2, and the window of 1.149.0 is recorded as withdrawn
-  (this file, [versioning.md](versioning.md), the changelog).
+**Alternatives considered.**
+- (a) Protocol 2 stays, and the window of 1.149.0 is recorded as
+  withdrawn - the decision of revision 0.5.
 - (b) Protocol 3 with the release that ships the app-driven window - both
   halves raised, as the rule asks; a frontend of 1.149.0 then refuses the
   newer backend's responses, and every non-UI5 frontend has to move too.
-- (c) 2, and the reserved event renamed (for example `___ZZZ_WIN2`), so
-  that a backend of either age refuses or ignores the other's requests
-  instead of misreading them - no number moves, the misreading becomes an
-  unknown event.
+  **Decided.**
+- (c) Protocol 2, and the reserved event renamed (for example
+  `___ZZZ_WIN2`), so that a backend of either age refuses or ignores the
+  other's requests instead of misreading them - no number moves, the
+  misreading becomes an unknown event.
 
 **Touches.** abap2UI5 `c_protocol` and the frontend's `PROTOCOL`,
 `spec/versioning.md`, `schema/request.schema.json`, every frontend that
 sends window requests.
+
+## 16. The repeating timer in portable renderers
+
+**Current decision (revision 0.8): UI5 profile.** abap2UI5 `4a418249`
+(branch `DEV`) added the repeat flag of `START_TIMER` (element [4]) and
+the action `STOP_TIMER` ([actions.md](actions.md#the-timer)). Portable
+profile v1 is the census of the core apps it was filled from, and no app
+of that census uses either: `portable-v1.json` is unchanged, and the
+frontend checks of the repeat (`ui5.timer-repeat`,
+`ui5.timer-repeat-user-event`, `ui5.timer-stop`, `ui5.timer-replace`,
+`ui5.timer-repeat-app-change`, `ui5.timer-repeat-popup`,
+`ui5.timer-repeat-error`) are of the UI5 profile. A portable renderer
+that does not know the flag runs the timer once - as `START_TIMER` always
+did - and skips `STOP_TIMER` as an action it does not know, logging it
+([actions.md](actions.md#follow-up-actions)); the two renderers of this
+repository do so.
+
+*Why it is open.* `START_TIMER` is portable, and the repeat changes what
+an app may leave out: an app that arms a repeating poll once and relies on
+it gets one tick in a renderer without the flag - the poll stops without
+an error. The rules are not UI5-specific (no control, no DOM: a timer, the
+end of a response, the app's name).
+
+**Alternatives.**
+- (a) Portable: the flag and `STOP_TIMER` join `actions.wire` of the next
+  portable profile; the checks move to the portable profile, and every
+  portable renderer implements the repeat, its ends and the stop.
+- (b) UI5 profile, and portable apps must not use them (a linter rule on
+  the fourth `t_arg` of `start_timer` and on `stop_timer`) - the current
+  decision without the silent difference.
+- (c) The current decision: UI5 profile, nothing more.
+
+**Touches.** `profiles/portable.md` section 6, `portable-v1.json`
+(`actions.wire`), `conformance/frontend/lib/checks/ui5.mjs`,
+`renderers/adaptive-cards/host.mjs`, `renderers/terminal/session.mjs`.

@@ -5,13 +5,13 @@ import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import path from "node:path";
 import { test } from "node:test";
-import { runBackendSuite, ALL_CHECKS, ProtocolClient, displays, routerOptions, canonical } from "../conformance/backend/index.mjs";
+import { runBackendSuite, ALL_CHECKS, ProtocolClient, displays, displayOf, destroys, nav, actions, canonical } from "../conformance/backend/index.mjs";
 import { ROOT } from "./lib/traffic.mjs";
 
 const answer = (body, status = 200) => new Response(typeof body === "string" ? body : JSON.stringify(body), {
   status, headers: { "content-type": typeof body === "string" ? "text/plain" : "application/json" },
 });
-const OK = { S_FRONT: { ID: "A".repeat(32), APP: "Z2UI5_CL_CONF_ECHO", PROTOCOL: 2 } };
+const OK = { S_FRONT: { ID: "A".repeat(32), APP: "Z2UI5_CL_CONF_ECHO", PROTOCOL: 3 } };
 
 test("pass, fail, warn and skip are told apart by level and profile", async () => {
   const checks = [
@@ -50,9 +50,20 @@ test("the client sends what the UI5 frontend sends", async () => {
 });
 
 test("response readers", () => {
-  const r = { json: { S_FRONT: { S_ACTION: { T_SYSTEM: [["VIEW_SLOTS", "display", "MAIN", "<v/>"], ["ROUTER", "sync", { setNavRouting: "KEEP" }]] } } } };
-  assert.equal(displays(r).length, 1);
-  assert.deepEqual(routerOptions(r), { setNavRouting: "KEEP" });
+  const r = { json: { S_FRONT: {
+    VIEWS: { POPUP: { XML: "<p/>", OPT: { a: 1 } }, MAIN: { XML: "" }, POPOVER: { DESTROY: true } },
+    NAV: { setNavRouting: "KEEP" },
+    ACTIONS: [["SET_FOCUS", "x"]],
+  } } };
+  // in slot order, whatever order the keys are in; an empty view is a display
+  assert.deepEqual(displays(r), ["MAIN", "POPUP"]);
+  assert.deepEqual(displayOf(r, "POPUP"), { XML: "<p/>", OPT: { a: 1 } });
+  assert.equal(displayOf(r, "POPOVER"), undefined);
+  assert.ok(destroys(r, "POPOVER") && !destroys(r, "POPUP"));
+  assert.deepEqual(nav(r), { setNavRouting: "KEEP" });
+  assert.deepEqual(actions(r), [["SET_FOCUS", "x"]]);
+  const bare = { json: { S_FRONT: {} } };
+  assert.deepEqual([displays(bare), nav(bare), actions(bare)], [[], undefined, []]);
   assert.equal(canonical({ b: 1, a: [{ d: 1, c: 2 }] }), '{"a":[{"c":2,"d":1}],"b":1}');
 });
 

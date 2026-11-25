@@ -1,6 +1,6 @@
 // spec/actions.md#messages - toast and message box.
 const A = "spec/actions.md#messages";
-import { customActions } from "../client.mjs";
+import { actions } from "../client.mjs";
 
 export default [
   {
@@ -11,7 +11,7 @@ export default [
     spec: A,
     async run(t) {
       const r = await t.event(await t.start("MSG"), "TOAST");
-      t.deepEqual(customActions(r), [["MESSAGE_TOAST", "show", "conformance toast"]], "T_CUSTOM");
+      t.deepEqual(actions(r), [["MESSAGE_TOAST", "show", "conformance toast"]], "S_FRONT.ACTIONS");
     },
   },
   {
@@ -22,7 +22,7 @@ export default [
     spec: A,
     async run(t) {
       const r = await t.event(await t.start("MSG"), "BOX");
-      t.deepEqual(customActions(r), [["MESSAGE_BOX", "error", "conformance box"]], "T_CUSTOM");
+      t.deepEqual(actions(r), [["MESSAGE_BOX", "error", "conformance box"]], "S_FRONT.ACTIONS");
     },
   },
   {
@@ -33,7 +33,7 @@ export default [
     spec: A,
     async run(t) {
       const r = await t.event(await t.start("MSG"), "BOX_CONFIRM");
-      t.deepEqual(customActions(r), [["MESSAGE_BOX", "confirm", "conformance confirm", { actions: ["OK", "CANCEL"], onClose: "BOX_CLOSED" }]], "T_CUSTOM");
+      t.deepEqual(actions(r), [["MESSAGE_BOX", "confirm", "conformance confirm", { actions: ["OK", "CANCEL"], onClose: "BOX_CLOSED" }]], "S_FRONT.ACTIONS");
     },
   },
   {

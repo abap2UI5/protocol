@@ -36,7 +36,7 @@ const CASES = {
 function messagesOf(responses) {
   // what the host would show: the follow-up messages of the last response
   const last = responses.at(-1);
-  const custom = (last.S_FRONT.S_ACTION && last.S_FRONT.S_ACTION.T_CUSTOM) || [];
+  const custom = last.S_FRONT.ACTIONS || [];
   return custom.filter((a) => a[0] === "MESSAGE_BOX" || a[0] === "MESSAGE_TOAST").map((a) => (a[0] === "MESSAGE_TOAST"
     ? { kind: "toast", text: a[2] }
     : { kind: "box", type: a[1], text: a[2], ...(a[3] || {}) }));
@@ -133,7 +133,7 @@ test("app text is never Markdown: a text or fact with Markdown syntax is a TextR
     + '<Text text="{/C}"/><Title text="**bold** title"/><Text text="plain"/>'
     + '<List items="{/L}"><StandardListItem title="{T}" description="{D}"/></List></Page></mvc:View>';
   const response = {
-    S_FRONT: { ID: "1", APP: "Z_T", S_ACTION: { T_SYSTEM: [["VIEW_SLOTS", "display", "MAIN", xml]] } },
+    S_FRONT: { ID: "1", APP: "Z_T", VIEWS: { MAIN: { XML: xml } } },
     MODEL: { C: link, L: [{ T: "a", D: "[x](https://evil.example)" }] },
   };
   const toast = "**[verify your account](https://evil.example/login)**";
@@ -206,14 +206,14 @@ test("the host: app start, a submit, a box close, an app change and an error, ag
     const [main, popover] = recorded("slots.popover", 0, 1);
     run.reply({ body: main });
     run.reply({ body: popover });
-    run.reply({ body: { S_FRONT: { APP: "Z2UI5_CL_OTHER", ID: "B".repeat(32), PROTOCOL: 2, S_ACTION: { T_CUSTOM: [["MESSAGE_BOX", "confirm", "sure?", { actions: ["OK", "CANCEL"], onClose: "CLOSED" }], ["X_UNKNOWN", 1]] } } } });
+    run.reply({ body: { S_FRONT: { APP: "Z2UI5_CL_OTHER", ID: "B".repeat(32), PROTOCOL: 3, ACTIONS: [["MESSAGE_BOX", "confirm", "sure?", { actions: ["OK", "CANCEL"], onClose: "CLOSED" }], ["X_UNKNOWN", 1]] } } });
     run.reply({ status: 500, headers: { "content-type": "text/plain" }, body: "boom <b>x</b>" });
     const host = createCardHost({ url: run.url });
     await host.start("Z2UI5_CL_CONF_SLOTS");
     assert.deepEqual(run.posts()[0].json, { value: { S_FRONT: { ORIGIN: mock.origin, PATHNAME: run.path, SEARCH: "?app_start=Z2UI5_CL_CONF_SLOTS" } } });
     await host.submit({ event: "POPOVER_OPEN" });
     assert.ok(host.state.slots.POPOVER);
-    // a press in MAIN closes the popover first; the answer of another app would have taken it down anyway
+    // a press in MAIN closes the popover first (an answer of another app takes it down only when its VIEWS says so)
     await host.submit({ event: "POPUP_OPEN" });
     assert.ok(!host.state.slots.POPOVER);
     assert.equal(host.state.app, "Z2UI5_CL_OTHER");

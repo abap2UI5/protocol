@@ -104,6 +104,10 @@ function makeContext(adapter, run) {
       if (!adapter.closeBox) throw new Unsupported("no closeBox");
       await adapter.closeBox(action);
     },
+    async retry() {
+      if (!adapter.retry) throw new Unsupported("no retry");
+      await adapter.retry();
+    },
     async back() {
       await adapter.back();
     },

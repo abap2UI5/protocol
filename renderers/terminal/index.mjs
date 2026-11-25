@@ -10,13 +10,14 @@
  *   await session.start("Z2UI5_CL_MY_APP");
  *   await app.key("tab"); await app.type("Ada"); await app.key("enter");
  */
-import { applyResponse, emptyState } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { emptyState } from "../../conformance/frontend/adapters/vendor/mcp-server/snapshot.mjs";
+import { applyResponse } from "../common/response.mjs";
 import { renderScreen } from "./render.mjs";
 import { createTerminalApp } from "./app.mjs";
 
 export { renderScreen, renderNode, renderList } from "./render.mjs";
 export { layoutBlocks, frame, flow, fitColumns, widgetLines } from "./layout.mjs";
-export { createSession, parseRoute, PROTOCOL } from "./session.mjs";
+export { createSession, parseRoute, startRoute, PROTOCOL } from "./session.mjs";
 export { createTerminalApp } from "./app.mjs";
 export { runTui, keyName } from "./tty.mjs";
 export { CONTROLS, ICON_TEXT, iconText } from "./mapping.mjs";

@@ -330,7 +330,7 @@ fires are exactly the `events` lines of section 3.
 
 ## 6. Frontend actions
 
-The follow-up actions of a response (`T_CUSTOM`,
+The follow-up actions of a response (`S_FRONT.ACTIONS`,
 [../spec/actions.md](../spec/actions.md)) and the `.eF(...)` wires a portable
 frontend MUST perform:
 
@@ -340,7 +340,7 @@ frontend MUST perform:
 | `MESSAGE_BOX show / alert / confirm / information / warning / error / success` | 45 (`message_box_display`) + 6 | dialog with type, text, title, actions, `onClose` event (the pressed action is its argument), details |
 | `VIEW_SLOTS destroy POPUP / POPOVER` | 5 | the frontend close of `cs_event-popup_close` / `popover_close` |
 | `SET_FOCUS` | 20 | focus the control with that id (optional selection start/end) |
-| `START_TIMER` | 8 | fire the event after the delay |
+| `START_TIMER` | 8 | fire the event after the delay; the repeat flag (element [4]) and `STOP_TIMER` are UI5 profile, not v1 ([open question 16](../spec/open-questions.md#16-the-repeating-timer-in-portable-renderers)) |
 | `DOWNLOAD_B64_FILE`, `CLIPBOARD_COPY`, `URLHELPER`, `OPEN_NEW_TAB` | 4, 4, 3, 2 | browser (or platform share/intent) APIs |
 | `SCROLL_TO`, `SCROLL_INTO_VIEW` | 2, 1 | scroll the element with that id |
 | `SET_TITLE`, `SET_FAVICON`, `LOCATION_RELOAD`, `SYSTEM_LOGOUT`, `STORE_DATA`, `KEYBOARD_SHORTCUT`, `PLAY_AUDIO` | 1-2 each | MAY be a no-op where the platform has no counterpart |
@@ -352,12 +352,12 @@ frontend MUST perform:
 (decided in revision 0.3,
 [open question 10](../spec/open-questions.md#10-navigation-actions-in-the-portable-action-list)).
 The table above names what a portable app may *call*. The navigation family
-among them is folded by the backend into the one `ROUTER` system action
+among them is folded by the backend into the one `NAV` section
 ([../spec/actions.md](../spec/actions.md#vocabulary),
-[../spec/navigation.md](../spec/navigation.md#the-router-action), [CL]
+[../spec/navigation.md](../spec/navigation.md#the-nav-section), [CL]
 `follow_up_action`, [FE] `check_on_event`): a renderer never receives
 `SET_PUSH_STATE`, `HASH_REPLACE`, `HASH_ATTACH_CHANGED`, `SET_NAV_ROUTING`
-or `SET_APP_STATE_ACTIVE` - it receives `ROUTER` with options, and
+or `SET_APP_STATE_ACTIVE` - it receives `NAV` with its options, and
 `HASH_BACK` as a follow-up action. `portable-v1.json` says both:
 `actions.api` (what an app may call; `frontendActions.allowed` is the same
 list, kept for readers of revision 0.2) and `actions.wire` (what a renderer
@@ -367,36 +367,36 @@ implements):
 
 | Client API (`actions.api`) | What the renderer receives (`actions.wire`) |
 |---|---|
-| `SET_FOCUS` | `SET_FOCUS` (`T_CUSTOM`, `.eF`) |
-| `START_TIMER` | `START_TIMER` (`T_CUSTOM`, `.eF`) |
-| `DOWNLOAD_B64_FILE` | `DOWNLOAD_B64_FILE` (`T_CUSTOM`, `.eF`) |
-| `CLIPBOARD_COPY` | `CLIPBOARD_COPY` (`T_CUSTOM`, `.eF`) |
-| `URLHELPER` | `URLHELPER` (`T_CUSTOM`, `.eF`) |
-| `OPEN_NEW_TAB` | `OPEN_NEW_TAB` (`T_CUSTOM`, `.eF`) |
-| `SCROLL_TO` | `SCROLL_TO` (`T_CUSTOM`, `.eF`) |
-| `SCROLL_INTO_VIEW` | `SCROLL_INTO_VIEW` (`T_CUSTOM`, `.eF`) |
-| `SET_TITLE` | `SET_TITLE` (`T_CUSTOM`, `.eF`) |
-| `SET_FAVICON` | `SET_FAVICON` (`T_CUSTOM`, `.eF`) |
-| `LOCATION_RELOAD` | `LOCATION_RELOAD` (`T_CUSTOM`, `.eF`) |
-| `SYSTEM_LOGOUT` | `SYSTEM_LOGOUT` (`T_CUSTOM`, `.eF`) |
-| `STORE_DATA` | `STORE_DATA` (`T_CUSTOM`, `.eF`) |
-| `KEYBOARD_SHORTCUT` | `KEYBOARD_SHORTCUT` (`T_CUSTOM`, `.eF`) |
-| `PLAY_AUDIO` | `PLAY_AUDIO` (`T_CUSTOM`, `.eF`) |
-| `SET_PUSH_STATE` | the `ROUTER` option `setPushState` - never `SET_PUSH_STATE` itself |
-| `HASH_REPLACE` | the `ROUTER` option `setHashReplace` - never `HASH_REPLACE` itself |
-| `HASH_BACK` | `HASH_BACK` (`T_CUSTOM`, `.eF`) |
-| `HASH_ATTACH_CHANGED` | the `ROUTER` option `setHashEvent` - never `HASH_ATTACH_CHANGED` itself |
-| `SET_NAV_ROUTING` | the `ROUTER` option `setNavRouting` - never `SET_NAV_ROUTING` itself |
-| `SET_APP_STATE_ACTIVE` | the `ROUTER` option `setAppStateActive` - never `SET_APP_STATE_ACTIVE` itself |
-| `SET_SIZE_LIMIT` | `SET_SIZE_LIMIT` (`T_CUSTOM`, `.eF`) |
-| (`MESSAGE_TOAST`) | `MESSAGE_TOAST` show (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
-| (`MESSAGE_BOX`) | `MESSAGE_BOX` show / alert / confirm / information / warning / error / success (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
-| (`BUSY_INDICATOR`) | `BUSY_INDICATOR` show / hide (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
-| (`INVISIBLE_MESSAGE`) | `INVISIBLE_MESSAGE` announce (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
-| (`THEMING`) | `THEMING` setTheme (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
-| (`VIEW_SLOTS`) | `VIEW_SLOTS` destroy (`T_CUSTOM` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| `SET_FOCUS` | `SET_FOCUS` (`ACTIONS`, `.eF`) |
+| `START_TIMER` | `START_TIMER` (`ACTIONS`, `.eF`) |
+| `DOWNLOAD_B64_FILE` | `DOWNLOAD_B64_FILE` (`ACTIONS`, `.eF`) |
+| `CLIPBOARD_COPY` | `CLIPBOARD_COPY` (`ACTIONS`, `.eF`) |
+| `URLHELPER` | `URLHELPER` (`ACTIONS`, `.eF`) |
+| `OPEN_NEW_TAB` | `OPEN_NEW_TAB` (`ACTIONS`, `.eF`) |
+| `SCROLL_TO` | `SCROLL_TO` (`ACTIONS`, `.eF`) |
+| `SCROLL_INTO_VIEW` | `SCROLL_INTO_VIEW` (`ACTIONS`, `.eF`) |
+| `SET_TITLE` | `SET_TITLE` (`ACTIONS`, `.eF`) |
+| `SET_FAVICON` | `SET_FAVICON` (`ACTIONS`, `.eF`) |
+| `LOCATION_RELOAD` | `LOCATION_RELOAD` (`ACTIONS`, `.eF`) |
+| `SYSTEM_LOGOUT` | `SYSTEM_LOGOUT` (`ACTIONS`, `.eF`) |
+| `STORE_DATA` | `STORE_DATA` (`ACTIONS`, `.eF`) |
+| `KEYBOARD_SHORTCUT` | `KEYBOARD_SHORTCUT` (`ACTIONS`, `.eF`) |
+| `PLAY_AUDIO` | `PLAY_AUDIO` (`ACTIONS`, `.eF`) |
+| `SET_PUSH_STATE` | the `NAV` option `setPushState` - never `SET_PUSH_STATE` itself |
+| `HASH_REPLACE` | the `NAV` option `setHashReplace` - never `HASH_REPLACE` itself |
+| `HASH_BACK` | `HASH_BACK` (`ACTIONS`, `.eF`) |
+| `HASH_ATTACH_CHANGED` | the `NAV` option `setHashEvent` - never `HASH_ATTACH_CHANGED` itself |
+| `SET_NAV_ROUTING` | the `NAV` option `setNavRouting` - never `SET_NAV_ROUTING` itself |
+| `SET_APP_STATE_ACTIVE` | the `NAV` option `setAppStateActive` - never `SET_APP_STATE_ACTIVE` itself |
+| `SET_SIZE_LIMIT` | `SET_SIZE_LIMIT` (`ACTIONS`, `.eF`) |
+| (`MESSAGE_TOAST`) | `MESSAGE_TOAST` show (`ACTIONS` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`MESSAGE_BOX`) | `MESSAGE_BOX` show / alert / confirm / information / warning / error / success (`ACTIONS` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`BUSY_INDICATOR`) | `BUSY_INDICATOR` show / hide (`ACTIONS` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`INVISIBLE_MESSAGE`) | `INVISIBLE_MESSAGE` announce (`ACTIONS` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`THEMING`) | `THEMING` setTheme (`ACTIONS` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
+| (`VIEW_SLOTS`) | `VIEW_SLOTS` destroy (`ACTIONS` or `.eF`, directly or as a `CONTROL_GLOBAL` target) |
 
-System actions (`T_SYSTEM`): `VIEW_SLOTS` display / destroy, `ROUTER` sync; the `ROUTER` options: `setNavRouting`, `checkNavAppCall`, `navAppCallPrevApp`, `navAppCallPrevId`, `setPushState`, `setHashReplace`, `setHashEvent`, `setAppStateActive`. MAY be a no-op where the platform has no counterpart: `ROUTER`, `HASH_BACK`, `SET_SIZE_LIMIT`.
+The sections of `S_FRONT`: `VIEWS` entries that display / destroy a slot; the `NAV` options: `setNavRouting`, `checkNavAppCall`, `navAppCallPrevApp`, `navAppCallPrevId`, `setPushState`, `setHashReplace`, `setHashEvent`, `setAppStateActive`. MAY be a no-op where the platform has no counterpart: `NAV`, `HASH_BACK`, `SET_SIZE_LIMIT`.
 
 <!-- portable:actions:end -->
 

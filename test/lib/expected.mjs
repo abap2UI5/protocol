@@ -2,7 +2,61 @@
 // pinned as such, each with the place the fix is made. A pin is exact: the
 // tests fail when a pinned check starts to pass (unpin it then, and record
 // the traffic again) as well as when another check fails.
-import { appDrivenWindow } from "../../conformance/hosts/node-runtime/build.mjs";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { appDrivenWindow, runtimeProtocol } from "../../conformance/hosts/node-runtime/build.mjs";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+/** The protocol number this revision specifies (spec/versioning.md). */
+export const PROTOCOL = 3;
+
+/**
+ * Protocol 3 is on abap2UI5's branch DEV and in no release yet. An
+ * implementation that still speaks protocol 2 is BEHIND: the suites of this
+ * revision do not measure it - every exchange would fail on the shape of
+ * the response - and say so with one check, which is pinned as its one
+ * failure: `response.protocol` for a backend (S_FRONT.PROTOCOL is not 3),
+ * `slots.main` for a frontend (it refuses the response, or reads no view
+ * out of it). The pin follows what is installed, like the one of the
+ * app-driven window below: with an implementation on protocol 3 the full
+ * suite runs and the pins further down apply.
+ *
+ *   node-runtime  the released @abap2ui5/node-runtime 1.150.0 (package.json,
+ *                 CI) speaks protocol 2; a runtime packed from abap2UI5 DEV
+ *                 (npm run pack:node-runtime there, npm install --no-save
+ *                 here - as abap2UI5's own CI runs this suite, and as the
+ *                 traffic in traffic/ was recorded) speaks 3
+ *   cap2ui5       @cap2ui5/cds-plugin 0.7.0 hosts the runtime 1.149.0
+ *   agent         the agent client of abap2UI5/mcp-server, vendored at
+ *                 332a0b0, speaks protocol 2 (PROTOCOL in appclient.mjs)
+ *   ui5           an abap2UI5 checkout before protocol 3 (the release commit
+ *                 CI's frontend job checks out) - core/Server.js PROTOCOL
+ */
+const CAP_HOST = path.join(ROOT, "conformance/hosts/cap2ui5");
+const CAP_PLUGIN = path.join(CAP_HOST, "node_modules/@cap2ui5/cds-plugin/package.json");
+const VENDORED_CLIENT = path.join(ROOT, "conformance/frontend/adapters/vendor/mcp-server/appclient.mjs");
+const numberIn = (file, re) => {
+  const m = fs.existsSync(file) && re.exec(fs.readFileSync(file, "utf8"));
+  return m ? Number(m[1]) : 0;
+};
+/** The protocol number of the UI5 frontend in `webapp` (core/Server.js). */
+export const frontendProtocol = (webapp) => (webapp ? numberIn(path.join(webapp, "core", "Server.js"), /\bPROTOCOL:\s*(\d+)/) : 0);
+/** What each implementation at hand speaks; 0: not installed, or none declared. */
+export const SPEAKS = Object.freeze({
+  "node-runtime": runtimeProtocol(),
+  cap2ui5: fs.existsSync(CAP_PLUGIN) ? runtimeProtocol(CAP_PLUGIN, CAP_HOST) : 0,
+  agent: numberIn(VENDORED_CLIENT, /^export const PROTOCOL = (\d+);/m),
+});
+/** Whether `name` (a backend, or the agent client) is behind this revision. */
+export const behind = (name) => SPEAKS[name] !== PROTOCOL;
+/** The one check that says a backend is behind, and the one for a frontend. */
+export const BEHIND_BACKEND_CHECK = "response.protocol";
+export const BEHIND_FRONTEND_CHECK = "slots.main";
+/** The filter the backend suite runs with against `backend`: the whole
+ *  suite, or - behind - the one check that says so. */
+export const backendFilter = (backend) => (behind(backend) ? [BEHIND_BACKEND_CHECK] : undefined);
 
 /**
  * The checks of the windowed tables (spec/windowed-tables.md) describe the
@@ -67,10 +121,14 @@ export const BACKEND_EXPECTED_WARNINGS = Object.freeze({
 
 /**
  * What the recorded traffic (traffic/<backend>/suite.json) carries: it was
- * recorded with the node-runtime host on a runtime built from abap2UI5 main
- * 694fb262 - the app-driven window, every check passes - and with the
- * cap2UI5 host on plugin 0.7.0, which fails the window checks as above
- * (conformance/RESULTS.md, "What the traffic is recorded against").
+ * recorded with the node-runtime host on a runtime packed from abap2UI5 DEV
+ * e94eaa4 plus the fix of the two keys that leaked into S_FRONT
+ * (conformance/RESULTS.md, "What the traffic is recorded against") -
+ * protocol 3, every check passes. No traffic of cap2UI5 is recorded for
+ * this revision: @cap2ui5/cds-plugin 0.7.0 is behind (above), and its
+ * protocol-2 traffic was taken out with the move to protocol 3. Record it
+ * again (npm run record) with the first plugin release on protocol 3; the
+ * comparisons of test/traffic.test.mjs run as soon as it is there.
  * test/traffic.test.mjs reads these, not the pins of what is installed.
  */
 export const RECORDED_FAILURES = Object.freeze({
@@ -81,15 +139,27 @@ export const RECORDED_WARNINGS = Object.freeze({
   "node-runtime": Object.freeze({}),
   cap2ui5: Object.freeze({ ...CAP_WINDOW_SHOULD, "error.details": DETAILS }),
 });
+/** Why traffic/cap2ui5/ is not there (null once it is recorded again). */
+export const CAP_TRAFFIC_MISSING = "no traffic of cap2UI5 is recorded for protocol 3 - @cap2ui5/cds-plugin 0.7.0 hosts a protocol-2 runtime; npm run record with the first plugin release on protocol 3";
+/**
+ * Recorded traffic that is still protocol 2 and kept: the agent client's
+ * (traffic/node-runtime/agent-client.json, mcp-server against a protocol-2
+ * runtime). Its snapshots are what profiles/semantic.md specifies and
+ * protocol 3 did not change them - they stay the samples of
+ * schema/snapshot.schema.json; its exchanges are not validated against the
+ * schemas of this revision. Recorded again when the client follows.
+ */
+export const TRAFFIC_PROTOCOL_2 = Object.freeze(["agent-client.json"]);
 
 const ids = (pins, backend) => {
   if (!pins[backend]) throw new Error(`no pins for backend "${backend}" - node-runtime or cap2ui5`);
   return Object.freeze(Object.keys(pins[backend]));
 };
-/** The pinned failures of `backend` ("node-runtime" | "cap2ui5"), in suite order. */
-export const expectedFailureIds = (backend) => ids(BACKEND_EXPECTED_FAILURES, backend);
+/** The pinned failures of `backend` ("node-runtime" | "cap2ui5"), in suite
+ *  order - of a backend that is behind, the one check it is measured by. */
+export const expectedFailureIds = (backend) => (behind(backend) ? Object.freeze([BEHIND_BACKEND_CHECK]) : ids(BACKEND_EXPECTED_FAILURES, backend));
 /** The pinned warnings of `backend`, in suite order. */
-export const expectedWarningIds = (backend) => ids(BACKEND_EXPECTED_WARNINGS, backend);
+export const expectedWarningIds = (backend) => (behind(backend) ? Object.freeze([]) : ids(BACKEND_EXPECTED_WARNINGS, backend));
 /** The failures and warnings the recorded traffic of `backend` carries. */
 export const recordedFailureIds = (backend) => ids(RECORDED_FAILURES, backend);
 export const recordedWarningIds = (backend) => ids(RECORDED_WARNINGS, backend);

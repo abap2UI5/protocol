@@ -193,21 +193,21 @@ const profile = {
   // renderer receives, apart. frontendActions.allowed stays the api list for
   // consumers of revision 0.2.
   actions: {
-    note: "api: the follow_up_action( ) names (cs_event values) a portable app may call - frontendActions.allowed is the same list, kept for consumers of revision 0.2. wire: what a portable renderer actually receives - T_SYSTEM actions with their ROUTER options, and the T_CUSTOM / .eF names. The navigation family of api is folded by the backend into the one ROUTER system action (foldedIntoRouter) and never arrives under its own name.",
+    note: "api: the follow_up_action( ) names (cs_event values) a portable app may call - frontendActions.allowed is the same list, kept for consumers of revision 0.2. wire: what a portable renderer actually receives (protocol 3) - the entries of S_FRONT.VIEWS, the options of S_FRONT.NAV, and the names in S_FRONT.ACTIONS / .eF. The navigation family of api is folded by the backend into the one NAV section (foldedIntoNav) and never arrives under its own name.",
     api: [
       "SET_FOCUS", "START_TIMER", "DOWNLOAD_B64_FILE", "CLIPBOARD_COPY", "URLHELPER", "OPEN_NEW_TAB", "SCROLL_TO", "SCROLL_INTO_VIEW",
       "SET_TITLE", "SET_FAVICON", "LOCATION_RELOAD", "SYSTEM_LOGOUT", "STORE_DATA", "KEYBOARD_SHORTCUT", "PLAY_AUDIO",
       "SET_PUSH_STATE", "HASH_REPLACE", "HASH_BACK", "HASH_ATTACH_CHANGED", "SET_NAV_ROUTING", "SET_APP_STATE_ACTIVE", "SET_SIZE_LIMIT",
     ],
     wire: {
-      system: { VIEW_SLOTS: ["display", "destroy"], ROUTER: ["sync"] },
-      routerOptions: ["setNavRouting", "checkNavAppCall", "navAppCallPrevApp", "navAppCallPrevId", "setPushState", "setHashReplace", "setHashEvent", "setAppStateActive"],
-      foldedIntoRouter: { SET_NAV_ROUTING: "setNavRouting", SET_PUSH_STATE: "setPushState", HASH_REPLACE: "setHashReplace", HASH_ATTACH_CHANGED: "setHashEvent", SET_APP_STATE_ACTIVE: "setAppStateActive" },
-      custom: [
+      views: ["display", "destroy"],
+      navOptions: ["setNavRouting", "checkNavAppCall", "navAppCallPrevApp", "navAppCallPrevId", "setPushState", "setHashReplace", "setHashEvent", "setAppStateActive"],
+      foldedIntoNav: { SET_NAV_ROUTING: "setNavRouting", SET_PUSH_STATE: "setPushState", HASH_REPLACE: "setHashReplace", HASH_ATTACH_CHANGED: "setHashEvent", SET_APP_STATE_ACTIVE: "setAppStateActive" },
+      actions: [
         "SET_FOCUS", "START_TIMER", "DOWNLOAD_B64_FILE", "CLIPBOARD_COPY", "URLHELPER", "OPEN_NEW_TAB", "SCROLL_TO", "SCROLL_INTO_VIEW",
         "SET_TITLE", "SET_FAVICON", "LOCATION_RELOAD", "SYSTEM_LOGOUT", "STORE_DATA", "KEYBOARD_SHORTCUT", "PLAY_AUDIO", "HASH_BACK", "SET_SIZE_LIMIT",
       ],
-      customGlobals: {
+      actionGlobals: {
         MESSAGE_TOAST: ["show"],
         MESSAGE_BOX: ["show", "alert", "confirm", "information", "warning", "error", "success"],
         BUSY_INDICATOR: ["show", "hide"],
@@ -215,7 +215,7 @@ const profile = {
         THEMING: ["setTheme"],
         VIEW_SLOTS: ["destroy"],
       },
-      noOpAllowed: ["ROUTER", "HASH_BACK", "SET_SIZE_LIMIT"],
+      noOpAllowed: ["NAV", "HASH_BACK", "SET_SIZE_LIMIT"],
     },
   },
   clientApi: {

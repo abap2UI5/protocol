@@ -1,19 +1,19 @@
 // spec/response.md - the response envelope, its version stamp and MODEL.
 const R = "spec/response.md";
-import { displays, displayOf, hasModel, systemActions, customActions } from "../client.mjs";
+import { displays, displayOf, hasModel, views, actions, nav } from "../client.mjs";
 
 export default [
   {
     id: "response.protocol",
-    title: "Every response declares PROTOCOL 2",
+    title: "Every response declares PROTOCOL 3",
     level: "MUST",
     profile: "core",
     spec: "spec/versioning.md#the-protocol-number",
     async run(t) {
       const r = await t.start("ECHO");
-      t.equal(r.json.S_FRONT.PROTOCOL, 2, "S_FRONT.PROTOCOL");
+      t.equal(r.json.S_FRONT.PROTOCOL, 3, "S_FRONT.PROTOCOL");
       const e = await t.event(r, "NOOP");
-      t.equal(e.json.S_FRONT.PROTOCOL, 2, "S_FRONT.PROTOCOL of an event response");
+      t.equal(e.json.S_FRONT.PROTOCOL, 3, "S_FRONT.PROTOCOL of an event response");
     },
   },
   {
@@ -47,24 +47,25 @@ export default [
     spec: `${R}#view-slots`,
     async run(t) {
       const r = await t.start("ECHO");
-      const d = displays(r);
-      t.equal(d.length, 1, "number of displays");
-      t.equal(d[0][2], "MAIN", "slot of the display");
-      t.ok(typeof d[0][3] === "string" && d[0][3].length > 0, "the display carries the view");
+      t.deepEqual(displays(r), ["MAIN"], "slots displayed");
+      t.ok(displayOf(r, "MAIN").XML.length > 0, "the display carries the view");
       t.ok(hasModel(r), "a response that displays a view carries MODEL");
       t.deepEqual(r.json.MODEL, { COUNT: 0, LAST_ARGS: "", LAST_EVENT: "" }, "MODEL");
     },
   },
   {
     id: "response.model-absent-when-unchanged",
-    title: "A roundtrip that changes nothing bound carries no MODEL and no action",
+    title: "A roundtrip that changes nothing bound carries no MODEL and none of the sections VIEWS, NAV and ACTIONS",
     level: "SHOULD",
     profile: "core",
     spec: `${R}#model`,
     async run(t) {
       const r = await t.event(await t.start("ECHO"), "NOOP");
       t.ok(!hasModel(r), `MODEL should be absent, is ${JSON.stringify(r.json.MODEL)}`);
-      t.equal(systemActions(r).length + customActions(r).length, 0, "number of actions");
+      t.deepEqual(views(r), {}, "S_FRONT.VIEWS");
+      t.equal(nav(r), undefined, "S_FRONT.NAV");
+      t.deepEqual(actions(r), [], "S_FRONT.ACTIONS");
+      for (const k of ["VIEWS", "NAV", "ACTIONS"]) t.ok(!Object.prototype.hasOwnProperty.call(r.json.S_FRONT, k), `S_FRONT.${k} is sent empty`);
     },
   },
   {

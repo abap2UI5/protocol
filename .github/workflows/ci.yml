@@ -13,15 +13,25 @@
 # renderer (renderers/terminal/, golden screens, and end to end against the
 # node-runtime host). Each backend run takes seconds; the install dominates.
 # The frontend job runs the frontend suite against the UI5 SPA of abap2UI5
-# (the release commit the spec is derived from, app/webapp only) in Chromium - the
+# (the commit the spec is derived from, bundle/webapp only) in Chromium - the
 # test job skips that test, it has no browser and no checkout - and records
 # the reports of the UI5 SPA, the agent client and the Adaptive Cards and
 # terminal renderers.
+#
+# Protocol 3 (branch DEV) is in no release yet. What npm ci installs still
+# speaks protocol 2 - @abap2ui5/node-runtime 1.150.0, the runtime
+# @cap2ui5/cds-plugin 0.7.0 hosts - and so does the vendored agent client:
+# each is "behind" and measured by the one check that says so, pinned
+# (test/lib/expected.mjs). The whole backend suite runs against a runtime
+# packed from abap2UI5 DEV in abap2UI5's own CI (test.yaml there:
+# conformance_backend, conformance_frontend), which pins a commit of this
+# branch. The frontend job here checks out abap2UI5 at the DEV commit the
+# spec is derived from, so the UI5 SPA is measured in full.
 name: ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, DEV ]
   pull_request:
 
 concurrency:
@@ -84,19 +94,23 @@ jobs:
           if-no-files-found: ignore
 
   frontend:
-    runs-on: ubuntu-latest
+    # 24.04, not ubuntu-latest: the pinned playwright-core cannot install a
+    # Chromium on ubuntu 26.04 ("Playwright does not support chromium on
+    # ubuntu26.04-x64", 2026-11-19) - abap2UI5's conformance_frontend job,
+    # which runs this suite, pins the same image; move both together
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: abap2UI5 app/webapp (the frontend under test)
+      - name: abap2UI5 bundle/webapp (the frontend under test)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: abap2UI5/abap2UI5
-          ref: af05dce4f614a1ce5009b8765952fdcee86e666d   # Release 1.150.0 - the commit @abap2ui5/node-runtime 1.150.0 was built from
+          ref: 1dc0803378a451a88dc70716aec454c3945503f4   # main, 1.151.0 (protocol 3, revision 0.9: repeating timer, STOP_TIMER) - tag 1.151.0 once it is cut
           path: deps/abap2UI5
-          sparse-checkout: app/webapp
+          sparse-checkout: bundle/webapp
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

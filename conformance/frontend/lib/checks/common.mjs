@@ -16,8 +16,8 @@ export async function startBind(t) {
 }
 
 /** A synthetic app: a MAIN view with `body`, its model, and a fresh id. */
-export function app(body, { model, app: cls = "Z2UI5_CL_CONF_FE", custom, title, page, ns } = {}) {
-  return answer({ app: cls, system: [display("MAIN", mainView(body, { title, page, ns }))], model, custom });
+export function app(body, { model, app: cls = "Z2UI5_CL_CONF_FE", actions, title, page, ns } = {}) {
+  return answer({ app: cls, views: { MAIN: display(mainView(body, { title, page, ns })) }, model, actions });
 }
 
 /** Start a synthetic app. Resolves the response body. */

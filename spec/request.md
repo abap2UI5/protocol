@@ -24,8 +24,9 @@ The envelope `value` is described in
   user changed nothing.
 
 A frontend SHOULD leave out every key whose value is empty: the UI5
-frontend removes an empty `T_EVENT_ARG`, `SEARCH`, `HASH` and `MODEL`, and
-the whole `CONFIG` when all of its blocks are empty ([SRV] `roundtrip`). A
+frontend removes an empty `T_EVENT_ARG`, `SEARCH`, `HASH` and `MODEL`,
+sends no `ROUTE` when the hash names none, and leaves out the whole
+`CONFIG` when all of its blocks are empty ([SRV] `roundtrip`). A
 backend MUST treat an absent key like an empty one ([H]
 `request_parse_body` reads each field with a keyed lookup and leaves a
 missing one initial).
@@ -37,10 +38,12 @@ missing one initial).
 | `ID` | string | every request that continues a draft: the `S_FRONT.ID` of the last response adopted ([V1] `eB`) | the draft to restore ([sessions.md](sessions.md)) |
 | `EVENT` | string | every event request: the first element of the wire's event array ([SRV] `roundtrip`) | what `check_on_event( )` / `get_event( )` answer |
 | `T_EVENT_ARG` | array | when the wire carries arguments | [event arguments](#event-arguments) |
-| `HASH` | string | every request when the hash is not empty, except in an embedded component whose host keeps the URL ([SRV] `roundtrip`, `state.ownsHash`) | routes and the app-state hash ([navigation.md](navigation.md)) |
+| `HASH` | string | every request when the hash is not empty, except in an embedded component whose host keeps the URL ([SRV] `roundtrip`, `state.ownsPage`) | what the app reads as `get( )-s_config-hash`, and the launchpad's part of the links the backend composes ([H] `hash_get_shell_part`) - not what an app start is resolved from |
+| `ROUTE` | object | a request without `ID` whose hash names something to restore ([SRV] `roundtrip`, [RT] `startRoute`) | [which app the request starts, and from which draft](#route) |
 | `ORIGIN`, `PATHNAME`, `SEARCH` | string | every app-start-shaped request, and the first request of a page load ([SES] `location`) | `?app_start=`, the launchpad flag, URLs the backend composes; stored with the draft ([H] `session_merge`) |
 | `MS_CLIENT_PREV` | integer >= 0 | from the second roundtrip on: the previous roundtrip's duration as the browser measured it ([SRV] `readHttp`) | the roundtrip monitor only; an unreadable value is dropped, never the request ([H] `request_parse_body`) |
 | `CONFIG` | object | [the session block](#config-the-session-block) | device, UI5 version, focus, scroll, launchpad data |
+| `TIMER` | boolean, `true` | the event request of a `START_TIMER` tick - the event the timer raises when its delay ends - and no other request ([VO] `evStartTimer` marks the dispatch, [V1] `eB`, [SRV] `roundtrip` moves it into `S_FRONT`) | [the timer tick](#the-timer-tick): an unchanged tick may be answered with the id it continued |
 
 A frontend MUST NOT send other keys in `S_FRONT`; a backend MUST ignore
 keys it does not know.
@@ -54,8 +57,11 @@ keys it does not know.
   request of a page load ([SRV] `roundtrip` leaves it off until
   `readHttp` measured one). *Frontend check:* `request.client-prev`.
 - A frontend that owns the page's URL SHOULD send a non-empty hash as
-  `HASH` with every request ([SRV] `roundtrip`): the backend reads routes
-  and the app-state hash from it. *Frontend check:* `router.hash-sent`.
+  `HASH` with every request ([SRV] `roundtrip`): an app reads it
+  (`get( )-s_config-hash`, [IC]), and with a listener registered the new
+  hash of a hash change travels there
+  ([navigation.md](navigation.md#the-app-owned-hash)). *Frontend check:*
+  `router.hash-sent`.
 
 **Implementation note.** cap2UI5's own wire tests also send `APP` and an
 empty `XX` next to `MODEL` - leftovers of earlier protocol versions that
@@ -67,7 +73,8 @@ A request **without** `ID` (or with an empty one) asks the backend to start
 an app. It carries the location (`ORIGIN`, `PATHNAME`, `SEARCH` with
 `?app_start=<CLASS>`), the `HASH` when there is one, and the whole session
 block ([SES] `config`: a request without draft id always re-sends it,
-because the app it starts has no session record to inherit from). Which app
+because the app it starts has no session record to inherit from) - and,
+when the hash names something to restore, [`ROUTE`](#route). Which app
 it starts is decided by
 [navigation.md](navigation.md#which-app-a-request-starts). The UI5 frontend
 sends one on the page load (App controller -> `Server.roundtrip(ctx, {})`)
@@ -75,13 +82,67 @@ and on every Back/Forward restore of a route ([SRV] `restoreFromRoute`).
 
 - A frontend that starts a named app MUST name it in the app-start
   request - as `?app_start=<CLASS>` in `SEARCH` ([SES] `location`, [AC]
-  `start`) or as a route in `HASH`; a request that names none starts the
-  backend's own start app ([navigation.md](navigation.md#which-app-a-request-starts)).
+  `start`) or as the class of [`ROUTE`](#route); a request that names
+  none starts the backend's own start app
+  ([navigation.md](navigation.md#which-app-a-request-starts)).
 - It SHOULD send `ORIGIN` and `PATHNAME` of the endpoint as the user
   reaches it: the backend builds URLs from them and keeps them with the
   session. A frontend that does not run on that page takes them from its
   embedder (the agent client's `location` option, [AC] `createAppClient`).
 - *Frontend checks:* `request.app-start`, `request.app-start-location`.
+
+## ROUTE
+
+```json
+{ "value": {
+    "S_FRONT": { "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/9EA726DF4B7244BC882F1552C9DE9D97",
+                 "ROUTE": { "APP": "Z2UI5_CL_CONF_ROUTE", "DRAFT": "9EA726DF4B7244BC882F1552C9DE9D97" },
+                 "ORIGIN": "http://localhost:3000", "PATHNAME": "/" } } }
+```
+
+What the hash of the page asks an app start to restore, **parsed by the
+frontend** ([RT] `startRoute`). The hash has a structure - the launchpad's
+part in front of the app's, stacked leading slashes of older URLs, a
+namespaced class that carries the separator in its name
+([navigation.md](navigation.md#routes)) - and the frontend, which writes
+it, is the one side that reads it. The backend takes three values as they
+are:
+
+| Hash (its app part) | `ROUTE` |
+|---|---|
+| `#/app/<CLASS>` | `{ "APP": "<CLASS>" }` |
+| `#/app/<CLASS>/<DRAFT>` | `{ "APP": "<CLASS>", "DRAFT": "<DRAFT>" }` |
+| `#/z2ui5-xapp-state=<DRAFT>` | `{ "APP_STATE": "<DRAFT>" }` |
+| anything else - no hash, an app-owned hash, a bare launchpad intent | no `ROUTE` |
+
+Rules for the frontend:
+
+- A frontend that owns the page's URL MUST send `ROUTE` with a request
+  without `ID` whenever the hash is a route or an app-state link, and
+  MUST NOT send it otherwise - not with a request that carries an `ID`,
+  and not on a host's page, whose hash is the host's ([SRV] `roundtrip`,
+  [RT] `init`: `startRoute` is wired only when the component owns the
+  page). The UI5 frontend sends such a request on the page load and on
+  every Back/Forward restore of a route ([SRV] `restoreFromRoute`).
+- Inside a launchpad hash only the app part is read
+  ([navigation.md](navigation.md#launchpad-hashes)); the id of an
+  app-state link is found among the `&`-separated parts of the app hash,
+  behind a `?` when there is one ([RT] `appStateOf`).
+- `DRAFT` never travels without `APP` ([RT] `startRoute`).
+- A frontend without a URL sends no `ROUTE`; it names its app in `SEARCH`.
+- *Frontend checks:* `router.start-route`, `router.start-app-state`,
+  `router.no-route-on-events`.
+
+Rules for the backend ([H] `request_parse_body`, `request_json_to_abap`):
+
+- A backend MUST resolve an app start from `ROUTE` and `SEARCH`
+  ([navigation.md](navigation.md#which-app-a-request-starts)) and MUST
+  NOT resolve it from `HASH`: a request whose `HASH` reads like a route
+  and that carries no `ROUTE` starts what `SEARCH` names. `HASH` is for
+  the app. *Checked by:* `route.hash-not-read`.
+- It reads `APP`, `DRAFT` and `APP_STATE` trimmed and in upper case ([H]
+  `request_json_to_abap`), and ignores `ROUTE` on a request with an `ID`
+  (such a request continues its draft, [H] `request_json_to_abap`).
 
 ## Event requests
 
@@ -105,6 +166,43 @@ nothing). *Checked by:* `event.roundtrip`, `event.unknown-event`.
   request of a windowed table: the backend runs the app with the app's own
   event the request names, the request in `get( )-r_event_data`
   ([windowed-tables.md](windowed-tables.md#the-window-request)).
+
+## The timer tick
+
+A `START_TIMER` follow-up action ([actions.md](actions.md#vocabulary))
+raises its event when the delay ends - a roundtrip nobody clicked for, and
+on a polling screen one that repeats every few seconds. The request of such
+a **tick** carries `S_FRONT.TIMER: true` (from abap2UI5 `880ff0a5`, branch
+`DEV`: [VO] `evStartTimer` dispatches the tick as `[<event>, { noBusy,
+timer: true }]`, [V1] `eB` sets `TIMER` on the body, [SRV] `roundtrip`
+moves it into `S_FRONT`).
+
+```json
+{ "value": { "S_FRONT": { "ID": "9EA726DF4B7244BC882F1552C9DE9D97", "EVENT": "TICK", "TIMER": true } } }
+```
+
+- A frontend MUST NOT send `TIMER` on any request but the tick of a
+  `START_TIMER` - not on a user event, not on an app start, not on a
+  window request - and sends it only as `true` ([V1] `eB`: `timer` is set
+  by no wire, only by [VO] `evStartTimer`). A frontend MAY leave it out
+  on a tick too: the tick is then an ordinary event, answered with a new
+  id. *Frontend check:* `request.timer-mark`.
+- The tick is otherwise an ordinary event request: it continues the id
+  adopted last, carries the model delta like any event, and its event is
+  the one the action named. The ticks of a repeating timer (revision 0.8,
+  [actions.md](actions.md#the-timer)) are ticks like this one - the
+  repeat changes when a tick is sent, not what it sends.
+- A backend that does not know `TIMER` ignores it (above). A backend that
+  knows it MAY answer a tick whose app state is unchanged with the id it
+  continued, and writes no draft then; for every other request - a tick
+  that changed the app state included - the rule of a new id holds
+  ([sessions.md](sessions.md#draft-ids)). *Checked by:*
+  `session.timer-tick`.
+- **Implementation note.** `timer` also rides in the options object the
+  UI5 frontend dispatches the tick with (`[<event>, { noBusy, timer: true
+  }]`, [LIB] `eventOptions`) - that is the frontend's own call, not a
+  wire: no view carries it, and a backend writes it into no wire
+  ([../profiles/ui5.md](../profiles/ui5.md#the-options-of-a-wire)).
 
 ## Event arguments
 
