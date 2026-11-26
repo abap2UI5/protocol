@@ -1,0 +1,24 @@
+// The dependencies and the syntax of the namespace rename of the ABAP
+// conformance apps (`npm run rename`, scripts/rename.mjs - package.json
+// config.renameLint points here). abaplint.jsonc resolves the framework from
+// the installed @abap2ui5/node-runtime, a folder; the rename has to CLONE
+// abap2UI5 to rename it along with the apps, so it needs the repository -
+// the release 1.151.0, the first with the app-driven window
+// (Z2UI5_CL_CONF_WINDOW).
+{
+  "dependencies": [
+    {
+      "url": "https://github.com/abapedia/steampunk-2305-api-intersect-702",
+      "files": "/src/**/*.*"
+    },
+    {
+      "url": "https://github.com/abap2UI5/abap2UI5",
+      "branch": "1.151.0",
+      "files": "/src/**/*.*"
+    }
+  ],
+  "syntax": {
+    "version": "v750",
+    "errorNamespace": "."
+  }
+}

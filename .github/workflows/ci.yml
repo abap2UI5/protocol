@@ -76,6 +76,16 @@ jobs:
         run: npm ci --prefix conformance/hosts/cap2ui5 --no-audit --no-fund
       - name: abaplint (ABAP conformance apps)
         run: npm run lint:abap
+      # the two things every repository of the abap2UI5 ecosystem has to do
+      # with its ABAP: downport it to 7.02 (on a copy, against abap2UI5
+      # 1.151.0-702) and rename it into another namespace (abap2UI5 1.151.0
+      # renamed along, the longest name it allows) - AGENTS.md "Gates"
+      - name: 7.02 downport (ABAP conformance apps)
+        if: ${{ matrix.node == '22' }}
+        run: npm run lint:abap:702
+      - name: namespace rename (ABAP conformance apps)
+        if: ${{ matrix.node == '22' }}
+        run: npm run rename
       - name: npm test (both backends, agent client, Adaptive Cards and terminal renderers)
         run: npm test
       - name: generated sections are up to date
