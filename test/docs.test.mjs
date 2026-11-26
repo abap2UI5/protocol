@@ -33,7 +33,8 @@ function anchors(file) {
 function markdownFiles(dir = ROOT) {
   const out = [];
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (["node_modules", ".git", ".build", ".cache", "deps", "test-results"].includes(e.name)) continue;
+    // rename-deps: the abap2UI5 clone npm run rename renames along (gitignored)
+    if (["node_modules", ".git", ".build", ".cache", "deps", "rename-deps", "test-results"].includes(e.name)) continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) out.push(...markdownFiles(p));
     else if (e.name.endsWith(".md")) out.push(p);

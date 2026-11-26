@@ -1,0 +1,47 @@
+// The 7.02 downport of the ABAP conformance apps (abap/): `npm run
+// lint:abap:702` (scripts/check-702.mjs) copies them into a temporary
+// folder, downports the copy with abaplint --fix against this config and
+// lints the result at v702 - 0 issues. Never run --fix with it on the tree
+// you commit. The framework is abap2UI5's downported release 1.151.0-702,
+// the first release that carries the app-driven window
+// (Z2UI5_CL_CONF_WINDOW).
+{
+  "global": {
+    "files": "/abap/**/*.*"
+  },
+  "dependencies": [
+    {
+      "url": "https://github.com/open-abap/open-abap-core",
+      "folder": "/deps/open-abap-core",
+      "files": "/src/**/*.*"
+    },
+    {
+      "url": "https://github.com/abap2UI5/abap2UI5",
+      "branch": "1.151.0-702",
+      "folder": "/deps/abap2UI5-702",
+      "files": "/src/**/*.*"
+    }
+  ],
+  "syntax": {
+    "version": "v702",
+    "errorNamespace": "."
+  },
+  "rules": {
+    "downport": true,
+    "definitions_top": true,
+    "begin_end_names": true,
+    "check_ddic": true,
+    "check_include": true,
+    "check_syntax": true,
+    "global_class": true,
+    "implement_methods": true,
+    "line_length": {
+      "length": 255
+    },
+    "method_implemented_twice": true,
+    "parser_error": true,
+    "superclass_final": true,
+    "unknown_types": true,
+    "xml_consistency": true
+  }
+}

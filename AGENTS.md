@@ -43,7 +43,8 @@ down, and the spec records what the implementations do.
 - **Behaviour the suite needs lives in a conformance app, twice.** A new app
   or event goes into `conformance/apps/README.md`, the ABAP class
   (`conformance/apps/abap`, abapGit format, abaplint-clean:
-  `npm run lint:abap`; also clean in the abap2UI5 linter) AND the cap2UI5
+  `npm run lint:abap`; also clean in the abap2UI5 linter; downportable to
+  7.02, `npm run lint:abap:702`; renameable, `npm run rename`) AND the cap2UI5
   twin (`conformance/apps/cap2ui5`). `test/traffic.test.mjs` requires both
   backends to answer every check identically.
 - **Traffic is recorded, never hand-edited.** `npm run record` rewrites
@@ -98,7 +99,20 @@ inside the backend run) and the UI5 SPA (when an abap2UI5 checkout and a
 Chromium are there;
 `PROTOCOL_SKIP_BROWSER=1` skips it, `PROTOCOL_REQUIRE_BROWSER=1` fails
 without them). CI runs the same on Node 22 and 24, and the UI5 SPA in a
-job of its own with Chromium. Never `playwright install` in a sandbox that
+job of its own with Chromium.
+
+The ABAP conformance apps have three gates of their own, CI steps before
+`npm test`: `npm run lint:abap` (abaplint, the shared app rule set),
+`npm run lint:abap:702` (`scripts/check-702.mjs`: a copy downported with
+`abaplint --fix` and linted at v702 against abap2UI5 1.151.0-702,
+`conformance/apps/abap_702.jsonc`) and `npm run rename`
+(`scripts/rename.mjs`, the namespace rename every repository of the
+abap2UI5 ecosystem shares: the apps and abap2UI5 1.151.0 renamed together
+to the longest name allowed, every name within its object type - hence the
+25 characters of `object_naming` - and no literal naming a renamed class;
+`package.json` `config` points it at `conformance/apps/abap` and
+`conformance/apps/abap_rename.jsonc`). A backend that renamed abap2UI5
+serves the apps under the renamed names and maps them with `--app`. Never `playwright install` in a sandbox that
 has browsers already - point `CHROMIUM_BIN` at one.
 
 ## Style

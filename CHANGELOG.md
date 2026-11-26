@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **The ABAP conformance apps downport to 7.02 and rename into another
+  namespace** (2026-11-26), like every repository of the abap2UI5
+  ecosystem: `npm run lint:abap:702` (a copy downported and linted at v702
+  against abap2UI5 1.151.0-702) and `npm run rename` (the shared
+  `scripts/rename.mjs`, abap2UI5 1.151.0 renamed along), both CI steps.
 - **`SET_TITLE_LAUNCHPAD` follows the owns-the-page rule** (2026-11-25):
   like `SET_TITLE`, an embedded component that does not own the page sets
   no shell title with it (abap2UI5 DEV `bd85ca52`, [LIB] `setShellTitle`);

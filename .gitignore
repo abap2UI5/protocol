@@ -6,3 +6,7 @@ conformance/apps/deps/
 conformance/hosts/cap2ui5/node_modules/
 conformance/hosts/cap2ui5/srv/apps/
 *.log
+
+# npm run rename: the renamed apps, the clones it renames along, its config
+.github/out/
+.github/abaplint/
