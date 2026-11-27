@@ -8,7 +8,8 @@ and `npm run conformance:cap2ui5` against the released
 traffic of this run is recorded in [`../traffic/`](../traffic/) - against
 what, [below](#what-the-traffic-is-recorded-against). What came after the
 release: [the timer the backend keeps, measured](#the-timer-the-backend-keeps-measured)
-and [the agent client on protocol 3](#the-agent-client-on-protocol-3).
+and [the agent client on protocol 3](#the-agent-client-on-protocol-3),
+re-vendored since at [mcp-server `53555b0`](#the-agent-client-at-53555b0).
 What the release
 changed here: [the release 1.151.0](#the-release-11510). What the move
 changed in the suites, what it found and who had not followed yet:
@@ -83,8 +84,8 @@ way:
   without the app-driven window, as before.
 
 `traffic/<backend>/agent-client.json` is recorded on the same hosts with
-the agent client of mcp-server `8a1d7d8` (`MCP_SERVER_HOME` at a `git
-archive` of the commit vendored here, protocol 3), and validated against
+the agent client of mcp-server `53555b0` (`MCP_SERVER_HOME` at a `git
+archive` of the commit vendored here, protocol 3; `8a1d7d8` before), and validated against
 the schemas like the rest; until 2026-11-27
 `traffic/node-runtime/agent-client.json` was the one of `332a0b0` against
 a protocol-2 runtime, kept for its snapshots (`TRAFFIC_PROTOCOL_2`, empty
@@ -190,6 +191,28 @@ suite runs against it again instead of the one check `slots.main`.
   3 (`npm run record`, `MCP_SERVER_HOME` at a `git archive` of
   `8a1d7d8`); their exchanges are validated against the schemas
   (`TRAFFIC_PROTOCOL_2` is empty).
+
+## The agent client at 53555b0
+
+Re-vendored (`npm run vendor:agent`) from abap2UI5/mcp-server `53555b0`
+(its #90, `main` on 2026-11-27; vendored before: `8a1d7d8`). What moved
+in the three modules is the client's hardening, not its reading of the
+protocol: an event whose answer was lost may have run (the session takes
+no further event until it is described again), the backend's answer is
+read up to 32 MB, the `$parameters` ternary is parsed in one linear pass,
+a view nested deeper than 256 levels is cut and named, and a repeating
+`START_TIMER` stays an action until `STOP_TIMER`.
+
+- **The frontend suite: 65 pass, 0 fail, 0 warn, 37 skip** (profile
+  semantic) - the same checks as at `8a1d7d8`, the same skips;
+  `AGENT_KNOWN_FAILS` stays empty.
+- `traffic/*/agent-client.json` recorded again with it on both hosts
+  (`npm run record`, `MCP_SERVER_HOME` at a `git archive` of `53555b0`,
+  `ABAP2UI5_HOME` at one of 1.151.0): the exchanges and the snapshots are
+  those of `8a1d7d8`; ids, ports, ETags and timings moved, and the
+  `source` line names the commit. The backend runs of the recording:
+  node-runtime 99 pass, cap2UI5 98 pass and 1 warn (`error.details`), as
+  before.
 
 ## The release 1.151.0
 
@@ -843,7 +866,8 @@ records - as a rule, or as an implementation note:
 Frontend suite, 102 checks (83 MUST, 19 SHOULD; 76 core, 8 portable, 15 UI5,
 3 semantic), run 2026-11-27 for protocol 3 (revision 0.9) against the
 traffic recorded from the released `@abap2ui5/node-runtime` 1.151.0 - the
-UI5 SPA of abap2UI5 1.151.0, the agent client of mcp-server `8a1d7d8`,
+UI5 SPA of abap2UI5 1.151.0, the agent client of mcp-server `53555b0`
+(`8a1d7d8` before: the same results),
 the Adaptive Cards and the terminal renderer (2026-11-24 against a
 runtime packed from DEV `a9c08191` and its UI5 SPA: the same results) - with
 `abap2ui5-conformance frontend --adapter <name>` (each frontend at its
@@ -977,9 +1001,10 @@ error body shown verbatim as text.
 
 ### Findings - the agent client
 
-On 2026-11-27 it is vendored at mcp-server `8a1d7d8` (protocol 3): 65
-pass, 0 fail, 0 warn, 37 skip, no finding open
-([the agent client on protocol 3](#the-agent-client-on-protocol-3)). The
+On 2026-11-27 it is vendored at mcp-server `53555b0` (protocol 3; at
+`8a1d7d8` the same): 65 pass, 0 fail, 0 warn, 37 skip, no finding open
+([the agent client on protocol 3](#the-agent-client-on-protocol-3),
+[at 53555b0](#the-agent-client-at-53555b0)). The
 record before it:
 
 Re-vendored at abap2UI5/mcp-server `a4d9f07` (main, PR #44), and again at

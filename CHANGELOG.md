@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- **The agent client is re-vendored at abap2UI5/mcp-server `53555b0`**
+  (its #90; was `8a1d7d8`): the client's hardening - a lost answer leaves
+  the session out of sync, a 32 MB read cap, a linear `$parameters`
+  parse, a view depth cut - and no change in how it reads the protocol.
+  The frontend suite holds at 65 pass, 0 fail, 37 skip (the pins of
+  `test/frontend.test.mjs` unchanged), and `traffic/*/agent-client.json`
+  is recorded again with it on both hosts (`npm run record`).
+- **The package is marked `private`**: it is not on npm, and `npm publish`
+  from a checkout would have published it under `@abap2ui5/protocol`.
+  The cap2UI5 host package already was.
+- **body-parser 2.4.0** in both lockfiles (through express 5.3.0 here, a
+  development dependency; through `@cap2ui5/cds-plugin`'s express in the
+  cap2UI5 host, where it serves the backend): past the DoS advisory of
+  2.3.0 (GHSA-27r3-jxmh-p828).
 - **The timer the backend keeps is measured** (2026-11-27). `timer_set( )`
   and `timer_stop( )` are released with abap2UI5 1.151.0 and hosted by
   `@cap2ui5/cds-plugin` 0.8.0, so the conformance app ACTIONS declares its
