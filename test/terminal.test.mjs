@@ -16,7 +16,7 @@ import {
   printResponses, createSession, createTerminalApp, runTui, CONTROLS, colorWanted, strWidth, truncate, wrap, clean, keyName, parseRoute, fitColumns,
 } from "../renderers/terminal/index.mjs";
 import { TOLERATED } from "../renderers/common/view.mjs";
-import { truncateLine, lineText } from "../renderers/terminal/text.mjs";
+import { truncateLine, lineText, lineAnsi } from "../renderers/terminal/text.mjs";
 import { renderMapping, apply, README } from "../scripts/render-terminal.mjs";
 import { startMock } from "../conformance/frontend/index.mjs";
 import { load, ROOT } from "./lib/traffic.mjs";
@@ -383,6 +383,138 @@ test("text from the backend cannot reach the terminal as a control sequence", ()
   // the only escape sequences are the renderer's own SGR styles
   assert.deepEqual(out.match(/\x1b(?!\[[0-9;]*m)/g), null);
   assert.ok(out.replace(/\x1b\[[0-9;]*m/g, "").includes("Error: HTTP 500"));
+});
+
+test("text from the backend cannot reach the terminal on any path: the title, the app, the status line, a message box's actions, --print's log", async () => {
+  const EVIL = "\x1b]52;c;ZXZpbA==\x07\x1b[2J";
+  assert.equal(clean("a\u202eb\u2066c\u2069d\u202a"), "abcd");
+  const mock = await startMock();
+  try {
+    const [first] = recorded("model.scalar", 0);
+    const evil = JSON.parse(JSON.stringify(first));
+    evil.S_FRONT.APP = `Z2UI5_CL_X${EVIL}`;
+    evil.S_FRONT.ACTIONS = [
+      ["SET_TITLE", `title${EVIL}`],
+      ["INVISIBLE_MESSAGE", "show", `notice${EVIL}`],
+      ["URLHELPER", "REDIRECT", `https://x.invalid/${EVIL}`],
+      [`UNKNOWN${EVIL}`, "go"],
+      ["MESSAGE_BOX", "confirm", "Sure?", { actions: [`YES${EVIL}`, "NO"] }],
+    ];
+    const { app, session } = await started(mock, evil);
+    assert.equal(session.title, "title\ufffd]52;c;ZXZpbA==\ufffd\ufffd[2J");
+    // the sink drops what a source forgot - here a field's label bypassing render
+    const unsafe = (out) => out.match(/\x07|\x1b(?!\[[0-9;]*m)|[\u0000-\u0006\u0008-\u0009\u000b-\u001a\u001c-\u001f\u0080-\u009f]/g);
+    for (const color of [false, true]) {
+      const colored = createTerminalApp({ session, width: 100, height: 30, color });
+      const frame = colored.frame().lines.join("\n");
+      assert.equal(unsafe(frame), null, JSON.stringify(frame));
+      assert.match(frame.replace(/\x1b\[[0-9;]*m/g, ""), /abap2UI5 - title\ufffd\]52;c;ZXZpbA==/);
+      assert.match(frame.replace(/\x1b\[[0-9;]*m/g, ""), /YES\ufffd\]52/);
+      assert.equal(unsafe(colored.print()), null);
+    }
+    assert.match(app.status(), /notice\ufffd\]52/);
+    assert.equal(unsafe(app.status()), null);
+    for (const l of session.log) assert.equal(unsafe(l), null, l);
+    assert.ok(session.log.some((l) => /^unknown follow-up action: UNKNOWN\ufffd/.test(l)));
+    // the action pressed goes back as the backend sent it
+    assert.ok(app.widgets().some((w) => w.box === `YES${EVIL}`));
+    // the last line of defence: a segment nobody cleaned
+    assert.equal(lineAnsi([{ text: `a${EVIL}\u202eb`, style: "bold" }], true), "\x1b[1ma]52;c;ZXZpbA==[2Jb\x1b[0m");
+    assert.equal(lineAnsi([{ text: `a${EVIL}` }], false), "a]52;c;ZXZpbA==[2J");
+  } finally {
+    await mock.close();
+  }
+});
+
+test("width: emoji, ZWJ sequences, VS16 and fullwidth by grapheme cluster; the field's cursor window in columns", async () => {
+  assert.equal(strWidth("\u2705"), 2);
+  assert.equal(strWidth("\u{1f680}"), 2);
+  assert.equal(strWidth("\u2b50"), 2);
+  assert.equal(strWidth("\u{1f468}\u200d\u{1f469}\u200d\u{1f467}\u200d\u{1f466}"), 2);
+  assert.equal(strWidth("\u2764\ufe0f"), 2);
+  assert.equal(strWidth("\u2764"), 1);
+  assert.equal(strWidth("\u00a9"), 1);
+  assert.equal(strWidth("1\ufe0f\u20e3"), 2);
+  assert.equal(strWidth("\u{1f1e9}\u{1f1ea}"), 2);
+  assert.equal(strWidth("\u{1f44d}\u{1f3fd}"), 2);
+  assert.equal(strWidth("\uff21\uff22"), 4);
+  assert.equal(strWidth("e\u0301"), 1);
+  assert.equal(truncate("\u{1f680}\u{1f680}\u{1f680}\u{1f680}", 5), "\u{1f680}...");
+  // a ZWJ sequence is never cut in half
+  const family = "\u{1f468}\u200d\u{1f469}\u200d\u{1f467}";
+  assert.equal(truncate(`${family}${family}${family}`, 5), `${family}...`);
+  assert.deepEqual(wrap(`${family}${family}${family}`, 4), [`${family}${family}`, family]);
+  const mock = await startMock();
+  try {
+    const [first] = recorded("model.scalar", 0);
+    const { app } = await started(mock, first);
+    assert.equal(app.focused().path, "/NAME");
+    await app.key("ctrl-u");
+    // wider than the field: the cursor stays in its last column, the frame as wide as the screen
+    await app.type("\u{1f680}".repeat(30));
+    const f = app.frame();
+    for (const l of f.lines) assert.ok(strWidth(l) <= 80, `${strWidth(l)}: ${l}`);
+    const row = f.lines[f.cursor.row];
+    const field = row.slice(row.indexOf("[") + 1, row.indexOf("]"));
+    assert.ok(/^>?(\u{1f680}){5}__$/u.test(field), field);
+    // right after the last rocket shown, in columns
+    assert.equal(f.cursor.col, strWidth(row.slice(0, row.lastIndexOf("\u{1f680}") + 2)));
+    // the cursor is left of the rocket it stands before, by columns
+    await app.key("home");
+    for (let i = 0; i < 3; i += 1) await app.key("right");
+    const g = app.frame();
+    const r2 = g.lines[g.cursor.row];
+    assert.equal(g.cursor.col, strWidth(r2.slice(0, r2.indexOf("\u{1f680}"))) + 6);
+    // Left / Backspace take a whole cluster
+    await app.key("end");
+    await app.type(family);
+    await app.key("backspace");
+    assert.equal(app.edit.buffer, "\u{1f680}".repeat(30));
+  } finally {
+    await mock.close();
+  }
+});
+
+test("paste: a bracketed paste is literal text for the focused field - it never submits or moves the focus", async () => {
+  const mock = await startMock();
+  try {
+    const [first] = recorded("model.scalar", 0);
+    const { run, app, session } = await started(mock, first);
+    assert.equal(app.focused().path, "/NAME");
+    await app.key("ctrl-u");
+    await app.paste("Ada\r\nLovelace\tx\x1b[2J");
+    assert.equal(app.focused().path, "/NAME");
+    assert.equal(app.edit.buffer, "Ada Lovelace x[2J");
+    assert.equal(run.posts().length, 1);
+    // through the TTY: bracketed paste on at the start, off at the end
+    const input = new PassThrough();
+    const output = new EventEmitter();
+    output.columns = 80;
+    output.rows = 30;
+    let written = "";
+    output.write = (s) => {
+      written += s;
+      return true;
+    };
+    const done = runTui({ app, input, output });
+    assert.match(written, /^\x1b\[\?1049h\x1b\[\?2004h/);
+    await app.key("ctrl-u");
+    input.write("\x1b[200~one\r\ttwo\x1b[201~");
+    await new Promise((r) => setTimeout(r, 20));
+    assert.equal(app.focused().path, "/NAME");
+    assert.equal(app.edit.buffer, "one  two");
+    assert.equal(run.posts().length, 1);
+    assert.equal(session.busy, false);
+    // after the paste, keys are keys again
+    input.write("!");
+    await new Promise((r) => setTimeout(r, 20));
+    assert.equal(app.edit.buffer, "one  two!");
+    input.write("\x03");
+    await done;
+    assert.match(written, /\x1b\[\?2004l\x1b\[\?25h\x1b\[\?1049l$/);
+  } finally {
+    await mock.close();
+  }
 });
 
 test("tty: readline keypresses map onto the app's key names; routes parse", () => {

@@ -4,7 +4,8 @@ The scripts that produced the census behind `profiles/portable.md` and
 `profiles/portable-v1.json`, kept **as they were run** on 2026-10-03 - the
 corpus roots at the top of `census.mjs` are the paths of that run (sibling
 checkouts and cloned addon repositories); point them at your own checkouts
-before running again.
+before running again - `census.mjs` stops and names every root it cannot
+find rather than count a smaller corpus.
 
 Prerequisite: a copy of `@abap2ui5/linter` 0.8.5 `lib/` and `data/` in
 `./lint`, with `lib/reconstruct.mjs` `resolveExpr` patched so the

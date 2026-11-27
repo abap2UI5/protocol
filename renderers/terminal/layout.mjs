@@ -17,7 +17,7 @@
  * widgets, spacers), field (a label column and its items), cols, box,
  * table, banner, bar, page.
  */
-import { GLYPHS, strWidth, wrap, truncate, truncateLine, padLine, lineWidth, sliceWidth, pad, clean } from "./text.mjs";
+import { GLYPHS, strWidth, wrap, truncate, truncateLine, padLine, lineWidth, sliceWidth, pad, clean, graphemes, clusterWidth } from "./text.mjs";
 
 const seg = (text, style, extra) => ({ text, ...(style ? { style } : {}), ...(extra || {}) });
 
@@ -90,17 +90,35 @@ export function widgetLines(w, width, env) {
   }
 }
 
+/**
+ * The first character shown of a field `iw` columns wide whose cursor stands
+ * before character `c` of `chars` (grapheme clusters): from the start while
+ * the text up to the cursor fits, else so far on that the cursor stands in
+ * the last column - counted in columns, a wide character takes two.
+ */
+function windowStart(chars, c, iw) {
+  let start = c;
+  let used = 0;
+  while (start > 0 && used + clusterWidth(chars[start - 1]) <= iw - 1) {
+    start -= 1;
+    used += clusterWidth(chars[start]);
+  }
+  return start;
+}
+
 function inputLines(w, width, env, { open, close, style, k, g }) {
   const editing = env.edit && env.edit.key === w.key;
   const total = Math.max(3, Math.min(width, env.fill ? width : Math.max(naturalWidth(w), w.fillTo || 0)));
   const iw = total - 2;
-  // a value from the model is sanitised like every text of the backend
+  // a value from the model is sanitised like every text of the backend; the
+  // text before the cursor too, so the cursor stays where it was typed
   const raw = clean(editing ? env.edit.buffer : String(w.value ?? ""));
-  const mask = (s) => (w.password ? "*".repeat([...s].length) : s);
+  const beforeCursor = editing ? clean(env.edit.buffer.slice(0, env.edit.cursor)) : "";
+  const mask = (s) => (w.password ? "*".repeat(graphemes(s).length) : s);
   const fieldStyle = style || "underline";
   if (w.multiline) {
     const rows = raw.split("\n");
-    const cursorLine = editing ? raw.slice(0, env.edit.cursor).split("\n").length - 1 : -1;
+    const cursorLine = editing ? beforeCursor.split("\n").length - 1 : -1;
     const height = Math.min(10, Math.max(w.rows || 2, rows.length));
     const out = [];
     for (let i = 0; i < height; i += 1) {
@@ -108,9 +126,9 @@ function inputLines(w, width, env, { open, close, style, k, g }) {
       let shown;
       let cursorAt = -1;
       if (i === cursorLine) {
-        const col = [...raw.slice(0, env.edit.cursor).split("\n").pop()].length;
-        const chars = [...text];
-        const start = Math.max(0, col - iw + 1);
+        const col = graphemes(beforeCursor.split("\n").pop()).length;
+        const chars = graphemes(text);
+        const start = windowStart(chars, col, iw);
         shown = sliceWidth(chars.slice(start).join(""), iw);
         cursorAt = col - start;
       } else {
@@ -122,9 +140,9 @@ function inputLines(w, width, env, { open, close, style, k, g }) {
   }
   const flat = mask(raw.replace(/\n/g, " "));
   if (editing) {
-    const chars = [...flat];
-    const c = [...raw.slice(0, env.edit.cursor)].length;
-    const start = Math.max(0, c - iw + 1);
+    const chars = graphemes(flat);
+    const c = graphemes(beforeCursor).length;
+    const start = windowStart(chars, c, iw);
     return [fieldSegs(sliceWidth(chars.slice(start).join(""), iw), c - start, iw, { open, close, style: fieldStyle, k, g })];
   }
   if (!flat && w.placeholder && w.focusable) {
@@ -137,7 +155,7 @@ function inputLines(w, width, env, { open, close, style, k, g }) {
 function fieldSegs(shown, cursorAt, iw, { open, close, style, k, g }) {
   const out = [seg(open, style, k)];
   if (cursorAt >= 0) {
-    const chars = [...shown];
+    const chars = graphemes(shown);
     out.push(seg(chars.slice(0, cursorAt).join(""), style, k), seg("", undefined, { cursor: true }), seg(chars.slice(cursorAt).join(""), style, k));
   } else {
     out.push(seg(shown, style, k));

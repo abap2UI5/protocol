@@ -16,7 +16,8 @@
  * focused action (submits a field that has a submit event, opens a pick
  * list), Space toggles, Esc closes the pick list or a popover, Alt+Left /
  * Ctrl+B go back, PageUp / PageDown scroll, F1 shows the keys, Ctrl+R
- * restarts the app, Ctrl+C quits.
+ * restarts the app, Ctrl+C quits. A paste (bracketed paste) goes into the
+ * focused field as literal text, `app.paste(text)`.
  *
  * An edit is the UI5 Input's: it is written into the model when it is
  * committed - the focus leaves the field, Enter, an action fires - and only
@@ -27,7 +28,7 @@ import { getAt } from "../../conformance/frontend/adapters/vendor/mcp-server/sna
 import { coerce } from "../common/request.mjs";
 import { renderScreen } from "./render.mjs";
 import { layoutBlocks, frame as drawFrame } from "./layout.mjs";
-import { GLYPHS, lineAnsi, lineText, lineWidth, padLine, truncateLine, strWidth, truncate, sliceWidth } from "./text.mjs";
+import { GLYPHS, lineAnsi, lineText, lineWidth, padLine, truncateLine, strWidth, truncate, sliceWidth, graphemes, clean } from "./text.mjs";
 
 const seg = (text, style, extra) => ({ text, ...(style ? { style } : {}), ...(extra || {}) });
 
@@ -36,7 +37,7 @@ function sliceLine(line, from, to) {
   const out = [];
   let col = 0;
   for (const s of line) {
-    for (const ch of s.text) {
+    for (const ch of graphemes(s.text)) {
       const w = strWidth(ch);
       if (col >= from && col + w <= to) {
         const last = out[out.length - 1];
@@ -185,7 +186,8 @@ export function createTerminalApp({ session, width = 80, height = 24, color = fa
       help.push("Tab next");
     }
     help.push("F1 keys", "Ctrl+C quit");
-    return [...parts, help.join("  ")].join(" | ");
+    // notices carry the backend's strings (a message, a URL, a file name)
+    return clean([...parts, help.join("  ")].join(" | "), { keepNewlines: false });
   }
 
   const focusedPickerMulti = (screen) => {
@@ -264,8 +266,9 @@ export function createTerminalApp({ session, width = 80, height = 24, color = fa
       if (p) place(p);
     }
     if (ui.help) place(helpLines(W - 4));
-    const title = session.title || screen.title || session.state.app || "";
-    const right = session.hash ? ` ${session.hash}` : "";
+    // the title (SET_TITLE), the app (S_FRONT.APP) and the hash are the backend's
+    const title = clean(session.title || screen.title || session.state.app || "", { keepNewlines: false });
+    const right = session.hash ? ` ${clean(session.hash, { keepNewlines: false })}` : "";
     const left = ` abap2UI5${title ? ` - ${title}` : ""}`;
     const headText = `${truncate(left, Math.max(1, W - strWidth(right)), glyphs)}`;
     const header = padLine([seg(headText, "reverse bold"), seg(" ".repeat(Math.max(0, W - strWidth(headText) - strWidth(right))), "reverse"), seg(sliceWidth(right, Math.max(0, W - strWidth(headText))), "reverse")], W);
@@ -408,8 +411,9 @@ export function createTerminalApp({ session, width = 80, height = 24, color = fa
 
   function editKey(name, ch) {
     const e = ui.edit;
-    const chars = [...e.buffer];
-    const c = [...e.buffer.slice(0, e.cursor)].length;
+    // the cursor moves and deletes by what is drawn as one character
+    const chars = graphemes(e.buffer);
+    const c = graphemes(e.buffer.slice(0, e.cursor)).length;
     const set = (arr, cur) => {
       e.buffer = arr.join("");
       e.cursor = arr.slice(0, cur).join("").length;
@@ -423,9 +427,9 @@ export function createTerminalApp({ session, width = 80, height = 24, color = fa
       case "delete": if (c < chars.length) { chars.splice(c, 1); set(chars, c); } return true;
       case "ctrl-u": set([], 0); return true;
       case "char": {
-        const add = [...ch];
-        chars.splice(c, 0, ...add);
-        set(chars, c + add.length);
+        const before = chars.slice(0, c).join("") + ch;
+        e.buffer = before + chars.slice(c).join("");
+        e.cursor = before.length;
         return true;
       }
       default: return false;
@@ -438,11 +442,11 @@ export function createTerminalApp({ session, width = 80, height = 24, color = fa
     const before = e.buffer.slice(0, e.cursor);
     const lines = e.buffer.split("\n");
     const row = before.split("\n").length - 1;
-    const col = before.split("\n").pop().length;
+    const col = graphemes(before.split("\n").pop()).length;
     const to = row + dir;
     if (to < 0 || to >= lines.length) return false;
     const start = lines.slice(0, to).reduce((n, l) => n + l.length + 1, 0);
-    e.cursor = start + Math.min(col, lines[to].length);
+    e.cursor = start + graphemes(lines[to]).slice(0, col).join("").length;
     return true;
   }
 
@@ -487,6 +491,26 @@ export function createTerminalApp({ session, width = 80, height = 24, color = fa
       case "escape": ui.picker = null; break;
       default:
     }
+    return Promise.resolve();
+  }
+
+  /**
+   * Text pasted into the terminal (bracketed paste): literal characters for
+   * the focused field - a line feed stays one in a text area and is a space
+   * elsewhere, a tab is a space, other control characters are dropped. A
+   * paste never submits, presses or moves the focus; outside a field (an
+   * action, a pick list, the keys help) it does nothing.
+   */
+  function pasteText(textIn) {
+    ui.seen = session.roundtrips;
+    if (ui.help || ui.picker) return Promise.resolve();
+    const w = focused();
+    if (!w || w.kind !== "input" || !ui.edit || ui.edit.key !== w.key) return Promise.resolve();
+    let t = String(textIn ?? "").replace(/\r\n?/g, "\n").replace(/\t/g, " ");
+    if (!w.multiline) t = t.replace(/\n/g, " ");
+    t = t.replace(/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/g, "");
+    if (w.maxLength) t = [...t].slice(0, Math.max(0, w.maxLength - [...ui.edit.buffer].length)).join("");
+    if (t) editKey("char", t);
     return Promise.resolve();
   }
 
@@ -596,6 +620,7 @@ export function createTerminalApp({ session, width = 80, height = 24, color = fa
       for (const ch of String(textIn)) await key(ch === "\n" ? "enter" : { ch });
     },
     key,
+    paste: pasteText,
     frame,
     /** The whole screen as text: the page, the overlays below it - what
      *  `--print` writes. `color` adds ANSI styles. */
