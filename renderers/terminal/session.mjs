@@ -38,6 +38,7 @@ import { emptyState, getAt, setAt } from "../../conformance/frontend/adapters/ve
 import { applyResponse, destroySlot } from "../common/response.mjs";
 import { modelKeyOf, liveSlots, PROFILE } from "../common/view.mjs";
 import { submitToRequest, startRequest, eventRequest } from "../common/request.mjs";
+import { clean } from "./text.mjs";
 
 export const PROTOCOL = 3;
 
@@ -163,9 +164,13 @@ export function createSession({
   // the hash history (a browser's, for this page)
   const router = { trail: [""], pos: 0, navRouting: false, navMode: null, currentApp: null, currentDraftId: null, navFromHash: false, hashEvent: null, appHash: "" };
 
+  // the log and the notices carry the backend's strings (a message, a URL,
+  // a file name, an action's name): cleaned once, here, for every reader
+  const logLine = (text) => log.push(clean(text, { keepNewlines: false }));
   const note = (text) => {
-    log.push(text);
-    notices.push(text);
+    const t = clean(text, { keepNewlines: false });
+    log.push(t);
+    notices.push(t);
   };
   const changed = () => onChange(session);
 
@@ -366,7 +371,7 @@ export function createSession({
         return;
       case "START_TIMER":
         if (!timers) {
-          log.push(`noop: START_TIMER ${method} (timers off)`);
+          logLine(`noop: START_TIMER ${method} (timers off)`);
           return;
         }
         later(String(method), Number(rest[0]) || 0);
@@ -379,7 +384,7 @@ export function createSession({
         scrollRequest = String(method ?? "");
         return;
       case "SET_TITLE":
-        title = String(method ?? "");
+        title = clean(String(method ?? ""), { keepNewlines: false });
         effects.push({ kind: "title", text: title });
         return;
       case "CLIPBOARD_COPY":
@@ -411,7 +416,7 @@ export function createSession({
       default:
     }
     if (WIRE.actions.includes(name) || (WIRE.actionGlobals[name] || []).includes(method)) {
-      log.push(`noop: ${name}${global ? ` ${method}` : ""} - no counterpart in a terminal`);
+      logLine(`noop: ${name}${global ? ` ${method}` : ""} - no counterpart in a terminal`);
       return;
     }
     const excluded = PROFILE.frontendActions.excluded.some((x) => x === name || x === `${raw[0]} ${name}`);
@@ -492,7 +497,7 @@ export function createSession({
     const key = modelKeyOf(slot);
     // an action of a layer a modal one covers by now (queued before it opened) is dropped
     if (payload.box === undefined && !job.timer && !liveSlots(state, messages).includes(slot)) {
-      log.push(`queued action ${payload.event || payload.client} dropped - its layer is no longer live`);
+      logLine(`queued action ${payload.event || payload.client} dropped - its layer is no longer live`);
       return;
     }
     const r = submitToRequest(state, payload, { pending: [...pending[key].keys()] });

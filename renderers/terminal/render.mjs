@@ -171,7 +171,8 @@ function renderBox(box, { interactive, widgets, unsupported }) {
   // details are shown with the box, expanded, as text (spec/actions.md#messages)
   if (box.details) blocks.push({ t: "blank" }, { t: "text", text: clean(htmlToText(box.details)), style: "dim" });
   const actions = (box.actions && box.actions.length ? box.actions : ["OK"]).map(String);
-  const items = actions.map((a) => ({ widget: ctx.widget({ kind: "button", label: a, box: a }) }));
+  // the label is shown, the action itself goes back to the backend as sent
+  const items = actions.map((a) => ({ widget: ctx.widget({ kind: "button", label: clean(a, { keepNewlines: false }), box: a }) }));
   blocks.push({ t: "blank" }, { t: "inline", items: [{ spacer: true }, ...items] });
   return { slot: "BOX", title: clean(box.title || BOX_TITLE[box.type] || "Message", { keepNewlines: false }), kind: BOX_KIND[box.type] || "info", blocks, interactive };
 }

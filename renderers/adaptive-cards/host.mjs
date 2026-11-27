@@ -14,7 +14,9 @@
  * The client rules of spec/transport.md: Content-Type and
  * sap-contextid-accept on every POST, the last sap-contextid kept and sent
  * back, the CSRF token handshake (403 + X-CSRF-Token: Required), no retry of
- * a 500, one roundtrip at a time - a submit while one is in flight is queued
+ * a 500, a timeout (`timeoutMs`, 120 s as the terminal's session: the
+ * roundtrip - POST, token HEAD, body - is abandoned and shown as an error,
+ * the queue goes on), one roundtrip at a time - a submit while one is in flight is queued
  * and built when it leaves (decided in revision 0.3, open question 8).
  * Follow-up actions: toasts and message boxes are shown, START_TIMER and a
  * toast's onClose fire their event, the other portable actions are no-ops a card has no
@@ -36,7 +38,7 @@ const WIRE = PROFILE.actions.wire;
 
 const validContextId = (v) => typeof v === "string" && v.trim() !== "" && v !== "undefined" && v !== "null";
 
-export function createCardHost({ url, location, fetchImpl = globalThis.fetch, timers = true, onChange = () => {} } = {}) {
+export function createCardHost({ url, location, fetchImpl = globalThis.fetch, timers = true, timeoutMs = 120_000, onChange = () => {} } = {}) {
   if (!url) throw new Error("createCardHost: url is required");
   const u = new URL(url);
   const where = location || ((app) => ({ origin: u.origin, pathname: u.pathname, search: `?app_start=${encodeURIComponent(app)}` }));
@@ -58,18 +60,21 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
 
   async function post(body) {
     const text = JSON.stringify({ value: body });
+    // one deadline for the whole roundtrip: a backend that never answers
+    // must not hold the queue (inflight) forever
+    const signal = AbortSignal.timeout(timeoutMs);
     const send = () => {
       const headers = { "content-type": "application/json", "sap-contextid-accept": "header" };
       if (contextId) headers["sap-contextid"] = contextId;
       if (csrf) headers["x-csrf-token"] = csrf;
-      return fetchImpl(url, { method: "POST", headers, body: text });
+      return fetchImpl(url, { method: "POST", headers, body: text, signal });
     };
     let res = await send();
     // the refusal's body is read once; without a token it is the answer
     let refusal = null;
     if (res.status === 403 && /^required$/i.test(res.headers.get("x-csrf-token") || "")) {
       refusal = await res.text();
-      const head = await fetchImpl(url, { method: "HEAD", headers: { "x-csrf-token": "Fetch" } });
+      const head = await fetchImpl(url, { method: "HEAD", headers: { "x-csrf-token": "Fetch" }, signal });
       const token = head.headers.get("x-csrf-token") || "";
       // an echoed Required/Fetch is no token
       csrf = token && !/^(required|fetch)$/i.test(token) ? token : null;
@@ -189,7 +194,8 @@ export function createCardHost({ url, location, fetchImpl = globalThis.fetch, ti
     try {
       r = await post(body);
     } catch (e) {
-      error = { text: `the backend did not answer: ${(e && e.message) || e}` };
+      const timedOut = e && (e.name === "TimeoutError" || e.name === "AbortError");
+      error = { text: timedOut ? `the backend did not answer within ${timeoutMs} ms` : `the backend did not answer: ${(e && e.message) || e}` };
       return;
     }
     adopt(r, sent);

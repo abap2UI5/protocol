@@ -19,7 +19,7 @@
 import { createSession } from "../session.mjs";
 import { createTerminalApp } from "../app.mjs";
 import { runTui } from "../tty.mjs";
-import { colorWanted, unicodeWanted } from "../text.mjs";
+import { colorWanted, unicodeWanted, clean } from "../text.mjs";
 import { renderScreen } from "../render.mjs";
 
 const USAGE = `usage: abap2ui5-tui <url> [--app <CLASS>] [--user <u> --password <p> | --cookie <c>]
@@ -117,8 +117,10 @@ async function main() {
     await session.start(o.app || "");
     await session.settle();
     out.write(`${app.print()}\n`);
-    for (const u of renderScreen(session.state, { messages: session.messages, error: session.error }).unsupported) process.stderr.write(`unsupported: ${u.control}${u.id ? ` #${u.id}` : ""} (${u.slot}) - ${u.reason}\n`);
-    for (const l of session.log) process.stderr.write(`${l}\n`);
+    // control names, ids and the log carry the backend's strings
+    const line = (t) => process.stderr.write(`${clean(t, { keepNewlines: false })}\n`);
+    for (const u of renderScreen(session.state, { messages: session.messages, error: session.error }).unsupported) line(`unsupported: ${u.control}${u.id ? ` #${u.id}` : ""} (${u.slot}) - ${u.reason}`);
+    for (const l of session.log) line(l);
     await session.terminate();
     return session.error ? 1 : 0;
   }

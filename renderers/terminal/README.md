@@ -105,6 +105,7 @@ const { text, unsupported } = printResponses([response], { width: 80 });
 | F1 | the key help |
 | Ctrl+R | restart the app from its start URL |
 | Ctrl+C, Ctrl+Q | quit (the stateful session on the server is terminated) |
+| a paste | the pasted text goes into the focused field as it is (bracketed paste): its line feeds and tabs never submit or move the focus |
 
 The status line shows the keys of the focused widget - and, after a
 roundtrip, what the terminal did with follow-up actions it has no
@@ -146,10 +147,13 @@ it could not render.
   error a red `Error:` block with the body verbatim
   ([spec/errors.md](../../spec/errors.md#what-a-frontend-does-with-it)).
 - **Text is sanitised.** Every control character a backend sends (in a
-  view, a model value, an error body) is replaced before it reaches the
-  terminal, so no response can move the cursor, retitle the window or write
-  the clipboard. Wide characters take two columns; what does not fit is cut
-  with an ellipsis.
+  view, a model value, an error body, a title, a message box's actions, a
+  follow-up action's arguments) is replaced where it is read, and every
+  segment passes a last filter before it is written - so no response can
+  move the cursor, retitle the window or write the clipboard; bidi controls
+  are stripped. Width is measured by grapheme cluster: wide East Asian
+  characters and emoji (a ZWJ sequence, a flag, a VS16 sequence once) take
+  two columns; what does not fit is cut with an ellipsis.
 - **Tolerance.** An element outside the profile is a visible placeholder
   `[? <control> - not rendered]`, reported in the status line and by
   `unsupported` (profiles/portable.md#conformance); an unknown follow-up

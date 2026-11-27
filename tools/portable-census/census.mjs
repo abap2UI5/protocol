@@ -24,8 +24,15 @@ const CORPORA = {
   ],
 };
 
+// the corpus roots are the paths of the recorded run (README.md): a root that
+// is not there would silently shrink the census - stop and name it instead
+const missing = Object.entries(CORPORA).flatMap(([corpus, dirs]) => dirs.filter((d) => !fs.existsSync(d)).map((d) => `  ${corpus}: ${d}`));
+if (missing.length) {
+  console.error(`census: ${missing.length} corpus root(s) not found - point CORPORA at the top of census.mjs at your checkouts:\n${missing.join('\n')}`);
+  process.exit(1);
+}
+
 function walk(dir, acc = []) {
-  if (!fs.existsSync(dir)) return acc;
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p, acc);

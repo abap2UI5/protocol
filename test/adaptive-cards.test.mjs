@@ -246,6 +246,42 @@ test("the host: a 403 without a token is answered with its own body; an echoed R
   assert.equal(host.error.text, "HTTP 403\nCSRF token validation failed");
 });
 
+test("the host: a backend that never answers times out - the POST and the token HEAD - and the queue goes on", async (t) => {
+  const [first] = recorded("model.scalar", 0);
+  const hang = (init) => new Promise((resolve, reject) => {
+    init.signal.addEventListener("abort", () => reject(init.signal.reason));
+  });
+  let mode = "post";
+  const calls = [];
+  const fetchImpl = async (u, init) => {
+    calls.push(init.method);
+    assert.ok(init.signal, `${init.method} without a signal`);
+    if (mode === "post") return hang(init);
+    if (mode === "head") {
+      if (init.method === "HEAD") return hang(init);
+      return new Response("CSRF token validation failed", { status: 403, headers: { "x-csrf-token": "Required" } });
+    }
+    return new Response(JSON.stringify(first), { status: 200, headers: { "content-type": "application/json" } });
+  };
+  const host = createCardHost({ url: "http://host.invalid/sap/bc/z2ui5", fetchImpl, timers: false, timeoutMs: 50 });
+  // AbortSignal.timeout does not keep the process alive - a socket would
+  const alive = setInterval(() => {}, 1000);
+  t.after(() => clearInterval(alive));
+  await host.start("Z2UI5_CL_CONF_BIND");
+  assert.equal(host.error.text, "the backend did not answer within 50 ms");
+  assert.equal(host.busy, false);
+  mode = "head";
+  await host.start("Z2UI5_CL_CONF_BIND");
+  assert.equal(host.error.text, "the backend did not answer within 50 ms");
+  assert.equal(host.busy, false);
+  assert.deepEqual(calls, ["POST", "POST", "HEAD"]);
+  // nothing is stuck in flight: the next roundtrip runs
+  mode = "ok";
+  await host.start("Z2UI5_CL_CONF_BIND");
+  assert.equal(host.error, null);
+  assert.equal(host.state.app, first.S_FRONT.APP);
+});
+
 test("the host: edits stay pending until a request carrying them wins", async () => {
   const mock = await startMock();
   try {
