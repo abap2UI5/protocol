@@ -4,6 +4,20 @@ import { BIND, CHECK, startBind, startApp, app, NEXT, nextButton } from "./commo
 
 const T = "spec/transport.md";
 
+/* The press a check makes while a held answer is in flight: when the
+ * frontend cannot make it (Unsupported), the held answer is let go and the
+ * check is skipped - it would pass with no second event ever fired. */
+async function pressOrSkip(t, held, target) {
+  try {
+    await t.press(target, { wait: false });
+  } catch (e) {
+    if (e.name !== "Unsupported") throw e;
+    held.release();
+    await t.settle().catch(() => {});
+    t.skip(`the second event could not be fired: ${e.message}`);
+  }
+}
+
 export default [
   {
     id: "transport.contextid-accept",
@@ -120,11 +134,8 @@ export default [
       const held = t.mock.replyHeld(answer({ app: "Z2UI5_CL_CONF_FE" }));
       await t.press(NEXT, { wait: false });
       await held.received;
-      try {
-        await t.press({ text: "Other", event: "OTHER" }, { wait: false });
-      } catch (e) {
-        if (e.name !== "Unsupported") throw e;
-      }
+      // a second press the frontend cannot make proves nothing: no verdict
+      await pressOrSkip(t, held, { text: "Other", event: "OTHER" });
       await t.wait(400);
       const during = t.posts().length;
       held.release();
@@ -149,11 +160,7 @@ export default [
       t.mock.reply(answer({ app: "Z2UI5_CL_CONF_ACTIONS" }));
       await t.press({ text: "Timer", event: "TIMER" });
       await held.received;
-      try {
-        await t.press({ text: "Focus", event: "FOCUS" }, { wait: false });
-      } catch (e) {
-        if (e.name !== "Unsupported") throw e;
-      }
+      await pressOrSkip(t, held, { text: "Focus", event: "FOCUS" });
       await t.wait(300);
       const during = t.posts().length;
       held.release();

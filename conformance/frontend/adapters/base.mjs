@@ -18,6 +18,12 @@
  *                            when the frontend offers no retry)
  *   back()                   browser Back (capability "url")
  *   setModel(path, value, slot)  a two-way binding writes `path` (capability "modelEdit")
+ *   query(selector)          the number of elements matching a CSS selector
+ *                            in the rendered DOM, shadow roots included
+ *                            (capability "dom"; deepCount below runs in
+ *                            the page) - a markup probe a shadow root hid
+ *                            from document.querySelector would pass
+ *                            vacuously
  *   settle()                 resolves once the frontend is idle
  *   state()                  the normalized state (below)
  *   stop()                   end the instance (close the page)
@@ -65,3 +71,15 @@ export const emptyState = () => ({
 });
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* Runs in the page: the elements matching `selector` in the document and
+ * in every open shadow root under it (a custom element renders into one). */
+export function deepCount(selector) {
+  let n = 0;
+  const visit = (root) => {
+    n += root.querySelectorAll(selector).length;
+    for (const el of root.querySelectorAll("*")) if (el.shadowRoot) visit(el.shadowRoot);
+  };
+  visit(document);
+  return n;
+}

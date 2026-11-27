@@ -67,6 +67,8 @@ has the contract): `open({ mock })`, `start(run, { app })` (a fresh instance
 against the run's endpoint), the interactions `fill(target, value)`,
 `press(target)`, `closeBox({ action, text })`, `retry()` (the Retry of
 the error shown; optional), `back()`, `setModel(path, value)`, then
+`query(selector)` (a frontend with a DOM: how many elements match, shadow
+roots included - a markup probe must reach where the frontend renders),
 `settle()`, `state()` (the normalized state: slots and their
 text, field values, models, messages, the error shown, diagnostics, hash,
 title, focus) and `stop()` / `close()`. A target carries what every kind of
