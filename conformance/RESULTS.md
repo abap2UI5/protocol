@@ -743,6 +743,7 @@ before protocol 3.
 | UI5 SPA (`ui5`) | abap2UI5 1.151.0 `bundle/webapp` (protocol 3; the tag CI's frontend job checks out), OpenUI5 1.153.0 (npm), Chromium 156 | ui5 | 98 | 0 | 0 | 4 | conformant (ui5) |
 | UI5 SPA (`ui5`) | abap2UI5 1.150.0 and older (`app/webapp` of the release commit `af05dce`, which CI pinned until 1.151.0) | ui5 | - | - | - | - | **behind: protocol 2** - `slots.main` fails, pinned ([above](#the-move-to-protocol-3)) |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `332a0b0` (vendored - `adapters/vendor/mcp-server/source.json`) | semantic | - | - | - | - | **behind: protocol 2** - it refuses every response of this revision; `slots.main` fails, pinned. Its last result on protocol 2: 63 pass, 1 fail, 23 skip |
+| agent client (`agent`) | abap2UI5/mcp-server main `53555b0` (its #90), from a checkout (`MCP_SERVER_HOME`) - run 2026-11-27 | semantic | 65 | 0 | 0 | 37 | every check that applies holds - `slots.order` failed before the check was fixed (below) |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 72 | 0 | 0 | 30 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 82 | 0 | 0 | 20 | every check it can be driven through holds, the router checks included |
 | Web Components (`webcomponent`) | abap2UI5-addons/embed-webcomponent 0.1.0, `dist/` built from its branch `claude/lucid-hopper-pa3nlx` (on main `f2f6b5c`), Chromium 156 - run 2026-11-27 | portable | 76 | 0 | 0 | 26 | conformant (portable) in most runs; `model.number-and-boolean` intermittent, about one run in ten, its main alike (below) |
@@ -911,6 +912,30 @@ on a runtime of abap2UI5 main `694fb262`: the nine exchanges and snapshots of be
 identical but for the draft ids, the three window requests are marked
 `malformed` ([above](#windowed-tables)); against the cap2UI5 host the
 `WINDOW:` scenario is left out (the app does not start there).
+
+**On protocol 3, from a checkout** (2026-11-27, mcp-server main
+`53555b0`, `MCP_SERVER_HOME`; the vendored copy is still `332a0b0`): 65
+pass, 0 fail, 0 warn, 37 skip, `semantic.recorded-snapshots` included.
+Before the fix below it was 64 pass and 1 fail, `slots.order` - at
+`53555b0` and at `8a95a6a` (its release 1.3.0) alike, and 65 pass with
+the fix at both. *Finding - the check, not the client:* the client applies `VIEWS`
+in slot order (`viewChanges` in `lib/snapshot.mjs`, `SLOT_ORDER`), and
+after the response under test both MAIN and POPUP are adopted and the
+popup is the snapshot's `layer`. The check then read the marker of the
+new MAIN view while the popup was open - text a semantic frontend does
+not give: a modal popup hides the page behind it
+([../profiles/semantic.md](../profiles/semantic.md#snapshot-v1), *Which
+layers are described*), so the adapter's `slots.MAIN.text` was empty.
+The check now asserts the popup open first (what a frontend applying the
+keys in their order fails: the MAIN display behind it takes the popup
+down), then closes it with a response that names POPUP alone and reads
+MAIN there - what MAIN shows then is what the response under test built.
+The rule is unchanged. A client changed to apply the keys in their order
+fails the new check (`the popup of the response is not open`); the UI5
+SPA of 1.151.0 and the Web Components frontend (`dist/` of its branch
+`claude/lucid-hopper-pa3nlx`) pass it, as the two renderers here do.
+The vendored copy follows with `npm run vendor:agent` and `npm run
+record`, as filed ([the release 1.151.0](#the-release-11510)).
 
 ### Findings - the Adaptive Cards renderer
 

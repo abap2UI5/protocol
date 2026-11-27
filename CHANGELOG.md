@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **`slots.order` reads MAIN once the popup is closed** (2026-11-27): the
+  check read the new MAIN view while the popup of the same response was
+  open - text a semantic frontend does not give, since a modal popup
+  hides the page behind it (`profiles/semantic.md`). The agent client
+  on protocol 3 (mcp-server `53555b0`, from a checkout) failed it while
+  applying `VIEWS` in slot order; it passes now, 65 of the 65 checks that
+  apply (`conformance/RESULTS.md`). The check still fails a frontend that
+  applies the keys in their order: the popup it asserts first is taken
+  down by the MAIN display behind it.
 - **An invisible column takes its cells with it** (2026-11-27): the
   Adaptive Cards and the terminal renderer left out the header of a
   `Column` with `visible="false"` but rendered the cell of its index in
