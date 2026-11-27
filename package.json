@@ -1,5 +1,6 @@
 {
   "name": "@abap2ui5/protocol",
+  "private": true,
   "version": "0.1.0",
   "description": "The abap2UI5 protocol: a versioned specification of the roundtrip between UI5 frontends and abap2UI5 backends, JSON Schemas for its messages, and conformance suites for both sides - so backends and frontends can be swapped.",
   "type": "module",
