@@ -1,5 +1,5 @@
 /*
- * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit 8a1d7d84b4dac2be92805837dd978911a5af7480,
+ * VENDORED - do not edit. abap2UI5/mcp-server lib/snapshot.mjs at commit 53555b020baf4f95e3fde0f3edc9afcee4a3c5e1,
  * copied unchanged by scripts/vendor-agent-client.mjs. Change it upstream,
  * then re-vendor; test/frontend.test.mjs fails when this copy drifts.
  */
@@ -47,6 +47,12 @@ const MAX_TEXTS = 30;
 const MAX_UNSUPPORTED = 30;
 const MAX_VALUES = 100;
 const MAX_ITEM_MESSAGES = 50;
+/* The deepest element of a view the walker descends to (aggregations count
+ * as levels). The walk is recursive - a few frames per level - and a view
+ * nested 2000 levels deep overflowed the stack AFTER the client had adopted
+ * the response, which left the session unreadable for good. Real views stay
+ * well under 100; what lies deeper is cut and named in `unsupported`. */
+export const MAX_VIEW_DEPTH = 256;
 const TEXT_MAX_LEN = 200;
 
 /* The two frontend-only wires the client performs itself: closing the popup
@@ -527,6 +533,8 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
     const key = modelKeyOf(slot);
     const model = st.models[key] || { data: {} };
     const root = parseViewXml(st.slots[slot].xml);
+    const cut = cutDeeperThan(root, MAX_VIEW_DEPTH);
+    if (cut) note(`${slot} view nested deeper than ${MAX_VIEW_DEPTH} levels (${layer}) - ${cut} subtree(s) below that depth not described`);
     const labelFor = collectLabelFor(root, model.data);
     const ctx = { layer, slot, modelKey: key, data: model.data || {}, row: null, label: null, where: [], labelFor, byId: collectIds(root) };
     walkChildren(root.children, ctx);
@@ -1285,6 +1293,25 @@ export function analyzeScreen({ state, response, app, session, maxRows = DEFAULT
     }
     return null;
   }
+}
+
+/* Cuts the children of every element `max` levels below the root, without
+ * recursing (the tree is as deep as the backend wrote it); answers how many
+ * subtrees were cut. Every recursive walk of the tree runs after this. */
+function cutDeeperThan(root, max) {
+  let cut = 0;
+  const stack = [[root, 0]];
+  while (stack.length) {
+    const [node, depth] = stack.pop();
+    if (!node.children || !node.children.length) continue;
+    if (depth >= max) {
+      cut += 1;
+      node.children = [];
+      continue;
+    }
+    for (const ch of node.children) stack.push([ch, depth + 1]);
+  }
+  return cut;
 }
 
 /* The controls of a view by their id - what a BINDING_CALL wire names. */

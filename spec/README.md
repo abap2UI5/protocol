@@ -20,7 +20,7 @@ repository are cited at versions that still speak protocol 2, for what
 did not change: `@cap2ui5/cds-plugin` 0.7.0 (on the runtime 1.149.0),
 abap2UI5/mcp-server `332a0b0` and abap2UI5/headless-frontend `c1c24ba`
 (its simulator class is `z2ui5_cl_frontend_sim` since `8f37e54`). The
-agent client the frontend suite runs is vendored from mcp-server `8a1d7d8`
+agent client the frontend suite runs is vendored from mcp-server `53555b0`
 (main, 2026-11-27), which speaks protocol 3 and sends the window request
 of [windowed-tables.md](windowed-tables.md#the-window-request).
 Revisions 0.1 to 0.5 describe protocol 2: 0.1 to 0.3 were derived from
