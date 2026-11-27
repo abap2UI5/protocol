@@ -141,7 +141,11 @@ function table(node, ctx) {
   const out = [];
   if (has(node, "headerText")) out.push(tb(str(node, "headerText", ctx), "bold"));
   out.push(...renderList(aggregation(node, "headerToolbar"), ctx), ...renderList(aggregation(node, "infoToolbar"), ctx));
-  const cols = aggregation(node, "columns").filter((c) => !has(c, "visible") || !falsy(attr(c, "visible", ctx)));
+  // an invisible column takes the cells of its index with it: UI5 matches
+  // the cells of a row to the columns by position and renders neither
+  const allCols = aggregation(node, "columns");
+  const hidden = new Set(allCols.map((c, i) => (!has(c, "visible") || !falsy(attr(c, "visible", ctx)) ? -1 : i)).filter((i) => i >= 0));
+  const cols = allCols.filter((c, i) => !hidden.has(i));
   const header = cols.map((c) => aggregation(c, "header").map((h) => str(h, "text", ctx)).join(" "));
   const rows = rowsOf(node, "items", ctx);
   if (!rows.length) {
@@ -151,7 +155,7 @@ function table(node, ctx) {
   const built = rows.map(({ base, node: item, index }) => {
     const rc = ctx.with(base);
     const { action, select } = rowWidgets(node, item, rc, index, ctx);
-    return { action, select, cells: aggregation(item, "cells").map((cell) => renderNode(cell, rc)) };
+    return { action, select, cells: aggregation(item, "cells").filter((cell, i) => !hidden.has(i)).map((cell) => renderNode(cell, rc)) };
   });
   out.push({ t: "table", header: header.some(Boolean) ? header : null, rows: built });
   return out;

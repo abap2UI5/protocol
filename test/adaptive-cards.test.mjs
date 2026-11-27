@@ -127,6 +127,24 @@ test("the cards say what the views say", () => {
   assert.deepEqual(unsupported.map((u) => u.control), ["com.example.unknown.Gadget"]);
 });
 
+const HIDDEN_COLUMN = '<mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"><Page title="T"><Table items="{/T}"><columns>'
+  + '<Column visible="false"><Text text="Key"/></Column><Column><Text text="Name"/></Column><Column visible="{/SHOW}"><Text text="Extra"/></Column></columns>'
+  + '<items><ColumnListItem><cells><Text text="{K}"/><Text text="{N}"/><Text text="{X}"/></cells></ColumnListItem></items></Table></Page></mvc:View>';
+const hiddenColumn = (show) => ({ S_FRONT: { ID: "1", APP: "Z_T", PROTOCOL: 3, VIEWS: { MAIN: { XML: HIDDEN_COLUMN } } }, MODEL: { SHOW: show, T: [{ K: "secret-key", N: "name", X: "extra" }] } });
+
+test("an invisible column takes the cells of its index with it", () => {
+  for (const show of [false, true]) {
+    const { card } = renderResponses([hiddenColumn(show)]);
+    assert.deepEqual(cardProblems(card), []);
+    let table = null;
+    walk(card.body, (e) => { if (e.type === "Table") table = e; });
+    const rows = table.rows.map((r) => r.cells.map((c) => cardText(c.items)));
+    assert.deepEqual(rows, show ? [["Name", "Extra"], ["name", "extra"]] : [["Name"], ["name"]]);
+    assert.equal(table.columns.length, show ? 2 : 1);
+    assert.ok(!JSON.stringify(card).includes("secret-key"), "the cell of the invisible column is not on the card");
+  }
+});
+
 test("app text is never Markdown: a text or fact with Markdown syntax is a TextRun", () => {
   const link = "Customer [click me](https://evil.example)";
   const xml = '<mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"><Page title="T">'
