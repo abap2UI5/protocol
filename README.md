@@ -80,25 +80,26 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 - **Who speaks protocol 3:** abap2UI5 1.151.0 and its `main` branch - the
   backend, the UI5 SPA and `@abap2ui5/node-runtime` 1.151.0
   (`package.json`) - cap2UI5 (`@cap2ui5/cds-plugin` 0.8.0 hosts that
-  runtime) and the two renderers of this repository. **Who still speaks
-  protocol 2:** abap2UI5 1.150.0 and older, `@cap2ui5/cds-plugin` 0.7.0
-  and older, and the agent client of abap2UI5/mcp-server as vendored here
-  (`332a0b0`; upstream reads protocol 3 from `7906a2f`). A protocol-2
+  runtime), the agent client of abap2UI5/mcp-server (vendored here at
+  `8a1d7d8`; it reads protocol 3 from `7906a2f`) and the two renderers of
+  this repository. **Who still speaks protocol 2:** abap2UI5 1.150.0 and
+  older and `@cap2ui5/cds-plugin` 0.7.0 and older. A protocol-2
   frontend refuses a protocol-3 response on its number, and the suites
   of this revision do not measure a protocol-2 implementation; what is
   pinned for each is in [conformance/RESULTS.md](conformance/RESULTS.md).
 - **Backend suite** ([the check list](conformance/backend/README.md#checks)):
   `@abap2ui5/node-runtime` 1.151.0 passes every check, `@cap2ui5/cds-plugin`
   0.8.0 every MUST (it hides an app's exception text, a SHOULD) - that is
-  what `traffic/` is recorded against.
+  what `traffic/` is recorded against. Both do all a backend MAY do with
+  a timer the app declares (the five `action.timer-declared*` checks).
 - **Schemas** validate every recorded request and response, checked by
   the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
 - **Frontend suite** ([the check list](conformance/frontend/README.md#checks)),
   scripted from the recorded traffic: the UI5 SPA of abap2UI5 1.151.0, the
-  Adaptive Cards renderer and the terminal renderer pass every check that
-  applies to them
+  agent client of mcp-server, the Adaptive Cards renderer and the terminal
+  renderer pass every check that applies to them
   ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
 - **Adaptive Cards renderer** (prototype, [renderers/adaptive-cards/](renderers/adaptive-cards/README.md)):
   all 65 portable controls mapped onto Adaptive Cards 1.5, the way back from

@@ -5,8 +5,8 @@ swapped independently:
 
 | Suite | Plays | Tests | Status |
 |---|---|---|---|
-| [backend/](backend/README.md) | the frontend | a backend, over HTTP, against the conformance apps | implemented - 93 checks, `abap2ui5-conformance backend` |
-| [frontend/](frontend/README.md) | the backend | a frontend, by scripted responses (recorded traffic + synthetic edge cases), through an adapter per frontend | implemented - 85 checks, `abap2ui5-conformance frontend --adapter ui5\|agent\|webcomponent\|adaptive-cards` |
+| [backend/](backend/README.md) | the frontend | a backend, over HTTP, against the conformance apps | implemented - 99 checks, `abap2ui5-conformance backend` |
+| [frontend/](frontend/README.md) | the backend | a frontend, by scripted responses (recorded traffic + synthetic edge cases), through an adapter per frontend | implemented - 102 checks, `abap2ui5-conformance frontend --adapter ui5\|agent\|webcomponent\|adaptive-cards\|terminal` |
 
 The **conformance apps** ([apps/](apps/README.md)) are what a backend serves
 for the backend suite: small apps with exactly specified behaviour, shipped

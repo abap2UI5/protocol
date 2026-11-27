@@ -1,0 +1,2379 @@
+{
+  "source": "lib/appclient.mjs of @abap2ui5/mcp-server 1.3.0 (mcp-server-8a1d7d8)",
+  "backend": "@cap2ui5/cds-plugin 0.8.0 on @abap2ui5/node-runtime 1.151.0",
+  "exchanges": [
+    {
+      "label": "BIND: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:6376/rest/root/z2ui5",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"450-i8R4rsQr6uxv3Oug9UTwV8oVpcQ\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_BIND",
+            "ID": "CA60AEB9E62F4A9DA5FD843A4E0A31AF",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - bind\"><Input id=\"name\" value=\"{/NAME}\"/><StepInput id=\"qty\" value=\"{/QTY}\"/><CheckBox id=\"flag\" text=\"Flag\" selected=\"{/FLAG}\"/><Input id=\"city\" value=\"{/S_ADDR/CITY}\"/><Input id=\"zip\" value=\"{/S_ADDR/ZIP}\"/><Text id=\"summary\" text=\"{/SUMMARY}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Add row\" press=\".eB(['ADD_ROW'])\"/><Table id=\"items\" items=\"{/T_ITEMS}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Input value=\"{TEXT}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "FLAG": false,
+            "NAME": "start",
+            "QTY": 1,
+            "SUMMARY": "",
+            "S_ADDR": {
+              "CITY": "Berlin",
+              "ZIP": "10115"
+            },
+            "T_ITEMS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "TEXT": "one"
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "TEXT": "two"
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "TEXT": "three"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "BIND: act - fill NAME and a cell, fire CHECK",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "CA60AEB9E62F4A9DA5FD843A4E0A31AF",
+              "EVENT": "CHECK"
+            },
+            "MODEL": {
+              "NAME": "Ada",
+              "T_ITEMS": {
+                "__delta": {
+                  "1": {
+                    "TEXT": "zwei"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"162-it6ykNxydf4j/NEM+B6XnMNr4eA\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_BIND",
+            "ID": "54B594551B6548479CA5CA6908790ABE",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "FLAG": false,
+            "NAME": "Ada",
+            "QTY": 1,
+            "SUMMARY": "Ada;1;;Berlin;10115;1:one:,2:zwei:,3:three:",
+            "S_ADDR": {
+              "CITY": "Berlin",
+              "ZIP": "10115"
+            },
+            "T_ITEMS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "TEXT": "one"
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "TEXT": "zwei"
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "TEXT": "three"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "MSG: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:6376/rest/root/z2ui5",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_MSG"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"201-djVQHp8Elrzl98Mwz6Zk/gxKjKw\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_MSG",
+            "ID": "B45ABB70D1D14761AB215A5DBAE9BB8C",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - messages\"><Text id=\"last_action\" text=\"{/LAST_ACTION}\"/><Button text=\"Toast\" press=\".eB(['TOAST'])\"/><Button text=\"Box\" press=\".eB(['BOX'])\"/><Button text=\"Confirm\" press=\".eB(['BOX_CONFIRM'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "LAST_ACTION": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "MSG: act - BOX_CONFIRM",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "B45ABB70D1D14761AB215A5DBAE9BB8C",
+              "EVENT": "BOX_CONFIRM"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"cb-N50oeR5qjh1sEyKr2ZhKZh8emLw\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "ACTIONS": [
+              [
+                "MESSAGE_BOX",
+                "confirm",
+                "conformance confirm",
+                {
+                  "actions": [
+                    "OK",
+                    "CANCEL"
+                  ],
+                  "onClose": "BOX_CLOSED"
+                }
+              ]
+            ],
+            "APP": "Z2UI5_CL_CONF_MSG",
+            "ID": "E30C1C2D5B7144EE86833E63A2F0D17C",
+            "PROTOCOL": 3
+          }
+        }
+      }
+    },
+    {
+      "label": "SLOTS: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:6376/rest/root/z2ui5",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"24f-bQdv+KuqFTCJZSrLDZ2l6PaHg6c\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_SLOTS",
+            "ID": "5E01E57B507D4BAB9809D82127BCD227",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - slots\"><Button id=\"btn_popup\" text=\"Popup\" press=\".eB(['POPUP_OPEN'])\"/><Button id=\"btn_popover\" text=\"Popover\" press=\".eB(['POPOVER_OPEN'])\"/><Button text=\"Nest\" press=\".eB(['NEST_OPEN'])\"/><Button text=\"Nest2\" press=\".eB(['NEST2_OPEN'])\"/><VBox id=\"nest_anchor\"/><VBox id=\"nest2_anchor\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "SLOTS: act - POPUP_OPEN",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "5E01E57B507D4BAB9809D82127BCD227",
+              "EVENT": "POPUP_OPEN"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"1fb-bBaMOXeiWE9mQXb85rUVUK6EAVE\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_SLOTS",
+            "ID": "775D8487C6BE460890C23B0EDB419133",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "POPUP": {
+                "XML": "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Dialog title=\"conformance popup\"><Input id=\"popup_text\" value=\"{/POPUP_TEXT}\"/><buttons><Button text=\"Close\" press=\".eB(['POPUP_CLOSE'])\"/><Button text=\"Close here\" press=\".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')\"/></buttons></Dialog></core:FragmentDefinition>"
+              }
+            }
+          },
+          "MODEL": {
+            "POPUP_TEXT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "NAV: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:6376/rest/root/z2ui5",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_NAV"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"1c2-CsEt+sll4XDuQEa9blJTidnc4qs\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_NAV",
+            "ID": "84A89840466A43CD965A3E76BE1E564B",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav caller\"><Text id=\"result\" text=\"{/RESULT}\"/><Text id=\"returns\" text=\"{/RETURNS}\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "RESULT": "",
+            "RETURNS": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "NAV: act - CALL",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "84A89840466A43CD965A3E76BE1E564B",
+              "EVENT": "CALL"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"22c-py04PzIQz36y25ED98GDU0osNcc\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_NAV_TGT",
+            "ID": "08263FEF16BF42F8B0B271A1401CBC7A",
+            "NAV": {
+              "setNavRouting": "DEFAULT"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav target\" showNavButton=\"true\" navButtonPress=\".eB(['___ZZZ_NAL'])\"><Text id=\"input\" text=\"{/INPUT}\"/><Text id=\"output\" text=\"{/OUTPUT}\"/><Button text=\"Done\" press=\".eB(['DONE'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "INPUT": "from caller",
+            "OUTPUT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "NAV: act - DONE",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "08263FEF16BF42F8B0B271A1401CBC7A",
+              "EVENT": "DONE"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"238-rCvWoSJZmNyKwT+lYEtoNSBD1T8\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_NAV",
+            "ID": "932C0A72998A4018A9F247EFC9BC7A69",
+            "NAV": {
+              "setNavRouting": "DEFAULT"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "OPT": {
+                  "appInstance": "19F8C31E863745B8A8F456DE312D4ED2",
+                  "navBack": true
+                },
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav caller\"><Text id=\"result\" text=\"{/RESULT}\"/><Text id=\"returns\" text=\"{/RETURNS}\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "RESULT": "from caller!",
+            "RETURNS": 1
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: app_start",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ORIGIN": "http://127.0.0.1:6376/rest/root/z2ui5",
+              "PATHNAME": "/",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_WINDOW"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"73d-c8rqaSf+GL6JYxgJ74kF1U8ZEQc\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "FE1394BB06F14C9BA592270E18F537C6",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - window\"><Text id=\"summary\" text=\"{/SUMMARY}\"/><Text id=\"mains\" text=\"{/MAINS}\"/><Text id=\"last\" text=\"{/LAST}\"/><Text id=\"request\" text=\"{/REQUEST}\"/><Text id=\"win_done\" text=\"{/WIN_DONE}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Sort list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'sort', 'QTY', 'X')\"/><Button text=\"Filter list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'filter', 'NAME', 'Contains', '1')\"/><Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/T_ROWS}\"><columns><Column/><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{NAME}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table><Table id=\"win\" growing=\"true\" growingThreshold=\"4\" items=\"{/MR_WIN/*}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "LAST": "",
+            "MAINS": 1,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "NAME": "item 03",
+                "QTY": 2
+              },
+              {
+                "DONE": false,
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 4,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 12
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: act - @BINDING_CALL (Sort list)",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "FE1394BB06F14C9BA592270E18F537C6",
+              "EVENT": "___ZZZ_WIN",
+              "T_EVENT_ARG": [
+                "/T_ROWS",
+                "ROWS",
+                "SORT",
+                "0",
+                "4",
+                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]",
+                "[]"
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"29f-Ghmtu7BB4B2h5imuqS9YqQHJWu0\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "08B3FD54016B443C890CB8F425E58447",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "ROWS SORT 0 4",
+            "MAINS": 2,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS SORT 0 4 S:QTY:D",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12
+              },
+              {
+                "DONE": false,
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 4,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 12
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: act - window: the next window",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "08B3FD54016B443C890CB8F425E58447",
+              "EVENT": "___ZZZ_WIN",
+              "T_EVENT_ARG": [
+                "/T_ROWS",
+                "ROWS",
+                "MORE",
+                "4",
+                "4"
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"354-lzxa5AZsGyJ1JnKf1kN+qvn7wYk\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "E30E94A19B3540ACA6FFAB2E9C465194",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "ROWS MORE 4 4",
+            "MAINS": 3,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS MORE 4 4",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12
+              },
+              {
+                "DONE": false,
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9
+              },
+              {
+                "DONE": false,
+                "ID": 12,
+                "NAME": "item 12",
+                "QTY": 8
+              },
+              {
+                "DONE": false,
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7
+              },
+              {
+                "DONE": false,
+                "ID": 9,
+                "NAME": "item 09",
+                "QTY": 6
+              },
+              {
+                "DONE": false,
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 8,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 12
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: act - window: filter NAME Contains 1",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "E30E94A19B3540ACA6FFAB2E9C465194",
+              "EVENT": "___ZZZ_WIN",
+              "T_EVENT_ARG": [
+                "/T_ROWS",
+                "ROWS",
+                "FILTER",
+                "0",
+                "4",
+                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]",
+                "[[[\"NAME\",\"Contains\",\"1\",null]]]"
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"2b6-xfzwjNHhUrVyeXI1i4+c+dlQGwU\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "F799D9007C1D4DD5AA113B5CF6CD95F3",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "ROWS FILTER 0 4",
+            "MAINS": 4,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS FILTER 0 4 S:QTY:D F1:NAME:Contains:1:",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11
+              },
+              {
+                "DONE": false,
+                "ID": 12,
+                "NAME": "item 12",
+                "QTY": 8
+              },
+              {
+                "DONE": false,
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5
+              },
+              {
+                "DONE": false,
+                "ID": 11,
+                "NAME": "item 11",
+                "QTY": 3
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 4,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 4
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "BIND: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "CA60AEB9E62F4A9DA5FD843A4E0A31AF",
+        "app": "Z2UI5_CL_CONF_BIND",
+        "title": "conformance - bind",
+        "layer": "main",
+        "fields": [
+          {
+            "id": "f1",
+            "path": "/NAME",
+            "name": "NAME",
+            "label": "NAME",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "start",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f2",
+            "path": "/QTY",
+            "name": "QTY",
+            "label": "QTY",
+            "control": "sap.m.StepInput",
+            "kind": "number",
+            "value": 1,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f3",
+            "path": "/FLAG",
+            "name": "FLAG",
+            "label": "Flag",
+            "control": "sap.m.CheckBox",
+            "kind": "boolean",
+            "value": false,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f4",
+            "path": "/S_ADDR/CITY",
+            "name": "S_ADDR-CITY",
+            "label": "S_ADDR-CITY",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "Berlin",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f5",
+            "path": "/S_ADDR/ZIP",
+            "name": "S_ADDR-ZIP",
+            "label": "S_ADDR-ZIP",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "10115",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          }
+        ],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "ADD_ROW",
+            "args": [],
+            "label": "Add row",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ITEMS",
+            "name": "T_ITEMS",
+            "label": "T_ITEMS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "TEXT",
+                "label": "TEXT"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 3,
+            "rows": [
+              {
+                "ID": 1,
+                "TEXT": "one",
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "TEXT": "two",
+                "DONE": false
+              },
+              {
+                "ID": 3,
+                "TEXT": "three",
+                "DONE": false
+              }
+            ],
+            "truncated": false,
+            "selectionMode": "None",
+            "editableCells": [
+              "TEXT",
+              "DONE"
+            ],
+            "layer": "main"
+          }
+        ],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "BIND: act - fill NAME and a cell, fire CHECK",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "54B594551B6548479CA5CA6908790ABE",
+        "app": "Z2UI5_CL_CONF_BIND",
+        "title": "conformance - bind",
+        "layer": "main",
+        "fields": [
+          {
+            "id": "f1",
+            "path": "/NAME",
+            "name": "NAME",
+            "label": "NAME",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "Ada",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f2",
+            "path": "/QTY",
+            "name": "QTY",
+            "label": "QTY",
+            "control": "sap.m.StepInput",
+            "kind": "number",
+            "value": 1,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f3",
+            "path": "/FLAG",
+            "name": "FLAG",
+            "label": "Flag",
+            "control": "sap.m.CheckBox",
+            "kind": "boolean",
+            "value": false,
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f4",
+            "path": "/S_ADDR/CITY",
+            "name": "S_ADDR-CITY",
+            "label": "S_ADDR-CITY",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "Berlin",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          },
+          {
+            "id": "f5",
+            "path": "/S_ADDR/ZIP",
+            "name": "S_ADDR-ZIP",
+            "label": "S_ADDR-ZIP",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "10115",
+            "required": false,
+            "editable": true,
+            "layer": "main"
+          }
+        ],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "ADD_ROW",
+            "args": [],
+            "label": "Add row",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ITEMS",
+            "name": "T_ITEMS",
+            "label": "T_ITEMS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "TEXT",
+                "label": "TEXT"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 3,
+            "rows": [
+              {
+                "ID": 1,
+                "TEXT": "one",
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "TEXT": "zwei",
+                "DONE": false
+              },
+              {
+                "ID": 3,
+                "TEXT": "three",
+                "DONE": false
+              }
+            ],
+            "truncated": false,
+            "selectionMode": "None",
+            "editableCells": [
+              "TEXT",
+              "DONE"
+            ],
+            "layer": "main"
+          }
+        ],
+        "messages": [],
+        "texts": [
+          "Ada;1;;Berlin;10115;1:one:,2:zwei:,3:three:"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "MSG: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "B45ABB70D1D14761AB215A5DBAE9BB8C",
+        "app": "Z2UI5_CL_CONF_MSG",
+        "title": "conformance - messages",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "TOAST",
+            "args": [],
+            "label": "Toast",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "BOX",
+            "args": [],
+            "label": "Box",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "BOX_CONFIRM",
+            "args": [],
+            "label": "Confirm",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "MSG: act - BOX_CONFIRM",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "E30C1C2D5B7144EE86833E63A2F0D17C",
+        "app": "Z2UI5_CL_CONF_MSG",
+        "title": "conformance - messages",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "TOAST",
+            "args": [],
+            "label": "Toast",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "BOX",
+            "args": [],
+            "label": "Box",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "BOX_CONFIRM",
+            "args": [],
+            "label": "Confirm",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a4",
+            "event": "BOX_CLOSED",
+            "args": [
+              "$action"
+            ],
+            "label": "close message box (OK | CANCEL)",
+            "control": "sap.m.MessageBox",
+            "trigger": "close",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [
+          {
+            "type": "info",
+            "text": "conformance confirm",
+            "source": "box"
+          }
+        ],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "SLOTS: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "5E01E57B507D4BAB9809D82127BCD227",
+        "app": "Z2UI5_CL_CONF_SLOTS",
+        "title": "conformance - slots",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "POPUP_OPEN",
+            "args": [],
+            "label": "Popup",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "POPOVER_OPEN",
+            "args": [],
+            "label": "Popover",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "NEST_OPEN",
+            "args": [],
+            "label": "Nest",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a4",
+            "event": "NEST2_OPEN",
+            "args": [],
+            "label": "Nest2",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "SLOTS: act - POPUP_OPEN",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "775D8487C6BE460890C23B0EDB419133",
+        "app": "Z2UI5_CL_CONF_SLOTS",
+        "title": "conformance popup",
+        "layer": "popup",
+        "fields": [
+          {
+            "id": "f1",
+            "path": "/POPUP_TEXT",
+            "name": "POPUP_TEXT",
+            "label": "POPUP_TEXT",
+            "control": "sap.m.Input",
+            "kind": "text",
+            "value": "",
+            "required": false,
+            "editable": true,
+            "layer": "popup"
+          }
+        ],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "POPUP_CLOSE",
+            "args": [],
+            "label": "Close",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "popup"
+          },
+          {
+            "id": "a2",
+            "event": "@CLOSE_POPUP",
+            "args": [],
+            "label": "Close here",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "popup"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "NAV: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "84A89840466A43CD965A3E76BE1E564B",
+        "app": "Z2UI5_CL_CONF_NAV",
+        "title": "conformance - nav caller",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CALL",
+            "args": [],
+            "label": "Call",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [
+          "0"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "NAV: act - CALL",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "08263FEF16BF42F8B0B271A1401CBC7A",
+        "app": "Z2UI5_CL_CONF_NAV_TGT",
+        "title": "conformance - nav target",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "___ZZZ_NAL",
+            "args": [],
+            "label": "Back",
+            "control": "sap.m.Page",
+            "trigger": "navButtonPress",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "DONE",
+            "args": [],
+            "label": "Done",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [
+          "from caller"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "NAV: act - DONE",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "932C0A72998A4018A9F247EFC9BC7A69",
+        "app": "Z2UI5_CL_CONF_NAV",
+        "title": "conformance - nav caller",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CALL",
+            "args": [],
+            "label": "Call",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [],
+        "messages": [],
+        "texts": [
+          "from caller!",
+          "1"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "WINDOW: app_start",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "FE1394BB06F14C9BA592270E18F537C6",
+        "app": "Z2UI5_CL_CONF_WINDOW",
+        "title": "conformance - window",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "sort",
+              "QTY",
+              "X"
+            ],
+            "label": "Sort list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "filter",
+              "NAME",
+              "Contains",
+              "1"
+            ],
+            "label": "Filter list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ROWS",
+            "name": "T_ROWS",
+            "label": "T_ROWS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "NAME",
+                "label": "NAME"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 4,
+            "total": 12,
+            "rows": [
+              {
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5,
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10,
+                "DONE": false
+              },
+              {
+                "ID": 3,
+                "NAME": "item 03",
+                "QTY": 2,
+                "DONE": false
+              },
+              {
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7,
+                "DONE": false
+              }
+            ],
+            "truncated": true,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4,
+              "more": "4 of 12 rows held - app_act { session, window: { table: \"t1\" } } loads rows 5-8; window.count, window.sort and window.filter ask the backend for any first rows of all 12"
+            }
+          },
+          {
+            "id": "t2",
+            "path": "/MR_WIN/*",
+            "name": "MR_WIN-*",
+            "label": "MR_WIN-*",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 4,
+            "total": 6,
+            "rows": [
+              {
+                "ID": 4,
+                "QTY": 6,
+                "DONE": false
+              },
+              {
+                "ID": 1,
+                "QTY": 5,
+                "DONE": false
+              },
+              {
+                "ID": 5,
+                "QTY": 4,
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "QTY": 3,
+                "DONE": false
+              }
+            ],
+            "truncated": true,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4,
+              "more": "4 of 6 rows held - app_act { session, window: { table: \"t2\" } } loads rows 5-6; window.count, window.sort and window.filter ask the backend for any first rows of all 6"
+            }
+          }
+        ],
+        "messages": [],
+        "texts": [
+          "1"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "WINDOW: act - @BINDING_CALL (Sort list)",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "08B3FD54016B443C890CB8F425E58447",
+        "app": "Z2UI5_CL_CONF_WINDOW",
+        "title": "conformance - window",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "sort",
+              "QTY",
+              "X"
+            ],
+            "label": "Sort list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "filter",
+              "NAME",
+              "Contains",
+              "1"
+            ],
+            "label": "Filter list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ROWS",
+            "name": "T_ROWS",
+            "label": "T_ROWS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "NAME",
+                "label": "NAME"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 4,
+            "total": 12,
+            "rows": [
+              {
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12,
+                "DONE": false
+              },
+              {
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11,
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10,
+                "DONE": false
+              },
+              {
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9,
+                "DONE": false
+              }
+            ],
+            "truncated": true,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4,
+              "more": "4 of 12 rows held - app_act { session, window: { table: \"t1\" } } loads rows 5-8; window.count, window.sort and window.filter ask the backend for any first rows of all 12"
+            }
+          },
+          {
+            "id": "t2",
+            "path": "/MR_WIN/*",
+            "name": "MR_WIN-*",
+            "label": "MR_WIN-*",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 4,
+            "total": 6,
+            "rows": [
+              {
+                "ID": 4,
+                "QTY": 6,
+                "DONE": false
+              },
+              {
+                "ID": 1,
+                "QTY": 5,
+                "DONE": false
+              },
+              {
+                "ID": 5,
+                "QTY": 4,
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "QTY": 3,
+                "DONE": false
+              }
+            ],
+            "truncated": true,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4,
+              "more": "4 of 6 rows held - app_act { session, window: { table: \"t2\" } } loads rows 5-6; window.count, window.sort and window.filter ask the backend for any first rows of all 6"
+            }
+          }
+        ],
+        "messages": [],
+        "texts": [
+          "2",
+          "ROWS SORT 0 4",
+          "/T_ROWS SORT 0 4 S:QTY:D"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "WINDOW: act - window: the next window",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "E30E94A19B3540ACA6FFAB2E9C465194",
+        "app": "Z2UI5_CL_CONF_WINDOW",
+        "title": "conformance - window",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "sort",
+              "QTY",
+              "X"
+            ],
+            "label": "Sort list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "filter",
+              "NAME",
+              "Contains",
+              "1"
+            ],
+            "label": "Filter list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ROWS",
+            "name": "T_ROWS",
+            "label": "T_ROWS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "NAME",
+                "label": "NAME"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 8,
+            "total": 12,
+            "rows": [
+              {
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12,
+                "DONE": false
+              },
+              {
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11,
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10,
+                "DONE": false
+              },
+              {
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9,
+                "DONE": false
+              },
+              {
+                "ID": 12,
+                "NAME": "item 12",
+                "QTY": 8,
+                "DONE": false
+              },
+              {
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7,
+                "DONE": false
+              },
+              {
+                "ID": 9,
+                "NAME": "item 09",
+                "QTY": 6,
+                "DONE": false
+              },
+              {
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5,
+                "DONE": false
+              }
+            ],
+            "truncated": true,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4,
+              "more": "8 of 12 rows held - app_act { session, window: { table: \"t1\" } } loads rows 9-12; window.count, window.sort and window.filter ask the backend for any first rows of all 12"
+            }
+          },
+          {
+            "id": "t2",
+            "path": "/MR_WIN/*",
+            "name": "MR_WIN-*",
+            "label": "MR_WIN-*",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 4,
+            "total": 6,
+            "rows": [
+              {
+                "ID": 4,
+                "QTY": 6,
+                "DONE": false
+              },
+              {
+                "ID": 1,
+                "QTY": 5,
+                "DONE": false
+              },
+              {
+                "ID": 5,
+                "QTY": 4,
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "QTY": 3,
+                "DONE": false
+              }
+            ],
+            "truncated": true,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4,
+              "more": "4 of 6 rows held - app_act { session, window: { table: \"t2\" } } loads rows 5-6; window.count, window.sort and window.filter ask the backend for any first rows of all 6"
+            }
+          }
+        ],
+        "messages": [],
+        "texts": [
+          "3",
+          "ROWS MORE 4 4",
+          "/T_ROWS MORE 4 4"
+        ],
+        "unsupported": []
+      }
+    },
+    {
+      "label": "WINDOW: act - window: filter NAME Contains 1",
+      "snapshot": {
+        "snapshotVersion": 1,
+        "session": "F799D9007C1D4DD5AA113B5CF6CD95F3",
+        "app": "Z2UI5_CL_CONF_WINDOW",
+        "title": "conformance - window",
+        "layer": "main",
+        "fields": [],
+        "actions": [
+          {
+            "id": "a1",
+            "event": "CHECK",
+            "args": [],
+            "label": "Check",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a2",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "sort",
+              "QTY",
+              "X"
+            ],
+            "label": "Sort list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          },
+          {
+            "id": "a3",
+            "event": "@BINDING_CALL",
+            "args": [
+              "rows",
+              "items",
+              "filter",
+              "NAME",
+              "Contains",
+              "1"
+            ],
+            "label": "Filter list",
+            "control": "sap.m.Button",
+            "trigger": "press",
+            "enabled": true,
+            "scope": "screen",
+            "layer": "main"
+          }
+        ],
+        "tables": [
+          {
+            "id": "t1",
+            "path": "/T_ROWS",
+            "name": "T_ROWS",
+            "label": "T_ROWS",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "NAME",
+                "label": "NAME"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 4,
+            "total": 4,
+            "rows": [
+              {
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11,
+                "DONE": false
+              },
+              {
+                "ID": 12,
+                "NAME": "item 12",
+                "QTY": 8,
+                "DONE": false
+              },
+              {
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5,
+                "DONE": false
+              },
+              {
+                "ID": 11,
+                "NAME": "item 11",
+                "QTY": 3,
+                "DONE": false
+              }
+            ],
+            "truncated": false,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4
+            }
+          },
+          {
+            "id": "t2",
+            "path": "/MR_WIN/*",
+            "name": "MR_WIN-*",
+            "label": "MR_WIN-*",
+            "control": "sap.m.Table",
+            "columns": [
+              {
+                "name": "ID",
+                "label": "ID"
+              },
+              {
+                "name": "QTY",
+                "label": "QTY"
+              },
+              {
+                "name": "DONE",
+                "label": "DONE"
+              }
+            ],
+            "rowCount": 4,
+            "total": 6,
+            "rows": [
+              {
+                "ID": 4,
+                "QTY": 6,
+                "DONE": false
+              },
+              {
+                "ID": 1,
+                "QTY": 5,
+                "DONE": false
+              },
+              {
+                "ID": 5,
+                "QTY": 4,
+                "DONE": false
+              },
+              {
+                "ID": 2,
+                "QTY": 3,
+                "DONE": false
+              }
+            ],
+            "truncated": true,
+            "selectionMode": "None",
+            "editableCells": [
+              "DONE"
+            ],
+            "layer": "main",
+            "window": {
+              "size": 4,
+              "more": "4 of 6 rows held - app_act { session, window: { table: \"t2\" } } loads rows 5-6; window.count, window.sort and window.filter ask the backend for any first rows of all 6"
+            }
+          }
+        ],
+        "messages": [],
+        "texts": [
+          "4",
+          "ROWS FILTER 0 4",
+          "/T_ROWS FILTER 0 4 S:QTY:D F1:NAME:Contains:1:"
+        ],
+        "unsupported": []
+      }
+    }
+  ]
+}

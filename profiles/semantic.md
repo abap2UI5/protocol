@@ -462,11 +462,14 @@ that is a JSON array of groups sets those groups. Each sends `SORT` or
 does not send (a malformed groups JSON, an operator outside the whitelist)
 is refused, sending nothing.
 
-**The agent client does not follow this yet.** mcp-server `332a0b0` (the
-vendored client, [AC]) still sends the window request of abap2UI5 1.149.0
-and 1.150.0, `[path, count]`, `[path, count, sort]` or `[path, count, "",
-filter]`, which a backend with the app-driven window hands to the app as
-an event named after the count, so no row is loaded
+**The agent client follows this** from the copy vendored at mcp-server
+`8a1d7d8` ([AC], protocol 3): `@BINDING_CALL` and `app_act { window }`
+send `[path, event, reason, skip, top, sorters, filter groups]`
+(`traffic/node-runtime/agent-client.json`). `332a0b0`, vendored before,
+still sent the window request of abap2UI5 1.149.0 and 1.150.0, `[path,
+count]`, `[path, count, sort]` or `[path, count, "", filter]`, which a
+backend with the app-driven window hands to the app as an event named
+after the count, so no row was loaded
 ([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
 Its snapshots - `total`, `window`, `@BINDING_CALL` - are unchanged by the
 new wire.

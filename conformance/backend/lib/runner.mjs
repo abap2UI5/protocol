@@ -1,7 +1,9 @@
 /*
  * The backend suite's runner: plays the frontend against one backend over
  * HTTP, check by check, and reports every check as pass, fail (a MUST that
- * does not hold), warn (a SHOULD that does not hold) or skip.
+ * does not hold), warn (a SHOULD that does not hold) or skip. A MAY check
+ * passes when the backend does what the rule allows, skips itself when the
+ * backend does not do it, and warns when it does it otherwise.
  *
  * Every 2xx JSON response a check receives is validated against
  * schema/response.schema.json, and every well-formed request the suite sends

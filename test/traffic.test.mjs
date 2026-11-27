@@ -64,8 +64,8 @@ test("both backends answer every check identically (status, media type, JSON bod
 // Where each backend takes another branch the spec allows for the draft ids
 // (expected.mjs, BACKEND_TRAFFIC_IDS_APART): the same with every id alike.
 const anyId = (value) => JSON.parse(JSON.stringify(value).replace(/<ID\d+>/g, "<ID>"));
-test("the checks answered alike but for the draft ids (BACKEND_TRAFFIC_IDS_APART) are identical with every draft id the same; cap2UI5 answers the unchanged timer tick with the id it continued, the node-runtime host with a new one", { skip: noCap }, () => {
-  assert.deepEqual([...idsApart], ["session.timer-tick"]);
+test("the checks answered alike but for the draft ids (BACKEND_TRAFFIC_IDS_APART) are identical with every draft id the same; cap2UI5 answers the unchanged timer tick with the id it continued - a declared timer running too -, the node-runtime host with a new one", { skip: noCap }, () => {
+  assert.deepEqual([...idsApart], ["action.timer-declared", "session.timer-tick"]);
   for (const id of idsApart) {
     const n = node.checks.find((c) => c.id === id);
     const o = cap.checks.find((c) => c.id === id);
@@ -73,10 +73,20 @@ test("the checks answered alike but for the draft ids (BACKEND_TRAFFIC_IDS_APART
     assert.equal(o.status, "pass", `cap2ui5 ${id}`);
     assert.deepEqual(anyId(comparable(o)), anyId(comparable(n)), id);
   }
-  const tick = (s) => s.checks.find((c) => c.id === "session.timer-tick").exchanges.find((x) => x.label === "tick NOOP");
   const continued = (x) => x.request.body.value.S_FRONT.ID;
-  assert.equal(tick(cap).response.body.S_FRONT.ID, continued(tick(cap)));
-  assert.notEqual(tick(node).response.body.S_FRONT.ID, continued(tick(node)));
+  for (const [id, label] of [["session.timer-tick", "tick NOOP"], ["action.timer-declared", "tick IDLE"]]) {
+    const tick = (s) => s.checks.find((c) => c.id === id).exchanges.find((x) => x.label === label);
+    assert.equal(tick(cap).response.body.S_FRONT.ID, continued(tick(cap)), `cap2ui5 ${id}`);
+    assert.notEqual(tick(node).response.body.S_FRONT.ID, continued(tick(node)), `node-runtime ${id}`);
+  }
+});
+
+test("the timer the backend keeps (spec/actions.md, MAY): both backends do all of it - every action.timer-declared* check passes, none skips", () => {
+  for (const [name, s] of recordedBackends()) {
+    const declared = s.checks.filter((c) => c.id.startsWith("action.timer-declared"));
+    assert.equal(declared.length, 5, name);
+    for (const c of declared) assert.equal(c.status, "pass", `${name} ${c.id}`);
+  }
 });
 
 test("the windowed tables: both backends (@abap2ui5/node-runtime 1.151.0, and @cap2ui5/cds-plugin 0.8.0 on it) pass every check of them, the one behind a data reference included, and are compared above", { skip: noCap }, () => {

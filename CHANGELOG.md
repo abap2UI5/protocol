@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+- **The timer the backend keeps is measured** (2026-11-27). `timer_set( )`
+  and `timer_stop( )` are released with abap2UI5 1.151.0 and hosted by
+  `@cap2ui5/cds-plugin` 0.8.0, so the conformance app ACTIONS declares its
+  timer, in ABAP and in the cap2UI5 twin: the events `TIMER_SET`,
+  `TIMER_UNSET`, `CALL` and `CALL_SELF`; it writes `cs_event-stop_timer`
+  instead of the literal `STOP_TIMER` now.
+  - Five backend checks of a new level, **MAY** (pass when a backend does
+    what the rule allows, skip when it does none of it, warn when it does
+    it otherwise; none affects conformance): `action.timer-declared`,
+    `action.timer-declared-restore`, `action.timer-declared-return`,
+    `action.timer-declared-hop-stop`, `action.timer-declared-stop`, on the
+    *Checked by* lines of `spec/actions.md` (*A timer the backend keeps*;
+    one new bullet: a backend MAY end the declared timer with `STOP_TIMER`
+    when the app ends the declaration). Specification revision 0.9 stays.
+  - Both reference backends pass all five: node-runtime 99 of 99, cap2UI5
+    98 of 99 (`error.details` warns, as before). cap2UI5 answers the
+    unchanged tick of a declared timer with the id it continued -
+    `action.timer-declared` joins `BACKEND_TRAFFIC_IDS_APART`.
+- **The agent client is on protocol 3** (2026-11-27): re-vendored from
+  abap2UI5/mcp-server `8a1d7d8` (main; protocol 3 from `7906a2f`), so it
+  is no longer *behind* - 65 pass, 0 fail, 37 skip of the frontend suite,
+  `AGENT_KNOWN_FAILS` empty: it sends the app-driven window request, and
+  `semantic.recorded-snapshots` passes. `slots.order` reads MAIN once the
+  popup of the response is closed - a semantic snapshot describes only
+  the popup while one is open. `traffic/*/agent-client.json` recorded with
+  it on both hosts and validated against the schemas
+  (`TRAFFIC_PROTOCOL_2` is empty).
+- Traffic recorded again on both hosts (`npm run record`).
+
 - **Both reference hosts on the releases with protocol 3** (2026-11-27):
   abap2UI5 1.151.0 (2026-11-26) is the first release that speaks protocol
   3, and `@cap2ui5/cds-plugin` 0.8.0 hosts its runtime. `package.json`

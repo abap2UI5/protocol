@@ -32,9 +32,9 @@ export const PROTOCOL = 3;
  *   cap2ui5       @cap2ui5/cds-plugin 0.8.0 hosts the runtime 1.151.0 and
  *                 speaks 3; 0.7.0 hosted 1.149.0 and spoke 2
  *   agent         the agent client of abap2UI5/mcp-server, vendored at
- *                 332a0b0, speaks protocol 2 (PROTOCOL in appclient.mjs);
- *                 upstream reads protocol 3 from 7906a2f (the client
- *                 @cap2ui5/cds-plugin 0.8.0 hosts), not vendored yet
+ *                 8a1d7d8 (main), speaks protocol 3 (PROTOCOL in
+ *                 appclient.mjs) - upstream reads it from 7906a2f on; the
+ *                 copy vendored before, 332a0b0, spoke 2
  *   ui5           the abap2UI5 checkout the frontend job uses (1.151.0 in
  *                 CI: protocol 3) - core/Server.js PROTOCOL; a checkout of
  *                 1.150.0 or older is behind
@@ -148,14 +148,15 @@ export const RECORDED_WARNINGS = Object.freeze({
  *  @cap2ui5/cds-plugin 0.8.0). */
 export const CAP_TRAFFIC_MISSING = null;
 /**
- * Recorded traffic that is still protocol 2 and kept: the agent client's
- * (traffic/node-runtime/agent-client.json, mcp-server against a protocol-2
- * runtime). Its snapshots are what profiles/semantic.md specifies and
- * protocol 3 did not change them - they stay the samples of
- * schema/snapshot.schema.json; its exchanges are not validated against the
- * schemas of this revision. Recorded again when the client follows.
+ * Recorded traffic that is still protocol 2 and kept, its exchanges not
+ * validated against the schemas of this revision. None since the agent
+ * client is vendored at mcp-server 8a1d7d8 (protocol 3): its traffic
+ * (traffic/<backend>/agent-client.json) is recorded on the releases and
+ * validated like the rest; until then traffic/node-runtime/agent-client.json
+ * was the one of mcp-server 332a0b0 against a protocol-2 runtime, kept for
+ * its snapshots.
  */
-export const TRAFFIC_PROTOCOL_2 = Object.freeze(["agent-client.json"]);
+export const TRAFFIC_PROTOCOL_2 = Object.freeze([]);
 
 const ids = (pins, backend) => {
   if (!pins[backend]) throw new Error(`no pins for backend "${backend}" - node-runtime or cap2ui5`);
@@ -186,5 +187,6 @@ export const BACKEND_TRAFFIC_APART = Object.freeze([]);
  * with every draft id the same (test/traffic.test.mjs), the reason here.
  */
 export const BACKEND_TRAFFIC_IDS_APART = Object.freeze({
+  "action.timer-declared": "cap2UI5 (@cap2ui5/cds-plugin 0.8.0) answers the tick that changed nothing while the declared timer runs with the id it continued - abap2UI5 sends nothing for an unchanged running timer (spec/actions.md#a-timer-the-backend-keeps); the node-runtime host never reuses an id",
   "session.timer-tick": "cap2UI5 (@cap2ui5/cds-plugin 0.8.0) answers the tick that changed nothing with the id it continued - the MAY of spec/sessions.md#draft-ids; the node-runtime host never reuses an id",
 });
