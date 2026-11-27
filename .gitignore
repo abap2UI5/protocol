@@ -10,3 +10,4 @@ conformance/hosts/cap2ui5/srv/apps/
 # npm run rename: the renamed apps, the clones it renames along, its config
 .github/out/
 .github/abaplint/
+/.rename_run.json
