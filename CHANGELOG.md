@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **An invisible column takes its cells with it** (2026-11-27): the
+  Adaptive Cards and the terminal renderer left out the header of a
+  `Column` with `visible="false"` but rendered the cell of its index in
+  every row - under the next header, and on the card as data. Both now
+  match cells to columns by position, as UI5 does.
 - **Both reference hosts on the releases with protocol 3** (2026-11-27):
   abap2UI5 1.151.0 (2026-11-26) is the first release that speaks protocol
   3, and `@cap2ui5/cds-plugin` 0.8.0 hosts its runtime. `package.json`

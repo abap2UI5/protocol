@@ -138,7 +138,11 @@ function table(node, ctx) {
   if (node.attrs.headerText !== undefined) out.push(tb(str(node, "headerText", ctx), { weight: "Bolder" }));
   out.push(...renderList(aggregation(node, "headerToolbar"), ctx), ...renderList(aggregation(node, "infoToolbar"), ctx));
   if (node.attrs.selectionChange !== undefined && ctx.interactive) ctx.report(node, "event selectionChange is not raised by a card - the selection travels with the next action");
-  const cols = aggregation(node, "columns").filter((c) => c.attrs.visible === undefined || !falsy(attr(c, "visible", ctx)));
+  // an invisible column takes the cells of its index with it: UI5 matches
+  // the cells of a row to the columns by position and renders neither
+  const allCols = aggregation(node, "columns");
+  const hidden = new Set(allCols.map((c, i) => (c.attrs.visible === undefined || !falsy(attr(c, "visible", ctx)) ? -1 : i)).filter((i) => i >= 0));
+  const cols = allCols.filter((c, i) => !hidden.has(i));
   const headers = cols.map((c) => aggregation(c, "header").map((h) => str(h, "text", ctx)).join(" "));
   const rows = rowsOf(node, "items", ctx);
   if (!rows.length) {
@@ -148,7 +152,7 @@ function table(node, ctx) {
   const selectable = SELECTABLE.has(str(node, "mode", ctx));
   const cellRows = rows.map(({ base, node: item, index }) => {
     const rc = ctx.with(base);
-    const cells = aggregation(item, "cells").map((cell) => ({ type: "TableCell", items: renderNode(cell, rc) }));
+    const cells = aggregation(item, "cells").filter((cell, i) => !hidden.has(i)).map((cell) => ({ type: "TableCell", items: renderNode(cell, rc) }));
     const toggleEl = selectable ? rowToggle(node, item, rc, ctx, `row ${index + 1}`) : null;
     if (selectable) cells.unshift({ type: "TableCell", items: toggleEl ? [toggleEl] : [] });
     const act = rowAction(node, item, rc, ctx);

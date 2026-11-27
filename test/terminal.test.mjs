@@ -84,6 +84,22 @@ test("the screens say what the views say; the unknown control is a visible place
   assert.ok(!box.includes("<") && !box.includes("x()"), box);
 });
 
+const HIDDEN_COLUMN = '<mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"><Page title="T"><Table items="{/T}"><columns>'
+  + '<Column visible="false"><Text text="Key"/></Column><Column><Text text="Name"/></Column><Column visible="{/SHOW}"><Text text="Extra"/></Column></columns>'
+  + '<items><ColumnListItem><cells><Text text="{K}"/><Text text="{N}"/><Text text="{X}"/></cells></ColumnListItem></items></Table></Page></mvc:View>';
+const hiddenColumn = (show) => ({ S_FRONT: { ID: "1", APP: "Z_T", PROTOCOL: 3, VIEWS: { MAIN: { XML: HIDDEN_COLUMN } } }, MODEL: { SHOW: show, T: [{ K: "secret-key", N: "name", X: "extra" }] } });
+
+test("an invisible column takes the cells of its index with it", () => {
+  const hidden = printResponses([hiddenColumn(false)]).text;
+  assert.match(hidden, /Name/);
+  assert.match(hidden, /name/);
+  assert.ok(!/secret-key|Key|Extra|extra/.test(hidden), hidden);
+  const shown = printResponses([hiddenColumn(true)]).text;
+  assert.match(shown, /Name[\s\S]*Extra/);
+  assert.match(shown, /name[\s\S]*extra/);
+  assert.ok(!shown.includes("secret-key"), shown);
+});
+
 // ----------------------------------------------------------- the keys ----
 
 /** A session + app against the scripted backend, started on `first`. */
