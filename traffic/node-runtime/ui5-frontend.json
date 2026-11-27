@@ -1,6 +1,6 @@
 {
-  "source": "bundle/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.150.0 (abap2UI5), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
-  "backend": "@abap2ui5/node-runtime 1.150.0",
+  "source": "bundle/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.151.0 (abap2UI5), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
+  "backend": "@abap2ui5/node-runtime 1.151.0",
   "exchanges": [
     {
       "label": "BIND: page load",
@@ -42,7 +42,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:46399",
+              "ORIGIN": "http://127.0.0.1:35921",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
             }
@@ -59,7 +59,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "E6B6418D02E94E718FE1D2230BAEACAD",
+            "ID": "1148FD5758E4486BA1A9CB5576F04F5D",
             "PROTOCOL": 3,
             "VIEWS": {
               "MAIN": {
@@ -129,9 +129,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "E6B6418D02E94E718FE1D2230BAEACAD",
+              "ID": "1148FD5758E4486BA1A9CB5576F04F5D",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 21
+              "MS_CLIENT_PREV": 30
             }
           }
         }
@@ -146,7 +146,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "428B43DE35CA492CB924450FCB73367C",
+            "ID": "C695617806B84235BA880C1421CA201C",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -190,9 +190,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "428B43DE35CA492CB924450FCB73367C",
+              "ID": "C695617806B84235BA880C1421CA201C",
               "EVENT": "ADD_ROW",
-              "MS_CLIENT_PREV": 11
+              "MS_CLIENT_PREV": 17
             }
           }
         }
@@ -207,7 +207,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_BIND",
-            "ID": "D2EE226A60BF478C8CF538B2C1855654",
+            "ID": "35370396503E4BD29FAEB0F66EB4C0F3",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -285,7 +285,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:46399",
+              "ORIGIN": "http://127.0.0.1:35921",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -302,7 +302,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "E825DC0FD3C84BC69E47942BD9DCADA3",
+            "ID": "8AAB79B7D7B1459D91846067975C1CA8",
             "PROTOCOL": 3,
             "VIEWS": {
               "MAIN": {
@@ -335,9 +335,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "E825DC0FD3C84BC69E47942BD9DCADA3",
+              "ID": "8AAB79B7D7B1459D91846067975C1CA8",
               "EVENT": "ECHO",
-              "MS_CLIENT_PREV": 12,
+              "MS_CLIENT_PREV": 25,
               "T_EVENT_ARG": [
                 "alpha",
                 2,
@@ -360,7 +360,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "D6DA772F7C6C44B7B1EE5D3493F5CA8C",
+            "ID": "8704F089BB3D473C8A8BE178A2E0EAEB",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -382,9 +382,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "D6DA772F7C6C44B7B1EE5D3493F5CA8C",
+              "ID": "8704F089BB3D473C8A8BE178A2E0EAEB",
               "EVENT": "NOOP",
-              "MS_CLIENT_PREV": 8
+              "MS_CLIENT_PREV": 12
             }
           }
         }
@@ -399,7 +399,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "D2CED38CDDE142CA8359E8002772B49B",
+            "ID": "597325ABF2274127AA06ED5EDEB12BF6",
             "PROTOCOL": 3
           }
         }
@@ -416,9 +416,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/z2ui5-xapp-state=D6DA772F7C6C44B7B1EE5D3493F5CA8C",
+              "HASH": "#/z2ui5-xapp-state=8704F089BB3D473C8A8BE178A2E0EAEB",
               "ROUTE": {
-                "APP_STATE": "D6DA772F7C6C44B7B1EE5D3493F5CA8C"
+                "APP_STATE": "8704F089BB3D473C8A8BE178A2E0EAEB"
               },
               "CONFIG": {
                 "S_UI5": {
@@ -449,8 +449,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 7,
-              "ORIGIN": "http://127.0.0.1:46399",
+              "MS_CLIENT_PREV": 10,
+              "ORIGIN": "http://127.0.0.1:35921",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
             }
@@ -467,7 +467,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ECHO",
-            "ID": "60555837C2E043639E4EFD590D56AD76",
+            "ID": "A6ADCE0E9F4547509E0AC061E7A281A2",
             "NAV": {
               "setAppStateActive": true
             },
@@ -532,7 +532,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:46399",
+              "ORIGIN": "http://127.0.0.1:35921",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -549,7 +549,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "9F6A0EC240574C3BB26019E15E6CA946",
+            "ID": "3D4E8FD2044E48E7A6115FE6EED2DABC",
             "NAV": {
               "setNavRouting": "KEEP"
             },
@@ -583,7 +583,7 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "9F6A0EC240574C3BB26019E15E6CA946",
+              "ID": "3D4E8FD2044E48E7A6115FE6EED2DABC",
               "EVENT": "COUNT",
               "MS_CLIENT_PREV": 10
             }
@@ -600,7 +600,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "40817B2938874D118BCF25DAA9E9EA6A",
+            "ID": "93437F80A1F246349C776308A544C2C3",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -620,9 +620,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "40817B2938874D118BCF25DAA9E9EA6A",
+              "ID": "93437F80A1F246349C776308A544C2C3",
               "EVENT": "CALL",
-              "MS_CLIENT_PREV": 9
+              "MS_CLIENT_PREV": 15
             }
           }
         }
@@ -637,11 +637,11 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_NAV_TGT",
-            "ID": "0388FE21A7FF48779881D986BE8267EF",
+            "ID": "247E7DF1B4344038817CACC6BDC26AA7",
             "NAV": {
               "checkNavAppCall": true,
               "navAppCallPrevApp": "Z2UI5_CL_CONF_ROUTE",
-              "navAppCallPrevId": "57D6F9E5EC2144C4B598323B34AEB6A8",
+              "navAppCallPrevId": "57D6E52ED3D448DA8187FB731ED84E05",
               "setNavRouting": "KEEP"
             },
             "PROTOCOL": 3,
@@ -675,10 +675,10 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/40817B2938874D118BCF25DAA9E9EA6A",
+              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/93437F80A1F246349C776308A544C2C3",
               "ROUTE": {
                 "APP": "Z2UI5_CL_CONF_ROUTE",
-                "DRAFT": "40817B2938874D118BCF25DAA9E9EA6A"
+                "DRAFT": "93437F80A1F246349C776308A544C2C3"
               },
               "CONFIG": {
                 "S_UI5": {
@@ -709,8 +709,8 @@
                   }
                 }
               },
-              "MS_CLIENT_PREV": 12,
-              "ORIGIN": "http://127.0.0.1:46399",
+              "MS_CLIENT_PREV": 9,
+              "ORIGIN": "http://127.0.0.1:35921",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
             }
@@ -727,7 +727,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_ROUTE",
-            "ID": "8103E36C1F264E21B5F79236D4F52D88",
+            "ID": "969DB9372C7F493FA9C9551AA087A8B8",
             "NAV": {
               "setNavRouting": "KEEP"
             },
@@ -790,7 +790,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:46399",
+              "ORIGIN": "http://127.0.0.1:35921",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
             }
@@ -807,7 +807,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "21CC8116986F475BBE361394888A0EA9",
+            "ID": "D8CA66366BC242DF8AE4EE8FBDE16C42",
             "PROTOCOL": 3,
             "VIEWS": {
               "MAIN": {
@@ -835,9 +835,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "21CC8116986F475BBE361394888A0EA9",
+              "ID": "D8CA66366BC242DF8AE4EE8FBDE16C42",
               "EVENT": "POPUP_OPEN",
-              "MS_CLIENT_PREV": 12
+              "MS_CLIENT_PREV": 16
             }
           }
         }
@@ -852,7 +852,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "BF0D3E6A00644F12BDBDFEBD1AF79A37",
+            "ID": "11E8BDAC8D8648F9A7BD1BBE3D8FE55D",
             "PROTOCOL": 3,
             "VIEWS": {
               "POPUP": {
@@ -877,9 +877,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "BF0D3E6A00644F12BDBDFEBD1AF79A37",
+              "ID": "11E8BDAC8D8648F9A7BD1BBE3D8FE55D",
               "EVENT": "POPOVER_OPEN",
-              "MS_CLIENT_PREV": 8
+              "MS_CLIENT_PREV": 14
             }
           }
         }
@@ -894,7 +894,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_SLOTS",
-            "ID": "42E56C214A614E9781936D09583B1412",
+            "ID": "BDEEC3FDF1DD478BB917E77735A286C3",
             "PROTOCOL": 3,
             "VIEWS": {
               "POPOVER": {
@@ -951,7 +951,7 @@
                   }
                 }
               },
-              "ORIGIN": "http://127.0.0.1:46399",
+              "ORIGIN": "http://127.0.0.1:35921",
               "PATHNAME": "/",
               "SEARCH": "?app_start=Z2UI5_CL_CONF_WINDOW"
             }
@@ -968,7 +968,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "CFF0392BB1C548DEA71837B64C0CB79D",
+            "ID": "C74431E4FD20485FB81340DD0B1942E3",
             "PROTOCOL": 3,
             "VIEWS": {
               "MAIN": {
@@ -1069,9 +1069,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "CFF0392BB1C548DEA71837B64C0CB79D",
+              "ID": "C74431E4FD20485FB81340DD0B1942E3",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 23,
+              "MS_CLIENT_PREV": 21,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1093,7 +1093,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "80E5B010EC894FD193EDB76A3745B602",
+            "ID": "9A3E0E49BDFC43D0BDF116CC03743C2C",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -1207,9 +1207,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "80E5B010EC894FD193EDB76A3745B602",
+              "ID": "9A3E0E49BDFC43D0BDF116CC03743C2C",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 17,
+              "MS_CLIENT_PREV": 12,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1233,7 +1233,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "7ECE9B51DA9043EF952DF8F9E5D9A963",
+            "ID": "B4A19259A1D54F31A27CC579F28CF084",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -1323,9 +1323,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "7ECE9B51DA9043EF952DF8F9E5D9A963",
+              "ID": "B4A19259A1D54F31A27CC579F28CF084",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 17,
+              "MS_CLIENT_PREV": 12,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1349,7 +1349,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "D0DD9DFFC16949289FEFFF63867B8615",
+            "ID": "D7001E02A466428C9F489AF94EBFBC00",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -1439,9 +1439,9 @@
         "body": {
           "value": {
             "S_FRONT": {
-              "ID": "D0DD9DFFC16949289FEFFF63867B8615",
+              "ID": "D7001E02A466428C9F489AF94EBFBC00",
               "EVENT": "___ZZZ_WIN",
-              "MS_CLIENT_PREV": 19,
+              "MS_CLIENT_PREV": 14,
               "T_EVENT_ARG": [
                 "/T_ROWS",
                 "ROWS",
@@ -1463,7 +1463,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "5DDF2970C1E445ABAE897E2F1779B1EE",
+            "ID": "519951C522A94EFFBDE1AAE6FF7E1E63",
             "PROTOCOL": 3
           },
           "MODEL": {
@@ -1577,9 +1577,9 @@
               }
             },
             "S_FRONT": {
-              "ID": "5DDF2970C1E445ABAE897E2F1779B1EE",
+              "ID": "519951C522A94EFFBDE1AAE6FF7E1E63",
               "EVENT": "CHECK",
-              "MS_CLIENT_PREV": 16
+              "MS_CLIENT_PREV": 12
             }
           }
         }
@@ -1594,7 +1594,7 @@
         "body": {
           "S_FRONT": {
             "APP": "Z2UI5_CL_CONF_WINDOW",
-            "ID": "66197DEDD6F5427FB866F69951FC1EE0",
+            "ID": "510518531AC0490980F4123296D1D34D",
             "PROTOCOL": 3
           },
           "MODEL": {

@@ -19,8 +19,9 @@
  * that output, which serve.mjs imports instead of the package.
  *
  * The app WINDOW is written for the app-driven window
- * (window_bind_tab( val total event window ), abap2UI5 main 694fb262 on); a
- * runtime before it - the released 1.150.0 - does not compile it, and the
+ * (window_bind_tab( val total event window ), abap2UI5 main 694fb262 on,
+ * released with 1.151.0); a runtime before it - 1.150.0 and older - does
+ * not compile it, and the
  * transpile would fail for every app. On such a runtime the app is left
  * out (appDrivenWindow( ), said on stderr): its start then fails, and the
  * checks of the windowed tables with it, as test/lib/expected.mjs pins.

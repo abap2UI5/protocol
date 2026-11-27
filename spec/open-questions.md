@@ -79,9 +79,10 @@ left unchanged MAY name the id the request continued, and the backend
 writes no draft; for every other request - a click, a keystroke, a window
 request, a tick that changed the app state - every 2xx response still
 names a new id ([sessions.md](sessions.md#draft-ids), backend checks
-`session.new-id`, `session.timer-tick`). abap2UI5 implements it on branch
-`DEV` (`cdd2fb25`, [H] `main_end_reuse`; the frontend marks the tick from
-`880ff0a5`); the maintainer approved it.
+`session.new-id`, `session.timer-tick`). abap2UI5 implements it from
+1.151.0 on (branch `DEV` `cdd2fb25`, [H] `main_end_reuse`; the frontend
+marks the tick from `880ff0a5`), and so does cap2UI5 from
+`@cap2ui5/cds-plugin` 0.8.0 on; the maintainer approved it.
 
 *Rationale.* A polling app - `START_TIMER` every two seconds - wrote a
 draft of its whole state per tick and user: 1,800 rows an hour of a
@@ -392,10 +393,11 @@ non-conformant at 0.5 without a change of its own - twice over: the
 window of abap2UI5 1.149.0 was replaced by the app-driven one on main
 (`694fb262`) within days. The node-runtime host, on a runtime built from
 that commit, passes every `window.*` check; on the released 1.150.0 it
-cannot start the app WINDOW, nor can the cap2UI5 host
-(`@cap2ui5/cds-plugin` 0.7.0, on the runtime 1.149.0) - both fail them,
-pinned until the next release
-([../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
+could not start the app WINDOW, nor could the cap2UI5 host
+(`@cap2ui5/cds-plugin` 0.7.0, on the runtime 1.149.0) - both failed them,
+pinned until the release 1.151.0, with which both pass them
+(`@abap2ui5/node-runtime` 1.151.0, `@cap2ui5/cds-plugin` 0.8.0;
+[../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
 What a backend has to implement is smaller since the window is the app's:
 it parses the request and hands it over, and sorts, filters and counts
 nothing - a backend that is no port of the framework has no sort or
@@ -544,8 +546,8 @@ frontend for one reserved event. That cost is paid by the other breaks of
 protocol 3 anyway.
 
 *What stays of the question.* Between abap2UI5 main `694fb262` (#3032) and
-the first release with protocol 3, a build of main declares protocol 2
-with the app-driven window. Such a build paired with a frontend or a
+the first release with protocol 3 (1.151.0), a build of main declared protocol
+2 with the app-driven window. Such a build paired with a frontend or a
 backend of 1.149.0 or 1.150.0 misreads window requests as described below;
 no release is in that state.
 
@@ -589,13 +591,13 @@ sends window requests.
 ## 16. The repeating timer in portable renderers
 
 **Current decision (revision 0.8): UI5 profile.** abap2UI5 `4a418249`
-(branch `DEV`) added the repeat flag of `START_TIMER` (element [4]) and
-the action `STOP_TIMER` ([actions.md](actions.md#the-timer)). Portable
-profile v1 is the census of the core apps it was filled from, and no app
-of that census uses either: `portable-v1.json` is unchanged, and the
-frontend checks of the repeat (`ui5.timer-repeat`,
-`ui5.timer-repeat-user-event`, `ui5.timer-stop`, `ui5.timer-replace`,
-`ui5.timer-repeat-app-change`, `ui5.timer-repeat-popup`,
+(branch `DEV`, released with 1.151.0) added the repeat flag of `START_TIMER`
+(element [4]) and the action `STOP_TIMER`
+([actions.md](actions.md#the-timer)). Portable profile v1 is the census of the
+core apps it was filled from, and no app of that census uses either:
+`portable-v1.json` is unchanged, and the frontend checks of the repeat
+(`ui5.timer-repeat`, `ui5.timer-repeat-user-event`, `ui5.timer-stop`,
+`ui5.timer-replace`, `ui5.timer-repeat-app-change`, `ui5.timer-repeat-popup`,
 `ui5.timer-repeat-error`) are of the UI5 profile. A portable renderer
 that does not know the flag runs the timer once - as `START_TIMER` always
 did - and skips `STOP_TIMER` as an action it does not know, logging it

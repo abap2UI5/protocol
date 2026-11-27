@@ -62,7 +62,7 @@ down, and the spec records what the implementations do.
   abap2UI5/mcp-server `docs/agent-snapshot.md`). Changes to the snapshot
   shape are made here first; implementations follow.
 - **The protocol number moves only with a breaking change**
-  (`spec/versioning.md`). Additive changes keep protocol 2.
+  (`spec/versioning.md`). Additive changes keep protocol 3.
 - **Do not edit other repositories from here.** A difference found in a
   backend is filed in `conformance/RESULTS.md` (and upstream), not patched.
 

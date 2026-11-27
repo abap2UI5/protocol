@@ -4,13 +4,13 @@
 // client.window_bind_tab( { val, total, event, window } ) is the app-driven
 // windowed table of abap2UI5 main 694fb262 (after 1.150.0): the app loads the
 // rows itself, the list binding's requests arrive as its event ROWS with
-// the request in client.get( ).r_event_data. @cap2ui5/cds-plugin 0.6.0
-// 0.7.0 hosts the runtime 1.150.0, whose window_bind_tab( ) takes val,
+// the request in client.get( ).r_event_data. @cap2ui5/cds-plugin 0.8.0
+// hosts the runtime 1.151.0, which has it, and passes every window check;
+// 0.7.0 hosted the runtime 1.149.0, whose window_bind_tab( ) takes val,
 // window, t_sort and t_filter: it refuses `total` and `event`, and the
 // app's start fails there (conformance/RESULTS.md, windowed tables). val
 // and total name fields, as val does for _bind( ) ("mr_win->*" behind a
-// data reference, t.ref( )) - the binding of total is the plugin's to
-// decide once it hosts a runtime with the app-driven window.
+// data reference, t.ref( )).
 const { defineApp, t } = require("@cap2ui5/cds-plugin");
 
 const ROW = { id: 0, name: "", qty: 0, done: false };

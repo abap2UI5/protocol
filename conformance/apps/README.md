@@ -140,7 +140,7 @@ Follow-up actions.
 | `SEVERAL` | `["SET_TITLE", "conformance title"]`, `["MESSAGE_TOAST", "show", "between"]`, `["SET_FOCUS", "inp"]` - in this order |
 | `TIMER` | `["START_TIMER", "TICK", "500"]` |
 | `TIMER_REPEAT` | `["START_TIMER", "TICK", "500", "", "X"]` - the repeating timer, the empty no-busy flag in its place |
-| `TIMER_STOP` | `["STOP_TIMER"]` (the app writes the literal: `cs_event-stop_timer` is on abap2UI5 DEV from `4a418249` only) |
+| `TIMER_STOP` | `["STOP_TIMER"]` (the app writes the literal, as written while `cs_event-stop_timer` was on abap2UI5 DEV only - `4a418249`, released with 1.151.0) |
 | `TICK` | `TICKS` + 1 |
 
 ## Z2UI5_CL_CONF_WINDOW
@@ -166,9 +166,10 @@ and counts its rows itself. `LAST` and `REQUEST` show what it was handed.
 | `TOTAL` | `total` = argument 1 (no rows loaded, no view) - not wired, the suite sends it |
 | Buttons `Sort list`, `Filter list` | wired frontend actions, no roundtrip of their own: `BINDING_CALL` `rows` `items` `sort` `QTY` `X`, and `rows` `items` `filter` `NAME` `Contains` `1` - the list binding of the UI5 frontend turns each into a window request |
 
-The cap2UI5 twin is written in the same shape, but `@cap2ui5/cds-plugin`
-0.7.0 hosts the runtime 1.150.0, whose `window_bind_tab( )` has no `total`
-and no `event`: the app does not start there
+The cap2UI5 twin is written in the same shape. `@cap2ui5/cds-plugin`
+0.8.0 hosts the runtime 1.151.0, whose `window_bind_tab( )` takes `total`
+and `event`, and passes every window check; 0.7.0 hosted the runtime
+1.149.0, which has neither, and the app did not start there
 ([../RESULTS.md](../RESULTS.md#windowed-tables)).
 
 ## Z2UI5_CL_CONF_REF

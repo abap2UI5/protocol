@@ -34,7 +34,8 @@ abbreviations: [../spec/README.md](../spec/README.md#sources).
 - `GET <endpoint>?z2ui5-bundle=cc` answers the custom controls
   (`z2ui5.cc.*`) as a JavaScript file of their own; the frontend loads it
   once per page, before it builds the first view that names one
-  ([HTTP] `_http_get_cc`; abap2UI5 DEV `6299a78`, 2026-11-23 - until then
+  ([HTTP] `_http_get_cc`; abap2UI5 DEV `6299a78`, 2026-11-23, released
+  with 1.151.0 - until then
   they were part of the frontend bundle). A view names a control by the
   namespace `z2ui5.cc`.
 - **Implementation note.** The page names the frontend bundle in a
@@ -147,7 +148,8 @@ ones: `CONTROL_BY_ID` (a whitelisted method on a control resolved by id,
 variant and launchpad actions (`CROSS_APP_NAV_TO_EXT`,
 `CROSS_APP_NAV_TO_PREV_APP`, `CROSS_APP_NAV_GET_LINKS`,
 `SET_TITLE_LAUNCHPAD`, `SET_APP_FULL_WIDTH`, [LP]) and, from abap2UI5
-`4a418249` (branch `DEV`), the repeat flag of `START_TIMER` and
+`4a418249` (branch `DEV`, released with 1.151.0), the repeat flag of
+`START_TIMER` and
 `STOP_TIMER` ([../spec/actions.md](../spec/actions.md#the-timer); [VO]
 `evStartTimer`, `evStopTimer`, `resumeRepeatTimer`) - UI5 profile in
 this revision, not portable v1
@@ -173,7 +175,8 @@ with `sync` - reachable from a view wire, written by nothing.
 Inside the SAP Fiori launchpad `SET_TITLE` sets the shell title as well
 as the page's title, like `SET_TITLE_LAUNCHPAD` - one action titles the app
 inside and outside the launchpad ([BRW] `evSetTitle`, [LIB]
-`setShellTitle`; from abap2UI5 `a9c08191`, branch `DEV`;
+`setShellTitle`; from abap2UI5 `a9c08191`, branch `DEV`, released with
+1.151.0;
 [../spec/actions.md](../spec/actions.md#the-title)). The shell service
 (`ShellUIService`) resolves asynchronously when the component starts; a
 title that arrives before it - the first response of a launch can - is

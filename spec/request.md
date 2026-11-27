@@ -173,9 +173,9 @@ A `START_TIMER` follow-up action ([actions.md](actions.md#vocabulary))
 raises its event when the delay ends - a roundtrip nobody clicked for, and
 on a polling screen one that repeats every few seconds. The request of such
 a **tick** carries `S_FRONT.TIMER: true` (from abap2UI5 `880ff0a5`, branch
-`DEV`: [VO] `evStartTimer` dispatches the tick as `[<event>, { noBusy,
-timer: true }]`, [V1] `eB` sets `TIMER` on the body, [SRV] `roundtrip`
-moves it into `S_FRONT`).
+`DEV`, released with 1.151.0: [VO] `evStartTimer` dispatches the tick as
+`[<event>, { noBusy, timer: true }]`, [V1] `eB` sets `TIMER` on the body,
+[SRV] `roundtrip` moves it into `S_FRONT`).
 
 ```json
 { "value": { "S_FRONT": { "ID": "9EA726DF4B7244BC882F1552C9DE9D97", "EVENT": "TICK", "TIMER": true } } }

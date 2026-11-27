@@ -3,8 +3,11 @@
 **Protocol 3, specification revision 0.9 (2026-11-24).** Derived from the
 implementations, not designed ahead of them: abap2UI5 branch `DEV` at
 `a9c08191` - the framework after 1.150.0, with protocol 3 - for the backend
-and the UI5 frontend, and the node runtime packed from that commit; no
-release carries protocol 3 yet. Revision 0.6 (2026-11-22, DEV `1445078`)
+and the UI5 frontend, and the node runtime packed from that commit.
+Protocol 3 is released with abap2UI5 1.151.0 (2026-11-26,
+`@abap2ui5/node-runtime` 1.151.0) and `@cap2ui5/cds-plugin` 0.8.0, which
+hosts that runtime; the development line is abap2UI5's branch `main`.
+Revision 0.6 (2026-11-22, DEV `1445078`)
 introduced protocol 3; 0.7 (DEV `04ead8ec`) added the timer tick
 (`S_FRONT.TIMER`, the unchanged tick that keeps its draft id) and the
 retention of drafts; 0.8 (DEV `4a418249`) the repeating timer and
@@ -13,8 +16,8 @@ backend that keeps an app's timer and sends it again when the app gets the
 screen back ([actions.md](actions.md#a-timer-the-backend-keeps)), the timer
 through a Retry, and `SET_TITLE` titling the launchpad shell
 ([actions.md](actions.md#the-title)). The implementations outside that
-repository still speak protocol 2 and are cited for what did not change:
-`@cap2ui5/cds-plugin` 0.7.0 (which hosts the released runtime),
+repository are cited at versions that still speak protocol 2, for what
+did not change: `@cap2ui5/cds-plugin` 0.7.0 (on the runtime 1.149.0),
 abap2UI5/mcp-server `332a0b0` and abap2UI5/headless-frontend `c1c24ba`
 (its simulator class is `z2ui5_cl_frontend_sim` since `8f37e54`).
 Revisions 0.1 to 0.5 describe protocol 2: 0.1 to 0.3 were derived from

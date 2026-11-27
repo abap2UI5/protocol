@@ -112,7 +112,8 @@ where it owns the page ([BRW] `evSetTitle`). Under the UI5 profile inside
 a launchpad it **also sets the shell title**, as `SET_TITLE_LAUNCHPAD`
 does - the user reads the shell header there, and an app no longer
 branches between the two actions ([BRW] `evSetTitle`, [LIB]
-`setShellTitle`; from abap2UI5 `a9c08191`, branch `DEV` - before it only
+`setShellTitle`; from abap2UI5 `a9c08191`, branch `DEV`, released with
+1.151.0 - before it only
 `SET_TITLE_LAUNCHPAD` reached the shell):
 
 - A title that arrives before the launchpad's shell service is ready - the
@@ -126,7 +127,8 @@ branches between the two actions ([BRW] `evSetTitle`, [LIB]
   the page's title nor the shell's ([BRW] `ownsPage`). The same holds for
   `SET_TITLE_LAUNCHPAD`: such a component sets no shell title and keeps
   none for the shell service, and the frontend logs the refusal ([LIB]
-  `setShellTitle`; from abap2UI5 `bd85ca52`, branch `DEV` - before it
+  `setShellTitle`; from abap2UI5 `bd85ca52`, branch `DEV`, released with
+  1.151.0 - before it
   `SET_TITLE_LAUNCHPAD` set the shell title from an embedded component as
   well).
 - Outside a launchpad `SET_TITLE` is the page's title only, and
@@ -141,8 +143,8 @@ branches between the two actions ([BRW] `evSetTitle`, [LIB]
 `START_TIMER` raises a backend event once its delay has passed - a
 **tick**, an ordinary event request marked `S_FRONT.TIMER: true`
 ([request.md](request.md#the-timer-tick)). From abap2UI5 `4a418249`
-(branch `DEV`) it can repeat itself, and `STOP_TIMER` ends it ([VO]
-`evStartTimer`, `evStopTimer`, `resumeRepeatTimer`; [IC]
+(branch `DEV`, released with 1.151.0) it can repeat itself, and `STOP_TIMER`
+ends it ([VO] `evStartTimer`, `evStopTimer`, `resumeRepeatTimer`; [IC]
 `cs_event-start_timer`, `cs_event-stop_timer`).
 
 ```json
@@ -232,7 +234,8 @@ profile in this revision
   only when it changed (below) does not send it again - without this a
   poll was lost with every successful Retry ([SRV] `readHttp` `onRetry`,
   `responseError`: the overlay's retry keeps `timerRepeat`; from abap2UI5
-  `a9c08191`, branch `DEV`). *Frontend check:* `ui5.timer-repeat-retry`.
+  `a9c08191`, branch `DEV`, released with 1.151.0). *Frontend check:*
+  `ui5.timer-repeat-retry`.
 - **Implementation note.** The UI5 frontend also ends a repeating timer
   on a Back/Forward restore - the restored screen arms its own ([SRV]
   `restoreFromRoute`) -, on `Server.reset` ([SRV] `reset`) and with the
@@ -249,7 +252,8 @@ tick like any other.
 
 ### A timer the backend keeps
 
-From abap2UI5 `a9c08191` (branch `DEV`) an app can **declare** its
+From abap2UI5 `a9c08191` (branch `DEV`, released with 1.151.0) an app
+can **declare** its
 repeating timer instead of sending it ([IC] `timer_set`, `timer_stop`).
 The backend keeps the declaration with the app's draft, next to what it
 last sent for it ([CONT] `ms_timer`, `ms_timer_sent`), and writes the
@@ -283,8 +287,8 @@ wire is new (revision 0.9); what a backend MAY do with the two actions:
   ([ACT] `prepare_app_stack`); `timer_stop( )` sends `STOP_TIMER` only when
   the declared timer was sent ([CL] `timer_stop`, [H] `main_end_timer`).
 - Not checked by the backend suite: both rules are MAY, and the
-  conformance apps declare no timer - `timer_set( )` is on `DEV` only,
-  while the apps are linted against the released runtime as well.
+  conformance apps declare no timer - they were written while
+  `timer_set( )` was on `DEV` only (it is released with 1.151.0).
 
 ## The offline queue
 

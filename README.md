@@ -10,9 +10,9 @@ the model, messages and frontend actions. That protocol is spoken by
 three backends (abap2UI5 on an ABAP system, the same framework transpiled to
 Node as `@abap2ui5/node-runtime`, cap2UI5 on CAP) and three frontends (the
 UI5 SPA, the MCP server's agent client, the ABAP frontend simulator). This
-repository writes it down - as **protocol 3**, which abap2UI5 speaks on its
-`DEV` branch; the released implementations still speak protocol 2
-([Status](#status)).
+repository writes it down - as **protocol 3**, released with abap2UI5
+1.151.0 and `@cap2ui5/cds-plugin` 0.8.0; abap2UI5 1.150.0 and older speak
+protocol 2 ([Status](#status)).
 
 ## The layers
 
@@ -55,7 +55,8 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
 ## Status
 
 - **Protocol 3**, specification revision 0.9, derived from abap2UI5
-  branch `DEV` at `a9c08191` (after 1.150.0). It breaks protocol 2: the
+  branch `DEV` at `a9c08191` (after 1.150.0) and released with abap2UI5
+  1.151.0 (2026-11-26). It breaks protocol 2: the
   response carries its views, its navigation intent and its follow-up
   actions as the sections `VIEWS`, `NAV` and `ACTIONS`, an app start
   carries the route parsed as `ROUTE`, the flags of an event wire are one
@@ -76,24 +77,26 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   decided again in revision 0.7 (the unchanged timer tick), four are open
   - question 16, the repeating timer in portable renderers, since revision
   0.8 ([spec/open-questions.md](spec/open-questions.md)).
-- **Who speaks protocol 3:** abap2UI5 `DEV` - the backend, the UI5 SPA
-  and the node runtime packed from it - and the two renderers of this
-  repository. **Who still speaks protocol 2:** every release -
-  `@abap2ui5/node-runtime` 1.150.0 (`package.json`), abap2UI5 1.150.0 -
-  cap2UI5 (`@cap2ui5/cds-plugin` 0.7.0 hosts that runtime) and the agent
-  client of abap2UI5/mcp-server (`332a0b0`, vendored here). A protocol-2
+- **Who speaks protocol 3:** abap2UI5 1.151.0 and its `main` branch - the
+  backend, the UI5 SPA and `@abap2ui5/node-runtime` 1.151.0
+  (`package.json`) - cap2UI5 (`@cap2ui5/cds-plugin` 0.8.0 hosts that
+  runtime) and the two renderers of this repository. **Who still speaks
+  protocol 2:** abap2UI5 1.150.0 and older, `@cap2ui5/cds-plugin` 0.7.0
+  and older, and the agent client of abap2UI5/mcp-server as vendored here
+  (`332a0b0`; upstream reads protocol 3 from `7906a2f`). A protocol-2
   frontend refuses a protocol-3 response on its number, and the suites
   of this revision do not measure a protocol-2 implementation; what is
   pinned for each is in [conformance/RESULTS.md](conformance/RESULTS.md).
 - **Backend suite** ([the check list](conformance/backend/README.md#checks)):
-  the node runtime packed from abap2UI5 `DEV` passes every check - that
-  is what `traffic/` is recorded against.
+  `@abap2ui5/node-runtime` 1.151.0 passes every check, `@cap2ui5/cds-plugin`
+  0.8.0 every MUST (it hides an app's exception text, a SHOULD) - that is
+  what `traffic/` is recorded against.
 - **Schemas** validate every recorded request and response, checked by
   the shipped validator and by ajv.
 - **Portable profile v1** filled from a census of 247 core apps (73.7 % by
   controls, 64.8 % run unchanged).
 - **Frontend suite** ([the check list](conformance/frontend/README.md#checks)),
-  scripted from the recorded traffic: the UI5 SPA of abap2UI5 `DEV`, the
+  scripted from the recorded traffic: the UI5 SPA of abap2UI5 1.151.0, the
   Adaptive Cards renderer and the terminal renderer pass every check that
   applies to them
   ([conformance/RESULTS.md](conformance/RESULTS.md#frontend-suite)).
@@ -119,14 +122,14 @@ npx abap2ui5-conformance backend --url http://localhost:3000/ --profile ui5
 # against the reference backends
 npm run conformance:node-runtime        # transpiles the framework with the ABAP apps, serves, runs
 npm ci --prefix conformance/hosts/cap2ui5
-npm run conformance:cap2ui5             # protocol 2 until cap2UI5 hosts a protocol-3 runtime
+npm run conformance:cap2ui5             # plugin 0.8.0 on the runtime 1.151.0
 ```
 
-The released `@abap2ui5/node-runtime` of `package.json` speaks protocol 2.
-Until a release speaks protocol 3, install a runtime packed from an
-abap2UI5 checkout over it (`npm run pack:node-runtime -- --out <dir>`
-there, then `npm install --no-save <dir>/abap2ui5-node-runtime-*.tgz`
-here).
+`package.json` pins the released `@abap2ui5/node-runtime` 1.151.0, which
+speaks protocol 3. To measure a build of abap2UI5 `main` instead, install
+a runtime packed from that checkout over it
+(`npm run pack:node-runtime -- --out <dir>` there, then
+`npm install --no-save <dir>/abap2ui5-node-runtime-*.tgz` here).
 
 To test your backend: deploy the [conformance apps](conformance/apps/README.md)
 (abapGit for ABAP; the JS twins for cap2UI5), point `--url` at the endpoint.
@@ -163,7 +166,7 @@ npm test                 # schemas, traffic, docs, portable profile, CLI, both b
                          # renderer; UI5 SPA with a checkout + Chromium), the golden
                          # cards and screens, the terminal against the node runtime
                          # (PROTOCOL_SKIP_BACKENDS=1 / PROTOCOL_SKIP_BROWSER=1 skip the slow parts)
-npm run record           # re-record traffic/ (the node runtime; cap2UI5 once it speaks protocol 3)
+npm run record           # re-record traffic/ (the node runtime and cap2UI5)
 npm run lint:abap        # abaplint over the ABAP conformance apps
 npm run generate         # regenerate the check lists, the portable-profile sections and
                          # the Adaptive Cards and terminal mapping tables

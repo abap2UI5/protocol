@@ -37,7 +37,8 @@ cap2UI5 (`cap2ui5.Drafts`, [CAP]).
   app state, and every request without `TIMER`, answers a new id as
   above. The reference compares the app container, serialized, with the
   draft it loaded byte for byte ([H] `main_end_reuse`, [CONT]
-  `db_check_unchanged`; from abap2UI5 `cdd2fb25`, branch `DEV`) and
+  `db_check_unchanged`; from abap2UI5 `cdd2fb25`, branch `DEV`, released
+  with 1.151.0) and
   renews the reused draft's time at most every five minutes so that a
   poll that finds nothing new keeps its draft past the expiry ([H]
   `main_end_save`, [DR] `touch`). Decided in revision 0.7
@@ -124,14 +125,14 @@ these limits:
   app stack - which name protected drafts.
 - **Implementation note.** The reference prunes each chain to its last
   `draft_keep_per_chain` drafts - 2 by default from abap2UI5 `04ead8ec`
-  (branch `DEV`), never fewer than 2, at most 50, 0 switches pruning off
-  ([EXIT], `ty_s_http_config_post`). Every save deletes the draft at depth
-  N + 1 of the chain it just extended, unless it is protected ([CONT]
-  `db_save`, `mt_draft_keep`; [DR] `prune_chain`, `c_min_keep_per_chain`;
-  from `cdd2fb25`). The minimum is 2 because of the retry: after the
-  backend saved the response that got lost, the draft the frontend
-  continues once more is depth 2. A Node runtime packed from that branch
-  prunes the same way (the in-memory store is the framework's); the
+  (branch `DEV`, released with 1.151.0), never fewer than 2, at most 50, 0
+  switches pruning off ([EXIT], `ty_s_http_config_post`). Every save deletes
+  the draft at depth N + 1 of the chain it just extended, unless it is
+  protected ([CONT] `db_save`, `mt_draft_keep`; [DR] `prune_chain`,
+  `c_min_keep_per_chain`; from `cdd2fb25`). The minimum is 2 because of the
+  retry: after the backend saved the response that got lost, the draft the
+  frontend continues once more is depth 2. `@abap2ui5/node-runtime` from
+  1.151.0 on prunes the same way (the in-memory store is the framework's); the
   releases up to 1.150.0, and cap2UI5 0.7.0 on them, do not prune. Before
   revision 0.7 the specification required every draft to be held until
   it expired.
