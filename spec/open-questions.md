@@ -439,14 +439,15 @@ the snapshot offers, not a duty of every semantic frontend.
 [../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)):
 the Adaptive Cards and the terminal renderer of this repository show the
 rows the app loaded as the whole table and send no window request. The
-agent client (abap2UI5/mcp-server `8efb3d7` on, vendored `332a0b0`)
+agent client (abap2UI5/mcp-server `8efb3d7` on, vendored `8a1d7d8`)
 implements (c): its snapshot names `total` and how to load the next
-window - but the window requests it sends are the ones of abap2UI5
-1.149.0 and 1.150.0, which a backend with
-the app-driven window hands to the app as an event named after a count
-(`traffic/node-runtime/agent-client.json`; a finding of
-[../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables)).
-All three send a cell edit as a `__delta` of the row.
+window, and from the copy vendored at `8a1d7d8` it sends the window
+request of this revision (`traffic/node-runtime/agent-client.json`) -
+`332a0b0`, vendored before, sent the one of abap2UI5 1.149.0 and 1.150.0,
+which a backend with the app-driven window hands to the app as an event
+named after a count (a finding of
+[../conformance/RESULTS.md](../conformance/RESULTS.md#windowed-tables),
+resolved). All three send a cell edit as a `__delta` of the row.
 
 *Why it is open.* An app that binds 10,000 rows with a window of 100 is a
 table of 100 rows in the portable renderers, without a word - the user of a

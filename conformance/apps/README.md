@@ -130,18 +130,26 @@ The error response.
 
 ## Z2UI5_CL_CONF_ACTIONS
 
-Follow-up actions.
+Follow-up actions, and the timer the app declares instead of sending it
+([../../spec/actions.md](../../spec/actions.md#a-timer-the-backend-keeps)).
+What the backend sends for the declared timer is the backend's, not the
+app's: the column says what abap2UI5 sends; a backend that keeps no
+timer sends nothing there, and the MAY checks skip.
 
 | | |
 |---|---|
-| Model | `TICKS` (integer, 0), bound to an Input with id `inp` |
-| View | buttons for the events below, and two with a wired frontend action (`follow_up_action( )` as attribute): "Title here" - `SET_TITLE` "wired title", `.eF('SET_TITLE', 'wired title')`; "Stop here" - `STOP_TIMER`, `.eF('STOP_TIMER')` |
+| Model | `TICKS` (integer, 0), bound to an Input with id `inp` - `ARM` is an attribute it does not bind |
+| View | buttons for the events below but `TICK`, and two with a wired frontend action (`follow_up_action( )` as attribute): "Title here" - `SET_TITLE` "wired title", `.eF('SET_TITLE', 'wired title')`; "Stop here" - `cs_event-stop_timer`, `.eF('STOP_TIMER')` |
 | `FOCUS` | `["SET_FOCUS", "inp"]` |
 | `SEVERAL` | `["SET_TITLE", "conformance title"]`, `["MESSAGE_TOAST", "show", "between"]`, `["SET_FOCUS", "inp"]` - in this order |
 | `TIMER` | `["START_TIMER", "TICK", "500"]` |
 | `TIMER_REPEAT` | `["START_TIMER", "TICK", "500", "", "X"]` - the repeating timer, the empty no-busy flag in its place |
-| `TIMER_STOP` | `["STOP_TIMER"]` (the app writes the literal, as written while `cs_event-stop_timer` was on abap2UI5 DEV only - `4a418249`, released with 1.151.0) |
+| `TIMER_STOP` | `["STOP_TIMER"]` (`cs_event-stop_timer`) |
 | `TICK` | `TICKS` + 1 |
+| `TIMER_SET` | declares the timer: `timer_set( event = 'TICK' delay_ms = 500 )` - abap2UI5 sends `["START_TIMER", "TICK", "500", "", "X"]`, and again whenever the app gets the screen back (a request without a draft id, the return from an app it called) |
+| `TIMER_UNSET` | ends the declaration: `timer_stop( )` - abap2UI5 sends `["STOP_TIMER"]` when it had sent the timer |
+| `CALL` | `nav_app_call` of a new `Z2UI5_CL_CONF_NAV_TGT` with `INPUT` = "from actions" (its `DONE` returns here) - with a declared timer abap2UI5 puts `["STOP_TIMER"]` first in the target's response |
+| `CALL_SELF` | `nav_app_call` of a new `Z2UI5_CL_CONF_ACTIONS` with `ARM` set: on its first display it queues `["START_TIMER", "TICK", "1000", "", "X"]` and clears `ARM` - with a declared timer abap2UI5 puts `["STOP_TIMER"]` before it |
 
 ## Z2UI5_CL_CONF_WINDOW
 

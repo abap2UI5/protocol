@@ -271,7 +271,9 @@ wire is new (revision 0.9); what a backend MAY do with the two actions:
   the running timer changes nothing ([above](#the-timer), *The same timer
   again*). abap2UI5 sends nothing while an unchanged timer runs, so an
   unchanged tick still answers with the draft id it continued
-  ([sessions.md](sessions.md#draft-ids)).
+  ([sessions.md](sessions.md#draft-ids)). *Checked by:*
+  `action.timer-declared`, `action.timer-declared-restore`,
+  `action.timer-declared-return`.
 - A backend MAY put **`STOP_TIMER` first in `ACTIONS` of a hop
   response**: the response of the app navigated to ends the timer of the
   app left, unless the app answering declares one of its own. A frontend
@@ -280,15 +282,28 @@ wire is new (revision 0.9); what a backend MAY do with the two actions:
   would go on ticking the poll of the app left. First, so that a
   `START_TIMER` the answering app queued in the same roundtrip still wins -
   the actions run in order ([ACT] `prepare_app_stack`: `check_timer_end`;
-  [H] `main_end_timer`).
+  [H] `main_end_timer`). *Checked by:* `action.timer-declared-hop-stop`.
+- A backend MAY end the declared timer with **`STOP_TIMER` in the response
+  in which the app ends the declaration**, when it had sent the timer, and
+  then sends it no more when the app gets the screen again ([CL]
+  `timer_stop`; [H] `main_end_timer`: no declaration but one sent - the
+  stop at the front of the actions). *Checked by:*
+  `action.timer-declared-stop`.
 - **Implementation note.** In abap2UI5 an app's own `follow_up_action( )`
   with `START_TIMER` or `STOP_TIMER` takes the slot over and drops the
   declaration ([CL] `follow_up_action`); `nav_app_call( me )` keeps it
   ([ACT] `prepare_app_stack`); `timer_stop( )` sends `STOP_TIMER` only when
   the declared timer was sent ([CL] `timer_stop`, [H] `main_end_timer`).
-- Not checked by the backend suite: both rules are MAY, and the
-  conformance apps declare no timer - they were written while
-  `timer_set( )` was on `DEV` only (it is released with 1.151.0).
+- The checks are MAY checks: they pass when a backend does what the rule
+  describes, skip when it does none of it, and warn when it does it
+  otherwise ([../conformance/backend/README.md](../conformance/backend/README.md#run-it)).
+  The conformance app ACTIONS declares its timer with `timer_set( )` and
+  ends it with `timer_stop( )`
+  ([../conformance/apps/README.md](../conformance/apps/README.md#z2ui5_cl_conf_actions)).
+  Not checked: the first display of an app that declares its timer on
+  its start, a Back/Forward restore and a popup app closing - the same
+  branches of [H] `main_end_timer` as the app-state link and the return
+  that are checked.
 
 ## The offline queue
 

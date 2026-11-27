@@ -60,7 +60,7 @@ test("check ids are unique and every check has a level and a profile", () => {
   const ids = ALL_CHECKS.map((c) => c.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const c of ALL_CHECKS) {
-    assert.ok(["MUST", "SHOULD"].includes(c.level), c.id);
+    assert.ok(["MUST", "SHOULD", "MAY"].includes(c.level), c.id);
     assert.ok(["core", "ui5"].includes(c.profile), c.id);
   }
 });

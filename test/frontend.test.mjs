@@ -160,13 +160,14 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 
 // The agent client's result, check by check - a change here is a change of
 // the client (re-vendored) or of a check. From mcp-server a4d9f07 (PR #44)
-// it followed every frontend rule that applies, until the windowed tables
-// became app-driven (conformance/RESULTS.md, below) - the vendored copy is
-// 332a0b0 (adapters/vendor/mcp-server/source.json); the
-// skips are the portable and UI5 profiles it does not claim, a URL, a DOM,
-// focus, programmatic model edits and the nested-table cell its snapshot
-// does not describe.
+// it followed every frontend rule that applies; the vendored copy is
+// 8a1d7d8 (adapters/vendor/mcp-server/source.json, protocol 3), which also
+// sends the app-driven window request. The skips are the portable and UI5
+// profiles it does not claim, timers it does not run, a URL, a DOM, focus,
+// programmatic model edits and the nested-table cell its snapshot does not
+// describe.
 const AGENT_SKIPS = [
+  "request.timer-mark", "transport.tick-keeps-event",
   "model.nested-table", "model.whole-beats-delta", "ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event",
   "action.after-render", "message.details-sanitized",
   "router.keep", "router.hash-sent", "router.back-restores", "router.app-state",
@@ -177,22 +178,17 @@ const AGENT_SKIPS = [
   "ui5.timer-repeat", "ui5.timer-repeat-user-event", "ui5.timer-stop", "ui5.timer-replace", "ui5.timer-repeat-app-change", "ui5.timer-repeat-popup", "ui5.timer-repeat-error", "ui5.timer-repeat-retry",
 ];
 
-// Its known deviation (RESULTS.md, windowed tables), with the place of the
-// fix: the client sends the window request of abap2UI5 1.149.0 and 1.150.0
-// ([path, count, sort?, filter?]), which is no request of this revision -
-// the replay of the "Sort list" BINDING_CALL posts one. Fixed in
-// abap2UI5/mcp-server lib/appclient.mjs (window requests as [path, event,
-// reason, skip, top, sorters, filter groups]), then re-vendored.
-const AGENT_KNOWN_FAILS = ["semantic.recorded-snapshots"];
+// Its known deviations (RESULTS.md), with the place of the fix: none at
+// 8a1d7d8. The window request of abap2UI5 1.149.0 and 1.150.0 that 332a0b0
+// sent ([path, count, sort?, filter?] - `semantic.recorded-snapshots`
+// failed on it) is gone: the client sends the app-driven one.
+const AGENT_KNOWN_FAILS = [];
 
-// Protocol 3: the vendored client speaks protocol 2 and refuses every
-// response of this revision - it is BEHIND (test/lib/expected.mjs) and
-// measured by the one check that says so, pinned as its failure. What it sends is still a request of this revision
-// (the app start names its class in SEARCH; it has no URL, so no ROUTE).
-// The check-by-check pin above applies again with the first vendored copy
-// on protocol 3 (abap2UI5/mcp-server lib/appclient.mjs: read VIEWS, NAV and
-// ACTIONS, the options object of a wire; then npm run vendor:agent and
-// npm run record).
+// A vendored client on protocol 2 (332a0b0 was) refuses every response of
+// this revision - it is BEHIND (test/lib/expected.mjs) and measured by the
+// one check that says so, pinned as its failure. What it sends is still a
+// request of this revision (the app start names its class in SEARCH; it has
+// no URL, so no ROUTE). On protocol 3 the check-by-check pin above applies.
 test(`the agent client (protocol ${SPEAKS.agent})${behind("agent") ? ` is behind protocol ${PROTOCOL}: it refuses a response of this revision` : ": the frontend suite's result is the one RESULTS.md records"}`, { timeout: 120_000 }, async () => {
   if (behind("agent")) {
     // `only` filters by substring: the two checks by their exact ids
@@ -208,7 +204,6 @@ test(`the agent client (protocol ${SPEAKS.agent})${behind("agent") ? ` is behind
   assert.equal(r.profile, "semantic");
   const bad = r.results.filter((x) => x.status === "fail" || x.status === "warn");
   assert.deepEqual(bad.map((x) => x.id), AGENT_KNOWN_FAILS, bad.map((x) => `${x.id}: ${x.message}`).join("\n"));
-  for (const x of bad) assert.match(x.message, /___ZZZ_WIN.*"T_EVENT_ARG":\["\/T_ROWS","4",/, x.id);
   assert.deepEqual(r.results.filter((x) => x.status === "skip").map((x) => x.id), AGENT_SKIPS);
 });
 

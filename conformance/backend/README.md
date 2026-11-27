@@ -36,8 +36,12 @@ Exit code 0: no MUST check failed (the backend conforms to the profile).
 1: at least one did. 2: a usage error.
 
 A **MUST** check that fails is a `FAIL`; a **SHOULD** check that fails is a
-`WARN` and does not affect conformance. Every check starts fresh (its own
-app starts), so checks are independent and can run in any order.
+`WARN` and does not affect conformance. A **MAY** check measures what a
+backend does with a freedom the spec gives it: `PASS` when it does what
+the rule describes, `SKIP` (with the reason) when it does not do it at all,
+`WARN` when it does it otherwise - none of the three affects conformance.
+Every check starts fresh (its own app starts), so checks are independent
+and can run in any order.
 
 Against an ABAP system: pull [`../apps/abap/`](../apps/abap/) with abapGit,
 then point `--url` at the abap2UI5 ICF node. The CSRF check sends a foreign
@@ -132,6 +136,11 @@ fails when it is out of date).
 | `action.order` | MUST | core | Follow-up actions keep the order the app queued them in, messages included | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.timer` | MUST | core | A timer is ["START_TIMER", <event>, <ms>] and its event is an ordinary roundtrip | [actions.md#follow-up-actions](../../spec/actions.md#follow-up-actions) |
 | `action.timer-repeat` | MUST | core | A repeating timer is ["START_TIMER", <event>, <ms>, "", "X"] - the empty no-busy flag keeps its place - and the stop is ["STOP_TIMER"] | [actions.md#the-timer](../../spec/actions.md#the-timer) |
+| `action.timer-declared` | MAY | core | A timer the app declares goes out with the response that declares it, as the repeating START_TIMER; its ticks are ordinary ticks, and one that changed nothing may keep its draft id | [actions.md#a-timer-the-backend-keeps](../../spec/actions.md#a-timer-the-backend-keeps) |
+| `action.timer-declared-restore` | MAY | core | A declared timer goes out again in the response to a request without a draft id - an app-state link of the app's draft | [actions.md#a-timer-the-backend-keeps](../../spec/actions.md#a-timer-the-backend-keeps) |
+| `action.timer-declared-return` | MAY | core | A declared timer goes out again when the app gets the screen back from an app it called | [actions.md#a-timer-the-backend-keeps](../../spec/actions.md#a-timer-the-backend-keeps) |
+| `action.timer-declared-hop-stop` | MAY | core | A hop away from an app whose declared timer runs ends it with STOP_TIMER first in ACTIONS - before a START_TIMER the app navigated to queued itself, another instance of the same class included | [actions.md#a-timer-the-backend-keeps](../../spec/actions.md#a-timer-the-backend-keeps) |
+| `action.timer-declared-stop` | MAY | core | timer_stop( ) of a declared timer that runs goes out as STOP_TIMER, and the timer is not sent again when the app gets the screen back | [actions.md#a-timer-the-backend-keeps](../../spec/actions.md#a-timer-the-backend-keeps) |
 | `nav.call` | MUST | core | nav_app_call hands the screen to the called app: its APP, its MAIN view, its model | [navigation.md#the-app-stack](../../spec/navigation.md#the-app-stack) |
 | `nav.leave-with-result` | MUST | core | nav_app_leave returns to the caller, which re-displays and reads the result | [navigation.md#the-app-stack](../../spec/navigation.md#the-app-stack) |
 | `nav.leave-reserved-event` | MUST | core | The reserved event ___ZZZ_NAL leaves the app without running it | [navigation.md#the-reserved-leave-event](../../spec/navigation.md#the-reserved-leave-event) |

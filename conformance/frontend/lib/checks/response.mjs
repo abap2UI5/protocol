@@ -225,9 +225,16 @@ export default [
         },
       }));
       await t.press(NEXT);
-      const s = await t.state();
-      t.ok(s.slots.MAIN.text.includes(MARKER), `the MAIN view of the response is not on screen: ${s.slots.MAIN.text}`);
+      let s = await t.state();
       t.ok(s.slots.POPUP.open, "the popup of the response is not open - it was built before MAIN and taken down by it");
+      // MAIN is read once the popup is closed: a frontend of the semantic
+      // profile describes only the popup while one is open
+      // (profiles/semantic.md, "Which layers are described")
+      t.mock.reply(answer({ views: { POPUP: destroy() } }));
+      await t.press({ text: "OK", event: "OK", slot: "POPUP" });
+      s = await t.state();
+      t.ok(!s.slots.POPUP.open, "the popup is still open after VIEWS.POPUP.DESTROY");
+      t.ok(s.slots.MAIN.text.includes(MARKER), `the MAIN view of the response is not on screen: ${s.slots.MAIN.text}`);
     },
   },
   {
