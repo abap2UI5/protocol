@@ -1,12 +1,14 @@
 # Results
 
-**Protocol 3** (spec revision 0.9, 2026-11-24). Backend suite, profile
-`ui5` (94 checks: 86 core, 8 UI5-profile; 77 MUST, 17 SHOULD), run
-2026-11-24 with `npm run conformance:node-runtime` against a runtime packed
-from abap2UI5's branch DEV `a9c08191`. The traffic of this run is recorded in
-[`../traffic/`](../traffic/) - against what,
-[below](#what-the-traffic-is-recorded-against). What the move changed in
-the suites, what it found and who has not followed yet:
+**Protocol 3** (spec revision 0.9, 2026-11-24), released with abap2UI5
+1.151.0. Backend suite, profile `ui5` (94 checks: 86 core, 8 UI5-profile;
+77 MUST, 17 SHOULD), run 2026-11-27 with `npm run conformance:node-runtime`
+and `npm run conformance:cap2ui5` against the released
+`@abap2ui5/node-runtime` 1.151.0 and `@cap2ui5/cds-plugin` 0.8.0. The
+traffic of this run is recorded in [`../traffic/`](../traffic/) - against
+what, [below](#what-the-traffic-is-recorded-against). What the release
+changed here: [the release 1.151.0](#the-release-11510). What the move
+changed in the suites, what it found and who had not followed yet:
 [the move to protocol 3](#the-move-to-protocol-3); what revision 0.7
 changed: [the timer tick and the pruned chain](#the-timer-tick-and-the-pruned-chain);
 revision 0.8: [the repeating timer](#the-repeating-timer); revision 0.9:
@@ -17,26 +19,27 @@ that the tables here replace.
 
 | Backend | Version | Apps | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| `node-runtime` | `@abap2ui5/node-runtime` packed from abap2UI5 DEV `a9c08191` (it names itself 1.150.0; `npm install --no-save`) - **the recorded traffic** | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.35, the version the package names, installed with it `--no-save`) | 94 | 0 | 0 | 0 | conformant (ui5) |
-| `node-runtime` | `@abap2ui5/node-runtime` 1.150.0 (released, `package.json`, CI) | the same, the app WINDOW left out | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned |
-| `cap2ui5` | `@cap2ui5/cds-plugin` 0.7.0 on `@abap2ui5/node-runtime` 1.149.0 (the version the plugin pins), `@sap/cds` 10 | the JavaScript apps | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned; no traffic recorded |
+| `node-runtime` | `@abap2ui5/node-runtime` 1.151.0 (released, `package.json`, CI) - **the recorded traffic** | the ABAP apps, transpiled together with the framework by the package's `abap2ui5-transpile` (`@abaplint/transpiler-cli` 2.14.35, the version the package names, `package.json`) | 94 | 0 | 0 | 0 | conformant (ui5) |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.8.0 on `@abap2ui5/node-runtime` 1.151.0 (the version the plugin pins), `@sap/cds` 10 - **the recorded traffic** | the JavaScript apps | 93 | 0 | 1 | 0 | conformant (ui5); `error.details` (SHOULD) warns, by design ([below](#differences-between-the-two-backends)) |
+| `node-runtime` | `@abap2ui5/node-runtime` 1.150.0 and older | the same, the app WINDOW left out | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned |
+| `cap2ui5` | `@cap2ui5/cds-plugin` 0.7.0 and older (0.7.0 on the runtime 1.149.0) | the JavaScript apps | - | - | - | - | **behind: protocol 2.** Not measured by this revision; `response.protocol` fails, pinned |
 
-Per area, node-runtime on the DEV runtime:
+Per area, on the releases:
 
-| Area | Checks | node-runtime |
-|---|---:|---|
-| transport | 8 | 8 pass |
-| response | 8 | 8 pass |
-| event | 5 | 5 pass |
-| model | 12 | 12 pass |
-| window | 9 | 9 pass |
-| message | 4 | 4 pass |
-| slots | 9 | 9 pass |
-| action | 4 | 4 pass |
-| nav / route | 15 | 15 pass |
-| session | 7 | 7 pass |
-| error | 5 | 5 pass |
-| ui5 | 8 | 8 pass |
+| Area | Checks | node-runtime | cap2ui5 |
+|---|---:|---|---|
+| transport | 8 | 8 pass | 8 pass |
+| response | 8 | 8 pass | 8 pass |
+| event | 5 | 5 pass | 5 pass |
+| model | 12 | 12 pass | 12 pass |
+| window | 9 | 9 pass | 9 pass |
+| message | 4 | 4 pass | 4 pass |
+| slots | 9 | 9 pass | 9 pass |
+| action | 4 | 4 pass | 4 pass |
+| nav / route | 15 | 15 pass | 15 pass |
+| session | 7 | 7 pass | 7 pass |
+| error | 5 | 5 pass | 4 pass, 1 warn |
+| ui5 | 8 | 8 pass | 8 pass |
 
 The ABAP system itself (abap2UI5 on NetWeaver / ABAP Cloud) has not been run
 yet - it needs a system with the apps pulled in by abapGit; the transpiled
@@ -44,46 +47,87 @@ runtime is the same framework source.
 
 ## What the traffic is recorded against
 
-`traffic/node-runtime/` is recorded with the node-runtime host on a runtime
-**packed from abap2UI5 DEV `a9c08191`** (`4a418249` in revision 0.8,
-`04ead8ec` in revision 0.7, `1445078` up to revision 0.6) -
-`npm run pack:node-runtime` in that checkout, `npm install --no-save` of the tgz here and
-`OPEN_ABAP_CORE_DIR` at the open-abap-core of the same checkout, as
-abap2UI5's own CI runs this suite - and the UI5 frontend's request code
-from the same commit's `bundle/webapp` (`ui5-frontend.json`). No release
-speaks protocol 3 yet. `package.json` keeps the released
-`@abap2ui5/node-runtime` 1.150.0 (no unpublished version is pinned), and
-`npm test` is green on both installations:
+`traffic/node-runtime/` is recorded with the node-runtime host on the
+released **`@abap2ui5/node-runtime` 1.151.0** (`package.json`), and the UI5
+frontend's request code from the `bundle/webapp` of abap2UI5 1.151.0
+(`ui5-frontend.json`; `ABAP2UI5_HOME` at a copy of the tag).
+`traffic/cap2ui5/` is recorded with the cap2UI5 host on
+**`@cap2ui5/cds-plugin` 0.8.0** (on the runtime 1.151.0) and the same
+frontend code. Up to 2026-11-26 the node-runtime traffic was recorded on
+runtimes packed from abap2UI5 DEV (`a9c08191` in revision 0.9,
+`4a418249` in 0.8, `04ead8ec` in 0.7, `1445078` up to 0.6), and no
+traffic of cap2UI5 was recorded for protocol 3. `npm test` reads it this
+way:
 
 - `test/traffic.test.mjs` reads the results of the recording
-  (`RECORDED_FAILURES` in [`../test/lib/expected.mjs`](../test/lib/expected.mjs):
-  none), whatever is installed;
+  (`RECORDED_FAILURES`, `RECORDED_WARNINGS` in
+  [`../test/lib/expected.mjs`](../test/lib/expected.mjs): none for
+  node-runtime, `error.details` warns for cap2UI5), whatever is installed,
+  and compares the two backends check by check
+  ([below](#differences-between-the-two-backends));
 - the live backend run (`test/backends.test.mjs`, `run-conformance.mjs
-  --expected`) runs the whole suite against a runtime on protocol 3 and,
-  against one that is behind - the released 1.150.0, CI - the one check
-  `response.protocol`, pinned as its failure (`behind( )` in
+  --expected`) runs the whole suite against a backend on protocol 3 - the
+  releases of `package.json` and of the cap2UI5 host, or a runtime packed
+  from abap2UI5 `main` and installed over it `--no-save` - and, against
+  one that is behind (1.150.0 or older, plugin 0.7.0 or older), the one
+  check `response.protocol`, pinned as its failure (`behind( )` in
   `expected.mjs`, read off `c_protocol` of the installed package);
 - the UI5 frontend the same way: the whole suite against a checkout on
-  protocol 3 (`PROTOCOL` in its `core/Server.js`), `slots.main` alone,
-  pinned as failed, against the release commit CI checks out;
+  protocol 3 (`PROTOCOL` in its `core/Server.js`) - CI's frontend job
+  checks out 1.151.0 -, `slots.main` alone, pinned as failed, against an
+  older one;
 - the app WINDOW is left out of the build and of abaplint on a runtime
   without the app-driven window, as before.
 
-Two recordings are not of this revision:
+One recording is not of this revision:
+**`traffic/node-runtime/agent-client.json` is kept as it was**, recorded
+on 2026-11-21 with mcp-server against a protocol-2 runtime. Its
+snapshots are the samples of `schema/snapshot.schema.json`, which
+protocol 3 did not change; its exchanges are protocol 2 and are not
+validated against the schemas of this revision (`TRAFFIC_PROTOCOL_2`).
+It is recorded again with a client on protocol 3 (an mcp-server checkout
+at `7906a2f` or later, `MCP_SERVER_HOME`).
 
-- **`traffic/cap2ui5/` is gone.** `@cap2ui5/cds-plugin` 0.7.0 hosts a
-  protocol-2 runtime; its traffic would validate against no schema here,
-  and the comparison of the two backends (`test/traffic.test.mjs`) is
-  skipped with that reason (`CAP_TRAFFIC_MISSING`) until `npm run record`
-  runs against a plugin on protocol 3.
-- **`traffic/node-runtime/agent-client.json` is kept as it was**, recorded
-  on 2026-11-21 with mcp-server against a protocol-2 runtime. Its
-  snapshots are the samples of `schema/snapshot.schema.json`, which
-  protocol 3 did not change; its exchanges are protocol 2 and are not
-  validated against the schemas of this revision (`TRAFFIC_PROTOCOL_2`).
+## The release 1.151.0
 
-Once a release carries protocol 3, `package.json` and CI move to it and
-the conditions above find it.
+abap2UI5 1.151.0 (2026-11-26) is the first release with protocol 3, and
+`@cap2ui5/cds-plugin` 0.8.0 (2026-11-27) hosts its runtime. Both
+reference hosts pin them now (`package.json`:
+`@abap2ui5/node-runtime` 1.151.0 and `@abaplint/transpiler-cli` 2.14.35,
+the transpiler the package names; `conformance/hosts/cap2ui5`: the plugin
+0.8.0), CI's frontend job checks out the tag, and nothing of the
+reference implementations is behind any more but the vendored agent
+client.
+
+- **node-runtime:** 94 pass, as on the DEV runtime `a9c08191`. The
+  traffic, recorded again, differs from the DEV recording only in draft
+  ids, ports, the page's ETag, the version the runtime names and the
+  frontend's `MS_CLIENT_PREV` timings - the release changed nothing on
+  the wire the suite sees.
+- **cap2UI5 is measured again:** 93 pass, 1 warning (`error.details`, by
+  design). The plugin passes every check of the windowed tables - it
+  hosts the app-driven window and keeps a change made in place to a
+  table field (cap2UI5 0.8.0 changelog) - so the nine window pins of the
+  cap2UI5 host are gone, and so is `CAP_TRAFFIC_MISSING`:
+  `traffic/cap2ui5/` (`suite.json`, `ui5-frontend.json`) is recorded
+  again, and the two backends are compared check by check, the windowed
+  tables included (`BACKEND_TRAFFIC_APART` is empty).
+- **One new difference, within the spec:** cap2UI5 answers the timer
+  tick that changed nothing with the id it continued - the MAY of
+  [../spec/sessions.md](../spec/sessions.md#draft-ids); the node-runtime
+  host never reuses an id (its own serializer makes the compare fail).
+  It is the first recorded traffic of that branch of `session.timer-tick`.
+  The comparison takes the check with every draft id alike
+  (`BACKEND_TRAFFIC_IDS_APART` in `test/lib/expected.mjs`;
+  [below](#differences-between-the-two-backends)).
+- **Frontends:** the UI5 SPA of abap2UI5 1.151.0 (`bundle/webapp` of the
+  tag) passes 98 and skips 4, as the one of DEV `a9c08191` did; the
+  Adaptive Cards and the terminal renderer give their results unchanged
+  on the traffic of the release ([below](#frontend-suite)).
+- **Still behind:** the agent client vendored from abap2UI5/mcp-server
+  `332a0b0` (protocol 2). mcp-server reads protocol 3 from `7906a2f` (the
+  client `@cap2ui5/cds-plugin` 0.8.0 hosts); it follows here with
+  `npm run vendor:agent` and `npm run record`.
 
 ## The timer tick and the pruned chain
 
@@ -237,8 +281,11 @@ schema allows them). Fixed in abap2UI5 `1445078`
 (`z2ui5_cl_ui5_handler=>response_abap_to_json` writes `ID`, `APP` and
 `PROTOCOL` by name); the traffic here is recorded after the fix.
 
-**Who is behind.** Protocol 3 is in no release, and three implementations
-of other repositories speak protocol 2. An implementation that is behind
+**Who is behind.** (As of revision 0.6; since abap2UI5 1.151.0 and
+`@cap2ui5/cds-plugin` 0.8.0 only the vendored agent client is -
+[the release 1.151.0](#the-release-11510).) Protocol 3 was in no release
+then, and three implementations of other repositories spoke protocol 2.
+An implementation that is behind
 is not measured by this revision - every exchange would fail on the shape
 of the response - and is pinned by the one check that says so
 (`test/lib/expected.mjs`):
@@ -604,13 +651,14 @@ both).
 
 `test/traffic.test.mjs` compares the two recordings check by check - status,
 media type and JSON body, draft ids normalized - and finds them
-**identical** apart from the following - and apart from the nine checks
-of the [windowed tables](#windowed-tables), which the cap2UI5 host fails on
-the app's start and the comparison leaves out while they are pinned
-(`BACKEND_TRAFFIC_APART` in `test/lib/expected.mjs`); the check of the app
-REF ([above](#tables-behind-a-data-reference)) is compared. Both are the same framework
-(cap2UI5 hosts `@abap2ui5/node-runtime` rather than porting it), so this
-was the expected outcome; what differs is what the host adds around it.
+**identical** apart from the following; the nine checks of the
+[windowed tables](#windowed-tables), which the cap2UI5 host failed on the
+app's start until `@cap2ui5/cds-plugin` 0.8.0 and the comparison left out
+while they were pinned (`BACKEND_TRAFFIC_APART` in
+`test/lib/expected.mjs`, empty now), are compared, and so is the check of
+the app REF ([above](#tables-behind-a-data-reference)). Both are the same
+framework (cap2UI5 hosts `@abap2ui5/node-runtime` rather than porting it), so
+this was the expected outcome; what differs is what the host adds around it.
 
 1. **Error body of a JavaScript app's exception** - *filed difference,
    within the spec.* A `throw` in a cap2UI5 JavaScript app is no ABAP
@@ -633,6 +681,15 @@ was the expected outcome; what differs is what the host adds around it.
    charset=utf-8` (cap2UI5, express) vs `text/plain; charset=UTF-8`
    (framework). Media types are case-insensitive in their parameters; not a
    difference the spec cares about.
+3. **The draft id of an unchanged timer tick** (`session.timer-tick`,
+   since `@cap2ui5/cds-plugin` 0.8.0) - *within the spec.* cap2UI5
+   answers the tick that changed nothing with the id it continued and
+   writes no draft, the MAY of
+   [../spec/sessions.md](../spec/sessions.md#draft-ids); the node-runtime
+   host answers a new id - its serializer makes the reference's compare
+   fail. Every response is otherwise identical; the comparison takes the
+   check with every draft id alike (`BACKEND_TRAFFIC_IDS_APART` in
+   `test/lib/expected.mjs`).
 
 ## Spec decisions taken while running the suite
 
@@ -668,9 +725,11 @@ records - as a rule, or as an implementation note:
 ## Frontend suite
 
 Frontend suite, 102 checks (83 MUST, 19 SHOULD; 76 core, 8 portable, 15 UI5,
-3 semantic), run 2026-11-24 for protocol 3 (revision 0.9) against the
-traffic recorded from a runtime packed from abap2UI5 DEV `a9c08191` - the
-UI5 SPA of that commit, the Adaptive Cards and the terminal renderer - with
+3 semantic), run 2026-11-27 for protocol 3 (revision 0.9) against the
+traffic recorded from the released `@abap2ui5/node-runtime` 1.151.0 - the
+UI5 SPA of abap2UI5 1.151.0, the Adaptive Cards and the terminal renderer
+(2026-11-24 against a runtime packed from DEV `a9c08191` and its UI5 SPA:
+the same results) - with
 `abap2ui5-conformance frontend --adapter <name>` (each frontend at its
 widest profile). The scripted backend answers from
 [`../traffic/node-runtime/`](../traffic/node-runtime/) plus synthetic edge
@@ -681,8 +740,8 @@ before protocol 3.
 
 | Frontend | Version | Profile | Pass | Fail | Warn | Skip | Verdict |
 |---|---|---|---:|---:|---:|---:|---|
-| UI5 SPA (`ui5`) | abap2UI5 DEV `a9c08191` `bundle/webapp` (protocol 3), OpenUI5 1.153.0 (npm), Chromium 156 | ui5 | 98 | 0 | 0 | 4 | conformant (ui5) |
-| UI5 SPA (`ui5`) | abap2UI5 1.150.0 `app/webapp` (release commit `af05dce`, which CI pins) | ui5 | - | - | - | - | **behind: protocol 2** - `slots.main` fails, pinned ([above](#the-move-to-protocol-3)) |
+| UI5 SPA (`ui5`) | abap2UI5 1.151.0 `bundle/webapp` (protocol 3; the tag CI's frontend job checks out), OpenUI5 1.153.0 (npm), Chromium 156 | ui5 | 98 | 0 | 0 | 4 | conformant (ui5) |
+| UI5 SPA (`ui5`) | abap2UI5 1.150.0 and older (`app/webapp` of the release commit `af05dce`, which CI pinned until 1.151.0) | ui5 | - | - | - | - | **behind: protocol 2** - `slots.main` fails, pinned ([above](#the-move-to-protocol-3)) |
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `332a0b0` (vendored - `adapters/vendor/mcp-server/source.json`) | semantic | - | - | - | - | **behind: protocol 2** - it refuses every response of this revision; `slots.main` fails, pinned. Its last result on protocol 2: 63 pass, 1 fail, 23 skip |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 72 | 0 | 0 | 30 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 82 | 0 | 0 | 20 | every check it can be driven through holds, the router checks included |

@@ -263,8 +263,8 @@ const skipBrowser = process.env.PROTOCOL_SKIP_BROWSER ? "PROTOCOL_SKIP_BROWSER i
 // 1.149.0; fixed in abap2UI5 2cc0344 (#3026), released with 1.150.0.
 // The three UI5-profile checks of the app-driven window fail on a frontend
 // whose list binding sends the window request of 1.149.0 and 1.150.0 - the
-// release commit af05dce CI checks out; fixed in abap2UI5 main 694fb262
-// (#3032, core/WindowModel.js), the next release after 1.150.0. Pinned only
+// release commit af05dce CI checked out until 1.151.0; fixed in abap2UI5
+// main 694fb262 (#3032, core/WindowModel.js), released with 1.151.0. Pinned only
 // for such a checkout: one whose core/WindowModel.js names the reasons of
 // the app-driven window passes them.
 const WINDOW_UI5 = ["ui5.window-growth", "ui5.window-sort-filter", "ui5.window-no-event"];
@@ -273,11 +273,12 @@ const appDrivenFrontend = (webapp) => {
   return !file || !fs.existsSync(file) || /\bREASON\b/.test(fs.readFileSync(file, "utf8"));
 };
 const UI5_KNOWN_FAILS = appDrivenFrontend(locateWebapp()) ? [] : WINDOW_UI5;
-// Protocol 3: a checkout before it - the release commit CI's frontend job
-// checks out - is BEHIND (test/lib/expected.mjs): it refuses every response
-// of this revision, and is measured by the one check that says so. The
-// whole suite runs against a checkout of abap2UI5 DEV, as abap2UI5's own CI
-// runs it (its job conformance_frontend).
+// Protocol 3: a checkout before it - abap2UI5 1.150.0 or older - is BEHIND
+// (test/lib/expected.mjs): it refuses every response of this revision, and
+// is measured by the one check that says so. The whole suite runs against
+// a checkout on protocol 3 - the release 1.151.0 CI's frontend job checks
+// out, or abap2UI5 main, as abap2UI5's own CI runs it (its job
+// conformance_frontend).
 const ui5Speaks = frontendProtocol(locateWebapp());
 const ui5Behind = Boolean(locateWebapp()) && ui5Speaks !== PROTOCOL;
 

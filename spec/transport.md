@@ -253,7 +253,8 @@ These are rules for frontends; they keep a session consistent.
   drops the event with its view, on an app switch, a reset, a route
   restore and an error response ([V1] `eB` (`tickInFlight`,
   `oTickQueuedEvent`), `_dispatchQueuedEvent`; [VO] `evStartTimer`; from
-  abap2UI5 `880ff0a5`, branch `DEV` - before it the click was dropped).
+  abap2UI5 `880ff0a5`, branch `DEV`, released with 1.151.0 - before it
+  the click was dropped).
   *Frontend check:* `transport.tick-keeps-event`.
 - **A repeating timer** ([actions.md](actions.md#the-timer), revision
   0.8) follows the same rule: it is armed again only once a response is

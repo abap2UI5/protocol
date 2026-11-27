@@ -41,7 +41,8 @@ defineApp("Z2UI5_CL_CONF_ACTIONS", class {
         client.follow_up_action({ val: client.cs_event.start_timer, t_arg: ["TICK", "500", "", "X"] });
         break;
       case "TIMER_STOP":
-        // the literal: cs_event.stop_timer is on abap2UI5 DEV from 4a418249 only
+        // the literal, as written while cs_event.stop_timer was on abap2UI5
+        // DEV only (4a418249, released with 1.151.0)
         client.follow_up_action({ val: "STOP_TIMER" });
         break;
       case "TICK":

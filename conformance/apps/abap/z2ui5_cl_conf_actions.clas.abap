@@ -94,9 +94,8 @@ CLASS z2ui5_cl_conf_actions IMPLEMENTATION.
         client->follow_up_action( val   = z2ui5_if_client=>cs_event-start_timer
                                   t_arg = VALUE #( ( `TICK` ) ( `500` ) ( `` ) ( `X` ) ) ).
       WHEN `TIMER_STOP`.
-        " the literal, not cs_event-stop_timer: the constant is on abap2UI5
-        " DEV from 4a418249, the released runtime the apps are linted
-        " against does not have it
+        " the literal, not cs_event-stop_timer: written while the constant
+        " was on abap2UI5 DEV only (4a418249, released with 1.151.0)
         client->follow_up_action( `STOP_TIMER` ).
       WHEN `TICK`.
         ticks = ticks + 1.

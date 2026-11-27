@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+- **Both reference hosts on the releases with protocol 3** (2026-11-27):
+  abap2UI5 1.151.0 (2026-11-26) is the first release that speaks protocol
+  3, and `@cap2ui5/cds-plugin` 0.8.0 hosts its runtime. `package.json`
+  pins `@abap2ui5/node-runtime` 1.151.0 (1.150.0 before) and
+  `@abaplint/transpiler-cli` 2.14.35, the transpiler the package names;
+  the cap2UI5 host pins the plugin 0.8.0 (0.7.0 before). The specification
+  revision stays 0.9 - the release carries the wire it describes.
+  - Neither backend is *behind* any more (`test/lib/expected.mjs` reads
+    what is installed): node-runtime passes 94 of 94, cap2UI5 93 of 94
+    with `error.details` warning, as before - and every check of the
+    windowed tables, so the nine window pins of the cap2UI5 host are
+    gone.
+  - Traffic recorded again on the releases: `traffic/node-runtime/`
+    (`suite.json`, `ui5-frontend.json` from the `bundle/webapp` of
+    1.151.0) - only draft ids, ports, ETags, versions and timings moved -
+    and `traffic/cap2ui5/` again (`suite.json`, `ui5-frontend.json`).
+    `CAP_TRAFFIC_MISSING` is null, `BACKEND_TRAFFIC_APART` empty: the two
+    backends are compared check by check again, the windowed tables
+    included.
+  - One new difference, within the spec: cap2UI5 answers the timer tick
+    that changed nothing with the id it continued (the MAY of
+    `spec/sessions.md`), the node-runtime host with a new one -
+    `session.timer-tick` is compared with every draft id alike
+    (`BACKEND_TRAFFIC_IDS_APART`).
+  - The UI5 SPA of 1.151.0 passes 98 and skips 4 of the frontend suite,
+    as the one of DEV `a9c08191`.
+  - Still behind: the agent client vendored from mcp-server `332a0b0`
+    (protocol 2; mcp-server reads protocol 3 from `7906a2f`), and
+    `traffic/node-runtime/agent-client.json` with it.
+  - README, spec status lines, `conformance/RESULTS.md` (*The release
+    1.151.0*), the CI comments and the test comments say what is
+    released; abap2UI5's development line is `main`.
+
 - **The ABAP conformance apps downport to 7.02 and rename into another
   namespace** (2026-11-26), like every repository of the abap2UI5
   ecosystem: `npm run lint:abap:702` (a copy downported and linted at v702

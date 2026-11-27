@@ -13,20 +13,21 @@
 # renderer (renderers/terminal/, golden screens, and end to end against the
 # node-runtime host). Each backend run takes seconds; the install dominates.
 # The frontend job runs the frontend suite against the UI5 SPA of abap2UI5
-# (the commit the spec is derived from, bundle/webapp only) in Chromium - the
+# (the release 1.151.0, bundle/webapp only) in Chromium - the
 # test job skips that test, it has no browser and no checkout - and records
 # the reports of the UI5 SPA, the agent client and the Adaptive Cards and
 # terminal renderers.
 #
-# Protocol 3 (branch DEV) is in no release yet. What npm ci installs still
-# speaks protocol 2 - @abap2ui5/node-runtime 1.150.0, the runtime
-# @cap2ui5/cds-plugin 0.7.0 hosts - and so does the vendored agent client:
-# each is "behind" and measured by the one check that says so, pinned
-# (test/lib/expected.mjs). The whole backend suite runs against a runtime
-# packed from abap2UI5 DEV in abap2UI5's own CI (test.yaml there:
-# conformance_backend, conformance_frontend), which pins a commit of this
-# branch. The frontend job here checks out abap2UI5 at the DEV commit the
-# spec is derived from, so the UI5 SPA is measured in full.
+# Protocol 3 is released with abap2UI5 1.151.0. What npm ci installs speaks
+# it - @abap2ui5/node-runtime 1.151.0, and @cap2ui5/cds-plugin 0.8.0, which
+# hosts that runtime - and both backends are measured by the whole suite.
+# The vendored agent client (mcp-server 332a0b0) still speaks protocol 2:
+# it is "behind" and measured by the one check that says so, pinned
+# (test/lib/expected.mjs). abap2UI5's own CI runs the suites against a
+# runtime packed from its branch main (test.yaml there: conformance_backend,
+# conformance_frontend), which pins a commit of this branch. The frontend
+# job here checks out abap2UI5 at 1.151.0, so the UI5 SPA is measured in
+# full.
 name: ci
 
 on:

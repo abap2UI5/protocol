@@ -21,7 +21,7 @@ integer - **3** today ([TY] `c_protocol`, stamped by [H]
 - Requests carry no protocol number; the backend reads what it knows and
   ignores the rest ([request.md](request.md)).
 
-The number is not the product version (`z2ui5_if_app=>version`, 1.150.0)
+The number is not the product version (`z2ui5_if_app=>version`, 1.151.0)
 and does not move with a release. It moves when a response can no longer be
 read by a frontend written for the previous number - the `S_ACTION`
 envelope replacing `S_FRONT.PARAMS` was such a change (protocol 2), and so
@@ -37,8 +37,9 @@ rendered nothing with no error anywhere.
 
 ## What protocol 3 broke
 
-Protocol 3 is the wire of abap2UI5 after 1.150.0 (branch `DEV`,
-`1445078`). A frontend of protocol 2 and a backend of protocol 3, or the
+Protocol 3 is the wire of abap2UI5 from 1.151.0 on (introduced on the
+branch `DEV` at `1445078`, after 1.150.0); 1.150.0 and older speak
+protocol 2. A frontend of protocol 2 and a backend of protocol 3, or the
 other way round, do not work together: the frontend refuses the response
 on its number ([above](#the-protocol-number)), and a backend of protocol
 3 that is sent a protocol-2 request reads no route out of its `HASH`.

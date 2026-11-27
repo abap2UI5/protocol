@@ -1,0 +1,1709 @@
+{
+  "source": "bundle/webapp/core/Server.js, Session.js, Lib.js, WindowModel.js of abap2UI5 1.151.0 (abap2UI5), run in Node by scripts/lib/ui5-frontend.mjs - device values stubbed",
+  "backend": "@cap2ui5/cds-plugin 0.8.0 on @abap2ui5/node-runtime 1.151.0",
+  "exchanges": [
+    {
+      "label": "BIND: page load",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "CONFIG": {
+                "S_UI5": {
+                  "VERSION": "1.136.0",
+                  "BUILDTIMESTAMP": "202509010000",
+                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
+                  "THEME": "sap_horizon"
+                },
+                "S_DEVICE": {
+                  "SYSTEM": "desktop",
+                  "BROWSER": {
+                    "NAME": "cr",
+                    "VERSION": "140"
+                  },
+                  "OS": {
+                    "NAME": "linux",
+                    "VERSION": ""
+                  },
+                  "SUPPORT": {
+                    "TOUCH": false,
+                    "POINTER": true,
+                    "RETINA": false
+                  },
+                  "ORIENTATION": "landscape",
+                  "RESIZE": {
+                    "WIDTH": 1280,
+                    "HEIGHT": 800
+                  }
+                }
+              },
+              "ORIGIN": "http://127.0.0.1:5556",
+              "PATHNAME": "/rest/root/z2ui5",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_BIND"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"450-feJM8V8/GsaIpunJlgsuEOb4SAo\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_BIND",
+            "ID": "591EAD003A6746718B417262B1558FE5",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - bind\"><Input id=\"name\" value=\"{/NAME}\"/><StepInput id=\"qty\" value=\"{/QTY}\"/><CheckBox id=\"flag\" text=\"Flag\" selected=\"{/FLAG}\"/><Input id=\"city\" value=\"{/S_ADDR/CITY}\"/><Input id=\"zip\" value=\"{/S_ADDR/ZIP}\"/><Text id=\"summary\" text=\"{/SUMMARY}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Add row\" press=\".eB(['ADD_ROW'])\"/><Table id=\"items\" items=\"{/T_ITEMS}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Input value=\"{TEXT}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "FLAG": false,
+            "NAME": "start",
+            "QTY": 1,
+            "SUMMARY": "",
+            "S_ADDR": {
+              "CITY": "Berlin",
+              "ZIP": "10115"
+            },
+            "T_ITEMS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "TEXT": "one"
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "TEXT": "two"
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "TEXT": "three"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "BIND: CHECK with a scalar, a structure and a table cell edited",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "MODEL": {
+              "NAME": "Ada",
+              "S_ADDR": {
+                "CITY": "Paris",
+                "ZIP": "10115"
+              },
+              "T_ITEMS": {
+                "__delta": {
+                  "1": {
+                    "TEXT": "zwei",
+                    "DONE": true
+                  }
+                }
+              }
+            },
+            "S_FRONT": {
+              "ID": "591EAD003A6746718B417262B1558FE5",
+              "EVENT": "CHECK",
+              "MS_CLIENT_PREV": 26
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"160-heTl4LrUkmiMbnlKE2du+hY/CFA\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_BIND",
+            "ID": "D47B427B82A549149984A50686BFB28B",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "FLAG": false,
+            "NAME": "Ada",
+            "QTY": 1,
+            "SUMMARY": "Ada;1;;Paris;10115;1:one:,2:zwei:X,3:three:",
+            "S_ADDR": {
+              "CITY": "Paris",
+              "ZIP": "10115"
+            },
+            "T_ITEMS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "TEXT": "one"
+              },
+              {
+                "DONE": true,
+                "ID": 2,
+                "TEXT": "zwei"
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "TEXT": "three"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "BIND: ADD_ROW",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "D47B427B82A549149984A50686BFB28B",
+              "EVENT": "ADD_ROW",
+              "MS_CLIENT_PREV": 53
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"18a-mTuDQgzmGu59dDPFiCcmWAB913Q\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_BIND",
+            "ID": "79E5C14149664F78B3E9740005C466B8",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "FLAG": false,
+            "NAME": "Ada",
+            "QTY": 1,
+            "SUMMARY": "Ada;1;;Paris;10115;1:one:,2:zwei:X,3:three:,4:new:",
+            "S_ADDR": {
+              "CITY": "Paris",
+              "ZIP": "10115"
+            },
+            "T_ITEMS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "TEXT": "one"
+              },
+              {
+                "DONE": true,
+                "ID": 2,
+                "TEXT": "zwei"
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "TEXT": "three"
+              },
+              {
+                "DONE": false,
+                "ID": 4,
+                "TEXT": "new"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "ECHO: page load",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "CONFIG": {
+                "S_UI5": {
+                  "VERSION": "1.136.0",
+                  "BUILDTIMESTAMP": "202509010000",
+                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
+                  "THEME": "sap_horizon"
+                },
+                "S_DEVICE": {
+                  "SYSTEM": "desktop",
+                  "BROWSER": {
+                    "NAME": "cr",
+                    "VERSION": "140"
+                  },
+                  "OS": {
+                    "NAME": "linux",
+                    "VERSION": ""
+                  },
+                  "SUPPORT": {
+                    "TOUCH": false,
+                    "POINTER": true,
+                    "RETINA": false
+                  },
+                  "ORIENTATION": "landscape",
+                  "RESIZE": {
+                    "WIDTH": 1280,
+                    "HEIGHT": 800
+                  }
+                }
+              },
+              "ORIGIN": "http://127.0.0.1:5556",
+              "PATHNAME": "/rest/root/z2ui5",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"2f3-bSPAKpe2mnncOzNnEPtoG/rDSXU\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_ECHO",
+            "ID": "37C9D2FF38E348D3916B70D7EFE9C8F5",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - echo\"><Text id=\"count\" text=\"{/COUNT}\"/><Text id=\"last_event\" text=\"{/LAST_EVENT}\"/><Text id=\"last_args\" text=\"{/LAST_ARGS}\"/><Button text=\"Echo\" press=\".eB(['ECHO'], 'alpha', 'beta')\"/><Button text=\"Nothing\" press=\".eB(['NOOP'])\"/><Button text=\"Push\" press=\".eB(['PUSH'])\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/><Button text=\"Live\" press=\".eB(['LIVE',{queueLast:true,noBusy:true}])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "COUNT": 0,
+            "LAST_ARGS": "",
+            "LAST_EVENT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "ECHO: ECHO with arguments",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "37C9D2FF38E348D3916B70D7EFE9C8F5",
+              "EVENT": "ECHO",
+              "MS_CLIENT_PREV": 22,
+              "T_EVENT_ARG": [
+                "alpha",
+                2,
+                true,
+                {
+                  "k": "v"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"ab-Jct9FOblI4/eowrGYwQ76976unY\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_ECHO",
+            "ID": "A77CDBD7123E420EA45A08351ACA9EB5",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "COUNT": 1,
+            "LAST_ARGS": "alpha|2|X|{\"k\":\"v\"}",
+            "LAST_EVENT": "ECHO"
+          }
+        }
+      }
+    },
+    {
+      "label": "ECHO: NOOP",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "A77CDBD7123E420EA45A08351ACA9EB5",
+              "EVENT": "NOOP",
+              "MS_CLIENT_PREV": 21
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"5d-qluvxktvY4p7896JCgRZbkX2E8M\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_ECHO",
+            "ID": "A254A4573A5E4607B66A3994BACE868F",
+            "PROTOCOL": 3
+          }
+        }
+      }
+    },
+    {
+      "label": "ECHO: restore via the app-state hash",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "HASH": "#/z2ui5-xapp-state=A77CDBD7123E420EA45A08351ACA9EB5",
+              "ROUTE": {
+                "APP_STATE": "A77CDBD7123E420EA45A08351ACA9EB5"
+              },
+              "CONFIG": {
+                "S_UI5": {
+                  "VERSION": "1.136.0",
+                  "BUILDTIMESTAMP": "202509010000",
+                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
+                  "THEME": "sap_horizon"
+                },
+                "S_DEVICE": {
+                  "SYSTEM": "desktop",
+                  "BROWSER": {
+                    "NAME": "cr",
+                    "VERSION": "140"
+                  },
+                  "OS": {
+                    "NAME": "linux",
+                    "VERSION": ""
+                  },
+                  "SUPPORT": {
+                    "TOUCH": false,
+                    "POINTER": true,
+                    "RETINA": false
+                  },
+                  "ORIENTATION": "landscape",
+                  "RESIZE": {
+                    "WIDTH": 1280,
+                    "HEIGHT": 800
+                  }
+                }
+              },
+              "MS_CLIENT_PREV": 15,
+              "ORIGIN": "http://127.0.0.1:5556",
+              "PATHNAME": "/rest/root/z2ui5",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_ECHO"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"32f-XdNYOkqt9kYNBTk9ULtTENQDQMg\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_ECHO",
+            "ID": "9D8C69B2F9594191B6C3F1EF5C8AD120",
+            "NAV": {
+              "setAppStateActive": true
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - echo\"><Text id=\"count\" text=\"{/COUNT}\"/><Text id=\"last_event\" text=\"{/LAST_EVENT}\"/><Text id=\"last_args\" text=\"{/LAST_ARGS}\"/><Button text=\"Echo\" press=\".eB(['ECHO'], 'alpha', 'beta')\"/><Button text=\"Nothing\" press=\".eB(['NOOP'])\"/><Button text=\"Push\" press=\".eB(['PUSH'])\"/><Button text=\"Render\" press=\".eB(['RERENDER'])\"/><Button text=\"Live\" press=\".eB(['LIVE',{queueLast:true,noBusy:true}])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "COUNT": 1,
+            "LAST_ARGS": "alpha|2|X|{\"k\":\"v\"}",
+            "LAST_EVENT": "ECHO"
+          }
+        }
+      }
+    },
+    {
+      "label": "ROUTE: page load",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "CONFIG": {
+                "S_UI5": {
+                  "VERSION": "1.136.0",
+                  "BUILDTIMESTAMP": "202509010000",
+                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
+                  "THEME": "sap_horizon"
+                },
+                "S_DEVICE": {
+                  "SYSTEM": "desktop",
+                  "BROWSER": {
+                    "NAME": "cr",
+                    "VERSION": "140"
+                  },
+                  "OS": {
+                    "NAME": "linux",
+                    "VERSION": ""
+                  },
+                  "SUPPORT": {
+                    "TOUCH": false,
+                    "POINTER": true,
+                    "RETINA": false
+                  },
+                  "ORIENTATION": "landscape",
+                  "RESIZE": {
+                    "WIDTH": 1280,
+                    "HEIGHT": 800
+                  }
+                }
+              },
+              "ORIGIN": "http://127.0.0.1:5556",
+              "PATHNAME": "/rest/root/z2ui5",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"1d5-nXMXKoBSI5l7Qu7SNRsJhVNeI0E\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_ROUTE",
+            "ID": "1F2C6F7F26E344C780351E5D7F567F7C",
+            "NAV": {
+              "setNavRouting": "KEEP"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - route\"><Text id=\"count\" text=\"{/COUNT}\"/><Button text=\"Count\" press=\".eB(['COUNT'])\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "COUNT": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "ROUTE: COUNT",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "1F2C6F7F26E344C780351E5D7F567F7C",
+              "EVENT": "COUNT",
+              "MS_CLIENT_PREV": 12
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"72-s7RijnpvfuU8DlnGZWf1mnR4foQ\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_ROUTE",
+            "ID": "CDECF0348F1C46BE898F96860F06E46F",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "COUNT": 1
+          }
+        }
+      }
+    },
+    {
+      "label": "ROUTE: CALL",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "CDECF0348F1C46BE898F96860F06E46F",
+              "EVENT": "CALL",
+              "MS_CLIENT_PREV": 26
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"29f-obkRivMG+VUBhiia3tE064LriII\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_NAV_TGT",
+            "ID": "8B10FDC670AB49A196E5056C01219BC6",
+            "NAV": {
+              "checkNavAppCall": true,
+              "navAppCallPrevApp": "Z2UI5_CL_CONF_ROUTE",
+              "navAppCallPrevId": "D22310BD35134A6ABC9830780C2E7435",
+              "setNavRouting": "KEEP"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - nav target\" showNavButton=\"true\" navButtonPress=\".eB(['___ZZZ_NAL'])\"><Text id=\"input\" text=\"{/INPUT}\"/><Text id=\"output\" text=\"{/OUTPUT}\"/><Button text=\"Done\" press=\".eB(['DONE'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "INPUT": "from route",
+            "OUTPUT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "ROUTE: browser Back to the route of the caller",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "HASH": "#/app/Z2UI5_CL_CONF_ROUTE/CDECF0348F1C46BE898F96860F06E46F",
+              "ROUTE": {
+                "APP": "Z2UI5_CL_CONF_ROUTE",
+                "DRAFT": "CDECF0348F1C46BE898F96860F06E46F"
+              },
+              "CONFIG": {
+                "S_UI5": {
+                  "VERSION": "1.136.0",
+                  "BUILDTIMESTAMP": "202509010000",
+                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
+                  "THEME": "sap_horizon"
+                },
+                "S_DEVICE": {
+                  "SYSTEM": "desktop",
+                  "BROWSER": {
+                    "NAME": "cr",
+                    "VERSION": "140"
+                  },
+                  "OS": {
+                    "NAME": "linux",
+                    "VERSION": ""
+                  },
+                  "SUPPORT": {
+                    "TOUCH": false,
+                    "POINTER": true,
+                    "RETINA": false
+                  },
+                  "ORIENTATION": "landscape",
+                  "RESIZE": {
+                    "WIDTH": 1280,
+                    "HEIGHT": 800
+                  }
+                }
+              },
+              "MS_CLIENT_PREV": 46,
+              "ORIGIN": "http://127.0.0.1:5556",
+              "PATHNAME": "/rest/root/z2ui5",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_ROUTE"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"1d5-eaNGdBm9WwvjaAvq8LHNkfpDvbM\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_ROUTE",
+            "ID": "D22CEAE33A954856A5478BDC27E281A2",
+            "NAV": {
+              "setNavRouting": "KEEP"
+            },
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - route\"><Text id=\"count\" text=\"{/COUNT}\"/><Button text=\"Count\" press=\".eB(['COUNT'])\"/><Button text=\"Call\" press=\".eB(['CALL'])\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "COUNT": 1
+          }
+        }
+      }
+    },
+    {
+      "label": "SLOTS: page load",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "CONFIG": {
+                "S_UI5": {
+                  "VERSION": "1.136.0",
+                  "BUILDTIMESTAMP": "202509010000",
+                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
+                  "THEME": "sap_horizon"
+                },
+                "S_DEVICE": {
+                  "SYSTEM": "desktop",
+                  "BROWSER": {
+                    "NAME": "cr",
+                    "VERSION": "140"
+                  },
+                  "OS": {
+                    "NAME": "linux",
+                    "VERSION": ""
+                  },
+                  "SUPPORT": {
+                    "TOUCH": false,
+                    "POINTER": true,
+                    "RETINA": false
+                  },
+                  "ORIENTATION": "landscape",
+                  "RESIZE": {
+                    "WIDTH": 1280,
+                    "HEIGHT": 800
+                  }
+                }
+              },
+              "ORIGIN": "http://127.0.0.1:5556",
+              "PATHNAME": "/rest/root/z2ui5",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_SLOTS"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"24f-fE318IWnTG5yHwSAwscZoSUKtSo\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_SLOTS",
+            "ID": "5E786FD9BCF94EC89291AFA1C2AC62D8",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - slots\"><Button id=\"btn_popup\" text=\"Popup\" press=\".eB(['POPUP_OPEN'])\"/><Button id=\"btn_popover\" text=\"Popover\" press=\".eB(['POPOVER_OPEN'])\"/><Button text=\"Nest\" press=\".eB(['NEST_OPEN'])\"/><Button text=\"Nest2\" press=\".eB(['NEST2_OPEN'])\"/><VBox id=\"nest_anchor\"/><VBox id=\"nest2_anchor\"/></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "SLOTS: POPUP_OPEN",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "5E786FD9BCF94EC89291AFA1C2AC62D8",
+              "EVENT": "POPUP_OPEN",
+              "MS_CLIENT_PREV": 11
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"1fb-YtZmXo2guBWsYxhNditVO+RKwtM\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_SLOTS",
+            "ID": "F8D02CBA1AFC4242BCEA62637DD93F98",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "POPUP": {
+                "XML": "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Dialog title=\"conformance popup\"><Input id=\"popup_text\" value=\"{/POPUP_TEXT}\"/><buttons><Button text=\"Close\" press=\".eB(['POPUP_CLOSE'])\"/><Button text=\"Close here\" press=\".eF('CONTROL_GLOBAL', 'VIEW_SLOTS', 'destroy', 'POPUP')\"/></buttons></Dialog></core:FragmentDefinition>"
+              }
+            }
+          },
+          "MODEL": {
+            "POPUP_TEXT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "SLOTS: POPOVER_OPEN",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "F8D02CBA1AFC4242BCEA62637DD93F98",
+              "EVENT": "POPOVER_OPEN",
+              "MS_CLIENT_PREV": 12
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"180-tki1HlNNcark9qJW94OiuHBfisY\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_SLOTS",
+            "ID": "0572B27B299443C3B794528FC42D8DC8",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "POPOVER": {
+                "OPT": {
+                  "openById": "btn_popover"
+                },
+                "XML": "<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\"><Popover title=\"conformance popover\"><Button text=\"Close\" press=\".eB(['POPOVER_CLOSE'])\"/></Popover></core:FragmentDefinition>"
+              }
+            }
+          },
+          "MODEL": {
+            "POPUP_TEXT": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: page load",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "CONFIG": {
+                "S_UI5": {
+                  "VERSION": "1.136.0",
+                  "BUILDTIMESTAMP": "202509010000",
+                  "GAV": "com.sap.openui5.dist:sdk:1.136.0",
+                  "THEME": "sap_horizon"
+                },
+                "S_DEVICE": {
+                  "SYSTEM": "desktop",
+                  "BROWSER": {
+                    "NAME": "cr",
+                    "VERSION": "140"
+                  },
+                  "OS": {
+                    "NAME": "linux",
+                    "VERSION": ""
+                  },
+                  "SUPPORT": {
+                    "TOUCH": false,
+                    "POINTER": true,
+                    "RETINA": false
+                  },
+                  "ORIENTATION": "landscape",
+                  "RESIZE": {
+                    "WIDTH": 1280,
+                    "HEIGHT": 800
+                  }
+                }
+              },
+              "ORIGIN": "http://127.0.0.1:5556",
+              "PATHNAME": "/rest/root/z2ui5",
+              "SEARCH": "?app_start=Z2UI5_CL_CONF_WINDOW"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"73d-T5QWoKBqX4dca5E1XyqRVR5tyv8\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "CF5D70B0E9C04230864CA632B8526503",
+            "PROTOCOL": 3,
+            "VIEWS": {
+              "MAIN": {
+                "XML": "<mvc:View xmlns=\"sap.m\" xmlns:mvc=\"sap.ui.core.mvc\"><Page title=\"conformance - window\"><Text id=\"summary\" text=\"{/SUMMARY}\"/><Text id=\"mains\" text=\"{/MAINS}\"/><Text id=\"last\" text=\"{/LAST}\"/><Text id=\"request\" text=\"{/REQUEST}\"/><Text id=\"win_done\" text=\"{/WIN_DONE}\"/><Button text=\"Check\" press=\".eB(['CHECK'])\"/><Button text=\"Sort list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'sort', 'QTY', 'X')\"/><Button text=\"Filter list\" press=\".eF('BINDING_CALL', 'rows', 'items', 'filter', 'NAME', 'Contains', '1')\"/><Table id=\"rows\" growing=\"true\" growingThreshold=\"4\" items=\"{/T_ROWS}\"><columns><Column/><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{NAME}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table><Table id=\"win\" growing=\"true\" growingThreshold=\"4\" items=\"{/MR_WIN/*}\"><columns><Column/><Column/><Column/></columns><items><ColumnListItem><cells><Text text=\"{ID}\"/><Text text=\"{QTY}\"/><CheckBox selected=\"{DONE}\"/></cells></ColumnListItem></items></Table></Page></mvc:View>"
+              },
+              "POPOVER": {
+                "DESTROY": true
+              },
+              "POPUP": {
+                "DESTROY": true
+              }
+            }
+          },
+          "MODEL": {
+            "LAST": "",
+            "MAINS": 1,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "NAME": "item 03",
+                "QTY": 2
+              },
+              {
+                "DONE": false,
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 4,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 12
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: the list is asked for rows past its window - getContexts(0, 8)",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "CF5D70B0E9C04230864CA632B8526503",
+              "EVENT": "___ZZZ_WIN",
+              "MS_CLIENT_PREV": 27,
+              "T_EVENT_ARG": [
+                "/T_ROWS",
+                "ROWS",
+                "MORE",
+                "4",
+                "4"
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"351-jpWksbOp2OtZu3qrTD/Kb+GrDW8\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "EF7F0199898D42D1871F8BA97877C0EE",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "ROWS MORE 4 4",
+            "MAINS": 2,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS MORE 4 4",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 1,
+                "NAME": "item 01",
+                "QTY": 5
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 3,
+                "NAME": "item 03",
+                "QTY": 2
+              },
+              {
+                "DONE": false,
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7
+              },
+              {
+                "DONE": false,
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12
+              },
+              {
+                "DONE": false,
+                "ID": 6,
+                "NAME": "item 06",
+                "QTY": 4
+              },
+              {
+                "DONE": false,
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9
+              },
+              {
+                "DONE": false,
+                "ID": 8,
+                "NAME": "item 08",
+                "QTY": 1
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 8,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 12
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: sort( ) on the list binding - QTY descending",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "EF7F0199898D42D1871F8BA97877C0EE",
+              "EVENT": "___ZZZ_WIN",
+              "MS_CLIENT_PREV": 124,
+              "T_EVENT_ARG": [
+                "/T_ROWS",
+                "ROWS",
+                "SORT",
+                "0",
+                "4",
+                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]",
+                "[]"
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"29f-v7xC2tTLFGRpidU0CiZ92IkPdEI\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "C8BC0B8F2A144AB9B51896FC9960BB00",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "ROWS SORT 0 4",
+            "MAINS": 3,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS SORT 0 4 S:QTY:D",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12
+              },
+              {
+                "DONE": false,
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 4,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 12
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: filter( ) on the list binding - QTY greater than 6",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "C8BC0B8F2A144AB9B51896FC9960BB00",
+              "EVENT": "___ZZZ_WIN",
+              "MS_CLIENT_PREV": 59,
+              "T_EVENT_ARG": [
+                "/T_ROWS",
+                "ROWS",
+                "FILTER",
+                "0",
+                "4",
+                "[{\"PATH\":\"QTY\",\"DESCENDING\":true}]",
+                "[[[\"QTY\",\"GT\",6,null]]]"
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"2af-XzpzRnS5gPGtHemNg6+L6WpT+8w\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "EB3EBF21616E44E8B807578159636EFF",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "ROWS FILTER 0 4",
+            "MAINS": 4,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS FILTER 0 4 S:QTY:D F1:QTY:GT:6:",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12
+              },
+              {
+                "DONE": false,
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 4,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 6
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: the list grows inside the sort and the filter - getContexts(0, 8)",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "S_FRONT": {
+              "ID": "EB3EBF21616E44E8B807578159636EFF",
+              "EVENT": "___ZZZ_WIN",
+              "MS_CLIENT_PREV": 76,
+              "T_EVENT_ARG": [
+                "/T_ROWS",
+                "ROWS",
+                "MORE",
+                "4",
+                "2"
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"2f5-ohZFbPXqTKwQOW4hoFV46VY7pyw\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "D09A31350EAA4D3389ADACC755A29476",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "ROWS MORE 4 2",
+            "MAINS": 5,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS MORE 4 2",
+            "SUMMARY": "",
+            "T_ROWS": [
+              {
+                "DONE": false,
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12
+              },
+              {
+                "DONE": false,
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11
+              },
+              {
+                "DONE": false,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9
+              },
+              {
+                "DONE": false,
+                "ID": 12,
+                "NAME": "item 12",
+                "QTY": 8
+              },
+              {
+                "DONE": false,
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 6,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 6
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "WINDOW: CHECK with the first and the third row shown ticked",
+      "request": {
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "sap-contextid-accept": "header"
+        },
+        "body": {
+          "value": {
+            "MODEL": {
+              "T_ROWS": {
+                "__delta": {
+                  "0": {
+                    "DONE": true
+                  },
+                  "2": {
+                    "DONE": true
+                  }
+                }
+              }
+            },
+            "S_FRONT": {
+              "ID": "D09A31350EAA4D3389ADACC755A29476",
+              "EVENT": "CHECK",
+              "MS_CLIENT_PREV": 75
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "content-type": "application/json; charset=UTF-8",
+          "etag": "W/\"2ee-2KOPqizMSzHVWlyyuDD2Wv1sj2w\"",
+          "x-content-type-options": "nosniff"
+        },
+        "body": {
+          "S_FRONT": {
+            "APP": "Z2UI5_CL_CONF_WINDOW",
+            "ID": "89EB998A12EC4F8081BE263AF485F327",
+            "PROTOCOL": 3
+          },
+          "MODEL": {
+            "LAST": "CHECK",
+            "MAINS": 6,
+            "MR_WIN": {
+              "*": [
+                {
+                  "DONE": false,
+                  "ID": 4,
+                  "QTY": 6
+                },
+                {
+                  "DONE": false,
+                  "ID": 1,
+                  "QTY": 5
+                },
+                {
+                  "DONE": false,
+                  "ID": 5,
+                  "QTY": 4
+                },
+                {
+                  "DONE": false,
+                  "ID": 2,
+                  "QTY": 3
+                }
+              ]
+            },
+            "REQUEST": "/T_ROWS MORE 4 2",
+            "SUMMARY": "5,2",
+            "T_ROWS": [
+              {
+                "DONE": true,
+                "ID": 5,
+                "NAME": "item 05",
+                "QTY": 12
+              },
+              {
+                "DONE": false,
+                "ID": 10,
+                "NAME": "item 10",
+                "QTY": 11
+              },
+              {
+                "DONE": true,
+                "ID": 2,
+                "NAME": "item 02",
+                "QTY": 10
+              },
+              {
+                "DONE": false,
+                "ID": 7,
+                "NAME": "item 07",
+                "QTY": 9
+              },
+              {
+                "DONE": false,
+                "ID": 12,
+                "NAME": "item 12",
+                "QTY": 8
+              },
+              {
+                "DONE": false,
+                "ID": 4,
+                "NAME": "item 04",
+                "QTY": 7
+              }
+            ],
+            "WIN_DONE": "",
+            "__WINDOW": {
+              "MR_WIN": {
+                "*": {
+                  "COUNT": 4,
+                  "EVENT": "WIN",
+                  "SIZE": 4,
+                  "TOTAL": 6
+                }
+              },
+              "T_ROWS": {
+                "COUNT": 6,
+                "EVENT": "ROWS",
+                "SIZE": 4,
+                "TOTAL": 6
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

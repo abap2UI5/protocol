@@ -4,7 +4,8 @@
  * against the framework of the installed @abap2ui5/node-runtime.
  *
  * The app WINDOW is written for the app-driven window (abap2UI5 main
- * 694fb262 on); on a runtime before it - the released 1.150.0 - it cannot
+ * 694fb262 on, released with 1.151.0); on a runtime before it - 1.150.0
+ * and older, or a build packed before 694fb262 - it cannot
  * pass the syntax check, so it is left out there and the run says so, as
  * the node-runtime host leaves it out of its build
  * (conformance/hosts/node-runtime/build.mjs). Every other app is checked.
