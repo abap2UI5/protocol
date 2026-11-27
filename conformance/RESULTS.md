@@ -404,7 +404,7 @@ of the response - and is pinned by the one check that says so
 | cap2UI5, `@cap2ui5/cds-plugin` 0.7.0 | 2 | `response.protocol`; its traffic is not recorded | a plugin that hosts that release. The twin of the app ECHO's new wire (`conformance/apps/cap2ui5/echo.js`) runs on plugin 0.7.0 and writes the flags by position there - `.eB(['LIVE',false,false,false,true,true])`, protocol 2 |
 | the agent client of abap2UI5/mcp-server, vendored at `332a0b0` | 2 | `slots.main` (it refuses the response) | `lib/appclient.mjs` and `lib/snapshot.mjs` there: read `VIEWS`, `NAV`, `ACTIONS`, no teardown on an app change, the options object of a wire; then `npm run vendor:agent` and `npm run record` - followed: mcp-server `7906a2f`, vendored at `8a1d7d8` (2026-11-27) |
 | the UI5 SPA of abap2UI5 1.150.0 (`af05dce`, CI's frontend job) | 2 | `slots.main` | CI checking out a commit on protocol 3 |
-| the Web Components frontend (abap2UI5/frontend-webcomponent) | 2 | not run since 2026-10-03 | that repository |
+| the Web Components frontend (abap2UI5/frontend-webcomponent) | 2 | not run since 2026-10-03 | that repository - followed: abap2UI5-addons/embed-webcomponent main `f2f6b5c` reads protocol 3 ([its run](#findings---the-web-components-frontend)) |
 
 **The renderers of this repository** (Adaptive Cards, terminal) follow in
 this revision. They fold a response with a module of their own,
@@ -862,7 +862,8 @@ before protocol 3.
 | agent client (`agent`) | abap2UI5/mcp-server `lib/appclient.mjs` @ `332a0b0` (vendored until 2026-11-27) | semantic | - | - | - | - | **behind: protocol 2** - it refused every response of this revision; `slots.main` failed, pinned. Its last result on protocol 2: 63 pass, 1 fail, 23 skip |
 | Adaptive Cards renderer (`adaptive-cards`) | [`renderers/adaptive-cards/`](../renderers/adaptive-cards/README.md) of this repository (prototype), Adaptive Cards 1.5 | portable | 72 | 0 | 0 | 30 | every check it can be driven through holds |
 | terminal renderer (`terminal`) | [`renderers/terminal/`](../renderers/terminal/README.md) of this repository, driven with keys through its state machine | portable | 82 | 0 | 0 | 20 | every check it can be driven through holds, the router checks included |
-| Web Components (`webcomponent`) | abap2UI5/frontend-webcomponent 0.1.0, `dist/` built from main `410d607` (PR #2) - run 2026-10-03, against the 1.146.0 recording | portable | 68 | 0 | 0 | 13 | protocol 2, not run for this revision; then conformant (portable) in 3 of 4 runs, `model.number-and-boolean` intermittent (below) |
+| Web Components (`webcomponent`) | abap2UI5-addons/embed-webcomponent 0.1.0, `dist/` built from its branch `claude/lucid-hopper-pa3nlx` (on main `f2f6b5c`), Chromium 156 - run 2026-11-27 | portable | 76 | 0 | 0 | 26 | conformant (portable) in most runs; `model.number-and-boolean` intermittent, about one run in ten, its main alike (below) |
+| Web Components (`webcomponent`) | the same, `dist/` built from main `f2f6b5c` | portable | 74 | 1 | 1 | 26 | `message.details-sanitized` fails, `transport.tick-keeps-event` warns - both fixed on the branch above (below) |
 | headless ABAP simulator (`headless`) | - | - | - | - | - | - | not drivable: in-process, no HTTP seam ([frontend/README.md](frontend/README.md#adapters)) |
 
 The UI5 SPA run is stable (two consecutive runs, identical results) and
@@ -1113,6 +1114,40 @@ Found on the way:
    it - the terminal names the URL in its status line.
 
 ### Findings - the Web Components frontend
+
+**Protocol 3, 2026-11-27.** Run with `--profile portable` against
+abap2UI5-addons/embed-webcomponent (`WC_FRONTEND_HOME`), its main
+`f2f6b5c` - the first commit that reads protocol 3 - and its branch
+`claude/lucid-hopper-pa3nlx`: 76 checks apply, 26 are skipped (the UI5
+and semantic profiles, the box close, focus and model edits the adapter
+does not wire, the table-cell checks). Three checks of the suite were
+imprecise for this frontend and pass or fail on what it does now -
+*the checks were imprecise*:
+
+1. `error.as-text` and `message.details-sanitized` looked for the
+   `<img>` of their probe with `document.querySelector`, which does not
+   see into a shadow root - and the element renders everything into
+   one. Both passed whatever the frontend rendered. A DOM adapter now
+   answers `query(selector)` with the elements of the document and of
+   every open shadow root (`deepCount`, `adapters/base.mjs`), and the
+   checks ask it. The adapter also read the error shown from the
+   `abap2ui5-error` event - what the frontend meant to show; it reads the
+   text of the error dialog now (`.a2u-error-text`).
+2. `transport.one-at-a-time` and `transport.tick-keeps-event` swallowed an
+   `Unsupported` second press: the first then passed with no second event
+   ever fired. Such a check is skipped now. No adapter's result moved.
+
+With them, main `f2f6b5c` **fails `message.details-sanitized`**: the box
+details went through the FormattedText sanitizer, which strips handlers
+and script URLs but keeps the tags, so the probe's `<img>` (its `onerror`
+gone, no script ran) loaded its `src`. The reference rebuilds the details
+from a tag whitelist ([LIB] `sanitizeMessageDetails`) - *the frontend
+was wrong*; the branch does the same. Main also **warns on
+`transport.tick-keeps-event`** (the click that met a tick was dropped),
+fixed on the branch. `model.number-and-boolean` failed in about one run
+of ten of the check alone, on main and on the branch alike: the finding of
+2026-10-03 below, still not attributed. `error.as-text` holds on both
+for real now.
 
 Run against `dist/` built from its main `410d607` (PR #2: `ROUTER` and the
 URL hash, verbatim error text, formatters, growing), in a separate worktree

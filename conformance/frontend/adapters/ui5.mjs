@@ -14,7 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Unsupported, emptyState, sleep } from "./base.mjs";
+import { Unsupported, deepCount, emptyState, sleep } from "./base.mjs";
 import { bootPage, openui5Roots, versionInfo } from "./ui5-page.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -234,6 +234,10 @@ export function createUi5Adapter({ webapp: explicit, slowMo = 0 } = {}) {
 
     async evaluate(fn, arg) {
       return page.evaluate(fn, arg);
+    },
+
+    async query(selector) {
+      return page.evaluate(deepCount, selector);
     },
 
     async state() {

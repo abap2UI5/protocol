@@ -39,7 +39,7 @@ export default [
       t.includes(s.error.text, "conformance-error-marker", "the error shown");
       t.ok(!s.xss, "a script in the error body ran");
       if (t.caps.has("dom")) {
-        const img = await t.adapter.evaluate(() => Boolean(document.querySelector('img[src="conformance-xss-probe"]')));
+        const img = (await t.adapter.query('img[src="conformance-xss-probe"]')) > 0;
         t.ok(!img, "the <img> of the error body reached the DOM");
       }
     },

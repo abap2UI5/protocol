@@ -140,7 +140,7 @@ export default [
       const s = await t.state();
       t.ok(s.messages.some((m) => m.kind === "box"), "no box shown");
       t.ok(!s.xss, "a script in the details ran");
-      const img = await t.adapter.evaluate(() => Boolean(document.querySelector('img[src="conformance-xss-probe"]')));
+      const img = (await t.adapter.query('img[src="conformance-xss-probe"]')) > 0;
       t.ok(!img, "the <img onerror> of the details reached the DOM");
     },
   },

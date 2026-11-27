@@ -17,7 +17,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Unsupported, emptyState, sleep } from "./base.mjs";
+import { Unsupported, deepCount, emptyState, sleep } from "./base.mjs";
 import { launchChromium } from "./ui5.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -62,8 +62,12 @@ function pageState() {
   };
   for (const e of ev) {
     if (e.type === "abap2ui5-message") out.messages.push({ kind: e.detail.type === "box" ? "box" : "toast", text: String(e.detail.text || ""), type: e.detail.messageType || e.detail.method });
-    if (e.type === "abap2ui5-error") out.error = { text: String(e.detail.message || "") };
   }
+  // the error as the user sees it: the text of the error dialog in the
+  // element's shadow root - not the abap2ui5-error event's detail, which
+  // says what the frontend meant to show, not what it rendered
+  const shown = host && host.shadowRoot ? [...host.shadowRoot.querySelectorAll(".a2u-error-text")].pop() : null;
+  if (shown) out.error = { text: shown.textContent || "" };
   if (!app) return out;
   const st = app.session.state;
   out.app = st.app || null;
@@ -218,6 +222,10 @@ export function createWebComponentAdapter({ dist: explicit } = {}) {
 
     async evaluate(fn, arg) {
       return page.evaluate(fn, arg);
+    },
+
+    async query(selector) {
+      return page.evaluate(deepCount, selector);
     },
 
     async state() {

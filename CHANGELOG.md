@@ -30,6 +30,24 @@
   it on both hosts and validated against the schemas
   (`TRAFFIC_PROTOCOL_2` is empty).
 - Traffic recorded again on both hosts (`npm run record`).
+- **An invisible column takes its cells with it** (2026-11-27): the
+  Adaptive Cards and the terminal renderer left out the header of a
+  `Column` with `visible="false"` but rendered the cell of its index in
+  every row - under the next header, and on the card as data. Both now
+  match cells to columns by position, as UI5 does.
+- **Frontend checks that passed vacuously** (2026-11-27): `error.as-text`
+  and `message.details-sanitized` probed the DOM with
+  `document.querySelector`, blind to a shadow root - a DOM adapter now
+  answers `query(selector)` across open shadow roots (`deepCount` in
+  `adapters/base.mjs`, the `ui5` and `webcomponent` adapters), and the
+  `webcomponent` adapter reads the error from the dialog it shows, not
+  from its event. `transport.one-at-a-time` and
+  `transport.tick-keeps-event` skip instead of passing (or warning) when
+  the frontend cannot make the second press. The Web Components frontend
+  is run on protocol 3 (`conformance/RESULTS.md`): its main fails
+  `message.details-sanitized` (an `<img>` in the box details reached the
+  DOM) and warns on `transport.tick-keeps-event`; both are fixed on its
+  branch, which passes 76 of the 76 portable checks that apply.
 
 - **Both reference hosts on the releases with protocol 3** (2026-11-27):
   abap2UI5 1.151.0 (2026-11-26) is the first release that speaks protocol
