@@ -161,8 +161,8 @@ test("the CLI runs the frontend suite and refuses an unknown adapter", () => {
 // The agent client's result, check by check - a change here is a change of
 // the client (re-vendored) or of a check. From mcp-server a4d9f07 (PR #44)
 // it followed every frontend rule that applies; the vendored copy is
-// 8a1d7d8 (adapters/vendor/mcp-server/source.json, protocol 3), which also
-// sends the app-driven window request. The skips are the portable and UI5
+// 53555b0 (adapters/vendor/mcp-server/source.json, protocol 3; the
+// app-driven window request since 8a1d7d8). The skips are the portable and UI5
 // profiles it does not claim, timers it does not run, a URL, a DOM, focus,
 // programmatic model edits and the nested-table cell its snapshot does not
 // describe.
@@ -179,7 +179,7 @@ const AGENT_SKIPS = [
 ];
 
 // Its known deviations (RESULTS.md), with the place of the fix: none at
-// 8a1d7d8. The window request of abap2UI5 1.149.0 and 1.150.0 that 332a0b0
+// 53555b0 (none since 8a1d7d8). The window request of abap2UI5 1.149.0 and 1.150.0 that 332a0b0
 // sent ([path, count, sort?, filter?] - `semantic.recorded-snapshots`
 // failed on it) is gone: the client sends the app-driven one.
 const AGENT_KNOWN_FAILS = [];

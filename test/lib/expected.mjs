@@ -32,7 +32,7 @@ export const PROTOCOL = 3;
  *   cap2ui5       @cap2ui5/cds-plugin 0.8.0 hosts the runtime 1.151.0 and
  *                 speaks 3; 0.7.0 hosted 1.149.0 and spoke 2
  *   agent         the agent client of abap2UI5/mcp-server, vendored at
- *                 8a1d7d8 (main), speaks protocol 3 (PROTOCOL in
+ *                 53555b0 (main), speaks protocol 3 (PROTOCOL in
  *                 appclient.mjs) - upstream reads it from 7906a2f on; the
  *                 copy vendored before, 332a0b0, spoke 2
  *   ui5           the abap2UI5 checkout the frontend job uses (1.151.0 in
@@ -150,7 +150,7 @@ export const CAP_TRAFFIC_MISSING = null;
 /**
  * Recorded traffic that is still protocol 2 and kept, its exchanges not
  * validated against the schemas of this revision. None since the agent
- * client is vendored at mcp-server 8a1d7d8 (protocol 3): its traffic
+ * client is vendored at mcp-server 8a1d7d8 (protocol 3; 53555b0 now): its traffic
  * (traffic/<backend>/agent-client.json) is recorded on the releases and
  * validated like the rest; until then traffic/node-runtime/agent-client.json
  * was the one of mcp-server 332a0b0 against a protocol-2 runtime, kept for

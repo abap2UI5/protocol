@@ -81,7 +81,7 @@ source file and method it was derived from ([spec/README.md](spec/README.md#sour
   backend, the UI5 SPA and `@abap2ui5/node-runtime` 1.151.0
   (`package.json`) - cap2UI5 (`@cap2ui5/cds-plugin` 0.8.0 hosts that
   runtime), the agent client of abap2UI5/mcp-server (vendored here at
-  `8a1d7d8`; it reads protocol 3 from `7906a2f`) and the two renderers of
+  `53555b0`; it reads protocol 3 from `7906a2f`) and the two renderers of
   this repository. **Who still speaks protocol 2:** abap2UI5 1.150.0 and
   older and `@cap2ui5/cds-plugin` 0.7.0 and older. A protocol-2
   frontend refuses a protocol-3 response on its number, and the suites
